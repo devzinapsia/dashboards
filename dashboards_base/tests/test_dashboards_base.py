@@ -38,3 +38,13 @@ class TestDashboardsBase(TransactionCase):
     def test_drilldown_action_default_name(self):
         action = self.env["dashboards.drilldown.mixin"]._get_drilldown_action("res.partner")
         self.assertTrue(action["name"])
+
+    def test_native_drilldown_action(self):
+        action = self.env["dashboards.drilldown.mixin"]._get_native_drilldown_action(
+            "base.action_partner_form",
+            domain=[("customer_rank", ">", 0)],
+            context={"default_customer_rank": 1},
+        )
+        self.assertEqual(action["res_model"], "res.partner")
+        self.assertEqual(action["domain"], [("customer_rank", ">", 0)])
+        self.assertEqual(action["context"]["default_customer_rank"], 1)
