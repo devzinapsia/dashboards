@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_collection_dashboard_config_manager,account.collection.dashboard.config.manager,model_account_collection_dashboard_config,group_collection_dashboard_manager,1,1,1,1

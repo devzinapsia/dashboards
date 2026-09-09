@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_collection_dashboard.CollectionDashboard">
+        <Layout display="display">
+            <div class="o_account_collection_dashboard p-3">
+
+                <div class="d-flex justify-content-end mb-3">
+                    <select class="form-select w-auto" t-on-change="onCurrencyChange">
+                        <option value="" t-esc="labels.allCurrencies"/>
+                        <t t-foreach="state.currencies" t-as="currency" t-key="currency.id">
+                            <option
+                                t-att-value="currency.id"
+                                t-att-selected="state.selectedCurrencyId === currency.id"
+                                t-esc="currency.name"
+                            />
+                        </t>
+                    </select>
+                </div>
+
+                <h5 class="mb-3" t-esc="labels.invoicingSection"/>
+                <div class="row g-3 mb-3" t-if="state.invoicedVsCollected">
+                    <div class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.invoiced"
+                            value="formatMonetary(state.invoicedVsCollected.invoiced, state.invoicedVsCollected.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.invoicedVsCollected.drilldown)"
+                        />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.collected"
+                            value="formatMonetary(state.invoicedVsCollected.collected, state.invoicedVsCollected.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.invoicedVsCollected.drilldown)"
+                        />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.collectionRate"
+                            value="Math.round(state.invoicedVsCollected.percentage) + '%'"
+                        />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3" t-if="state.latePayments">
+                    <div class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.latePayments"
+                            value="formatMonetary(state.latePayments.amount, state.latePayments.currency_id)"
+                            secondaryValue="state.latePayments.count"
+                            onClick="() => this.onDrilldownClick(state.latePayments.drilldown)"
+                        />
+                    </div>
+                </div>
+
+                <div class="mb-1 text-muted small" t-if="state.dueSoonByLevel.length" t-esc="labels.dueSoonByLevel"/>
+                <div class="row g-3 mb-3">
+                    <t t-foreach="state.dueSoonByLevel" t-as="level" t-key="level.level_id">
+                        <div class="col-12 col-md-4">
+                            <DashboardsKpiCard
+                                title="level.level_name"
+                                value="formatMonetary(level.amount, level.currency_id)"
+                                onClick="() => this.onDrilldownClick(level.drilldown)"
+                            />
+                        </div>
+                    </t>
+                </div>
+
+                <div class="mb-1 text-muted small" t-esc="labels.overdueByAge"/>
+                <div class="row g-3 mb-3">
+                    <t t-foreach="state.overdueByAge" t-as="bucket" t-key="bucket.label">
+                        <div class="col-12 col-md-3">
+                            <DashboardsKpiCard
+                                title="bucket.label"
+                                value="formatMonetary(bucket.amount, bucket.currency_id)"
+                                onClick="() => this.onDrilldownClick(bucket.drilldown)"
+                            />
+                        </div>
+                    </t>
+                </div>
+
+                <div class="mb-1 text-muted small" t-if="state.topOverduePartners.length" t-esc="labels.topOverduePartners"/>
+                <div class="row g-3 mb-4">
+                    <t t-foreach="state.topOverduePartners" t-as="partnerRow" t-key="partnerRow.partner_id">
+                        <div class="col-12 col-md-4">
+                            <DashboardsKpiCard
+                                title="partnerRow.partner_name"
+                                value="formatMonetary(partnerRow.amount, partnerRow.currency_id)"
+                                onClick="() => this.onDrilldownClick(partnerRow.drilldown)"
+                            />
+                        </div>
+                    </t>
+                </div>
+
+                <h5 class="mb-3" t-esc="labels.treasurySection"/>
+                <div class="row g-3 mb-4">
+                    <div t-if="state.fixedFund" class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.fixedFund"
+                            value="formatMonetary(state.fixedFund.balance, state.fixedFund.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.fixedFund.drilldown)"
+                        />
+                    </div>
+                    <t t-foreach="state.bankBalances" t-as="bank" t-key="bank.journal_id">
+                        <div class="col-12 col-md-4">
+                            <DashboardsKpiCard
+                                title="bank.journal_name"
+                                value="formatMonetary(bank.balance, bank.currency_id)"
+                                onClick="() => this.onDrilldownClick(bank.drilldown)"
+                            />
+                        </div>
+                    </t>
+                    <div t-if="state.cashCollections" class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.cashCollections"
+                            value="formatMonetary(state.cashCollections.amount, state.cashCollections.currency_id)"
+                            secondaryValue="state.cashCollections.count"
+                            onClick="() => this.onDrilldownClick(state.cashCollections.drilldown)"
+                        />
+                    </div>
+                </div>
+
+                <h5 class="mb-3" t-esc="labels.reconciliationSection"/>
+                <div class="row g-3 mb-4" t-if="state.pendingReconciliation">
+                    <div class="col-12 col-md-4">
+                        <DashboardsKpiCard
+                            title="labels.pendingReconciliation"
+                            value="formatMonetary(state.pendingReconciliation.amount, state.pendingReconciliation.currency_id)"
+                            secondaryValue="state.pendingReconciliation.count"
+                            onClick="() => this.onDrilldownClick(state.pendingReconciliation.drilldown)"
+                        />
+                    </div>
+                </div>
+
+                <h5 class="mb-3" t-esc="labels.bySalespersonSection"/>
+                <div class="row g-3 mb-4">
+                    <t t-foreach="state.collectionByUser" t-as="userRow" t-key="userRow.user_id">
+                        <div class="col-12 col-md-4">
+                            <DashboardsKpiCard
+                                title="userRow.user_name"
+                                value="formatMonetary(userRow.amount, state.invoicedVsCollected and state.invoicedVsCollected.currency_id)"
+                                onClick="() => this.onDrilldownClick(userRow.drilldown)"
+                            />
+                        </div>
+                    </t>
+                </div>
+
+            </div>
+        </Layout>
+    </t>
+
+</templates>

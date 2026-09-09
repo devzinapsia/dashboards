@@ -1,0 +1,69 @@
+from odoo import api, fields, models
+
+
+class AccountCollectionDashboardConfig(models.Model):
+    """Singleton settings record for the Collection dashboard.
+
+    Following the pattern documented in dashboards_base's README: one plain
+    model per concept dashboard (not res.config.settings, since there is no
+    wizard-style "Apply" step needed here), with one field per indicator
+    that requires the administrator to pick journals/accounts.
+    """
+
+    _name = "account.collection.dashboard.config"
+    _description = "Collection Dashboard Configuration"
+
+    company_id = fields.Many2one(
+        "res.company", string="Company", required=True, default=lambda self: self.env.company
+    )
+    fixed_fund_journal_id = fields.Many2one(
+        "account.journal",
+        string="Fixed fund journal",
+        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
+        help="Journal whose balance is shown as the 'Fixed fund' KPI.",
+    )
+    bank_balance_journal_ids = fields.Many2many(
+        "account.journal",
+        "account_collection_dashboard_config_bank_journal_rel",
+        "config_id",
+        "journal_id",
+        string="Bank balance journals",
+        domain="[('type', '=', 'bank'), ('company_id', '=', company_id)]",
+        help="One balance KPI card is shown for each selected journal.",
+    )
+    cash_collection_journal_ids = fields.Many2many(
+        "account.journal",
+        "account_collection_dashboard_config_cash_journal_rel",
+        "config_id",
+        "journal_id",
+        string="Cash/transfer collection journals",
+        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
+        help="Journals considered for the 'Cash/transfers collected' KPI.",
+    )
+    third_party_check_journal_ids = fields.Many2many(
+        "account.journal",
+        "account_collection_dashboard_config_check_journal_rel",
+        "config_id",
+        "journal_id",
+        string="Third-party check journals",
+        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
+        help="Journals used to hold third-party checks in portfolio, before they"
+        " are deposited or transferred.",
+    )
+
+    _company_uniq = models.Constraint(
+        "unique(company_id)",
+        "Only one Collection Dashboard configuration is allowed per company.",
+    )
+
+    @api.model
+    def _get_config(self, company=None):
+        company = company or self.env.company
+        config = self.search([("company_id", "=", company.id)], limit=1)
+        if not config:
+            config = self.create({"company_id": company.id})
+        return config
+
+    @api.model
+    def action_open_config(self):
+        return self._get_config()._get_records_action(name=self.env._("Collection Dashboard Settings"))

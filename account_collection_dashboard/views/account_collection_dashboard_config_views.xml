@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_collection_dashboard_config_form" model="ir.ui.view">
+        <field name="name">account.collection.dashboard.config.form</field>
+        <field name="model">account.collection.dashboard.config</field>
+        <field name="arch" type="xml">
+            <form string="Collection Dashboard Settings">
+                <sheet>
+                    <field name="company_id" invisible="1"/>
+                    <group>
+                        <group string="Treasury">
+                            <field name="fixed_fund_journal_id"/>
+                            <field name="bank_balance_journal_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Collections">
+                            <field name="cash_collection_journal_ids" widget="many2many_tags"/>
+                            <field name="third_party_check_journal_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_collection_dashboard_config" model="ir.actions.server">
+        <field name="name">Collection Dashboard Settings</field>
+        <field name="model_id" ref="model_account_collection_dashboard_config"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_config()</field>
+    </record>
+
+    <menuitem
+        id="menu_account_collection_dashboard_config"
+        name="Collection"
+        parent="dashboards_base.menu_dashboards_config"
+        action="action_account_collection_dashboard_config"
+        groups="group_collection_dashboard_manager"
+        sequence="10"/>
+
+</odoo>

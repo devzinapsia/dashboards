@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_account_collection_dashboard" model="ir.actions.client">
+        <field name="name">Collection</field>
+        <field name="tag">account_collection_dashboard.dashboard</field>
+    </record>
+
+    <menuitem
+        id="menu_account_collection_dashboard"
+        name="Collection"
+        parent="dashboards_base.menu_dashboards_boards"
+        action="action_account_collection_dashboard"
+        groups="group_collection_dashboard_user"
+        sequence="10"/>
+
+</odoo>
