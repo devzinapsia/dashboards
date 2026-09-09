@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="dashboards_base.KpiCard">
+        <div
+            class="o_dashboards_kpi_card card h-100"
+            t-att-class="{ 'o_dashboards_kpi_card_clickable' : isClickable }"
+            t-att-role="isClickable ? 'button' : undefined"
+            t-att-tabindex="isClickable ? 0 : undefined"
+            t-on-click="onCardClick"
+            t-on-keydown="(ev) => { if (isClickable and (ev.key === 'Enter' or ev.key === ' ')) onCardClick(); }"
+        >
+            <div class="card-body">
+                <div class="o_dashboards_kpi_card_title text-muted small" t-esc="props.title"/>
+                <div class="o_dashboards_kpi_card_value fw-bold fs-3" t-esc="props.value"/>
+                <div t-if="props.secondaryValue" class="o_dashboards_kpi_card_secondary text-muted small" t-esc="props.secondaryValue"/>
+                <t t-slot="default"/>
+            </div>
+        </div>
+    </t>
+
+</templates>

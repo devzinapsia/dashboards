@@ -1,0 +1,27 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* dashboards_base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: \n"
+"Language: es\n"
+
+#. module: dashboards_base
+#: model:ir.module.category,name:dashboards_base.module_category_dashboards
+#: model:ir.ui.menu,name:dashboards_base.menu_dashboards_root
+msgid "Dashboards"
+msgstr "Dashboards"
+
+#. module: dashboards_base
+#: model:ir.ui.menu,name:dashboards_base.menu_dashboards_boards
+msgid "Boards"
+msgstr "Tableros"
+
+#. module: dashboards_base
+#: model:ir.ui.menu,name:dashboards_base.menu_dashboards_config
+msgid "Configuration"
+msgstr "Configuración"

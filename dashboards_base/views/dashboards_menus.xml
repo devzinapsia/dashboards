@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Root "Dashboards" app menu and its two empty submenus.
+
+        Concept modules (e.g. account_collection_dashboard) must reuse
+        these ids as parent_id for their own menu items instead of
+        creating new root menus:
+          - dashboards_base.menu_dashboards_boards: each concept module
+            adds its dashboard client action entry here.
+          - dashboards_base.menu_dashboards_config: each concept module
+            adds its own settings/configuration entry here.
+    -->
+    <menuitem
+        id="menu_dashboards_root"
+        name="Dashboards"
+        web_icon="dashboards_base,static/description/icon.png"
+        sequence="30"/>
+
+    <menuitem
+        id="menu_dashboards_boards"
+        name="Boards"
+        parent="menu_dashboards_root"
+        sequence="10"/>
+
+    <menuitem
+        id="menu_dashboards_config"
+        name="Configuration"
+        parent="menu_dashboards_root"
+        sequence="20"/>
+
+</odoo>
