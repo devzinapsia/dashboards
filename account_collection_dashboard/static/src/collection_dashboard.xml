@@ -112,7 +112,7 @@
 
                 <div class="row g-3 mb-4">
                     <div t-if="state.topSlowPayingCustomers.length" class="col-12 col-md-3">
-                        <div class="card p-2">
+                        <div class="card p-2 o_account_collection_dashboard_chart_card" t-att-class="{ 'o_account_collection_dashboard_chart_card_dark': isDarkMode }">
                             <div class="card-body">
                                 <h6 class="card-title" t-esc="labels.topSlowPayingCustomers"/>
                                 <DashboardsChart
@@ -124,7 +124,7 @@
                         </div>
                     </div>
                     <div t-if="state.collectionProjection.length" class="col-12 col-md-9">
-                        <div class="card p-2">
+                        <div class="card p-2 o_account_collection_dashboard_chart_card" t-att-class="{ 'o_account_collection_dashboard_chart_card_dark': isDarkMode }">
                             <div class="card-body">
                                 <h6 class="card-title" t-esc="labels.collectionProjection"/>
                                 <DashboardsChart

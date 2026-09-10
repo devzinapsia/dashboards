@@ -7,6 +7,7 @@ import { _t } from "@web/core/l10n/translation";
 import { loadBundle } from "@web/core/assets";
 import { DashboardsKpiCard } from "@dashboards_base/components/kpi_card/kpi_card";
 import { DashboardsChart } from "@dashboards_base/components/dashboard_chart/dashboard_chart";
+import { isDarkMode, CHART_AXIS_TICK_COLOR, CHART_AXIS_GRID_COLOR } from "@dashboards_base/js/dashboards_theme";
 import { Component, onWillStart, useState } from "@odoo/owl";
 
 const COLLECTION_PROJECTION_LABELS_PLUGIN_ID = "accountCollectionDashboardProjectionLabels";
@@ -15,6 +16,8 @@ export class CollectionDashboard extends Component {
     static template = "account_collection_dashboard.CollectionDashboard";
     static components = { Layout, DashboardsKpiCard, DashboardsChart };
     static props = ["*"];
+
+    isDarkMode = isDarkMode;
 
     setup() {
         this.orm = useService("orm");
@@ -85,7 +88,7 @@ export class CollectionDashboard extends Component {
                 }
                 const { ctx } = chart;
                 ctx.save();
-                ctx.fillStyle = "#212529";
+                ctx.fillStyle = CHART_AXIS_TICK_COLOR;
                 ctx.font = "12px sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
@@ -113,8 +116,16 @@ export class CollectionDashboard extends Component {
             indexAxis: "y",
             plugins: { legend: { display: false } },
             scales: {
-                x: { title: { display: true, text: _t("Days") } },
-                y: { title: { display: true, text: _t("Customer") } },
+                x: {
+                    title: { display: true, text: _t("Days"), color: CHART_AXIS_TICK_COLOR },
+                    ticks: { color: CHART_AXIS_TICK_COLOR },
+                    grid: { color: CHART_AXIS_GRID_COLOR },
+                },
+                y: {
+                    title: { display: true, text: _t("Customer"), color: CHART_AXIS_TICK_COLOR },
+                    ticks: { color: CHART_AXIS_TICK_COLOR },
+                    grid: { color: CHART_AXIS_GRID_COLOR },
+                },
             },
         };
     }
@@ -146,9 +157,17 @@ export class CollectionDashboard extends Component {
                 },
             },
             scales: {
+                x: {
+                    ticks: { color: CHART_AXIS_TICK_COLOR },
+                    grid: { color: CHART_AXIS_GRID_COLOR },
+                },
                 y: {
-                    title: { display: true, text: _t("Balance") },
-                    ticks: { callback: (value) => this.formatMonetary(value, currencyId) },
+                    title: { display: true, text: _t("Balance"), color: CHART_AXIS_TICK_COLOR },
+                    ticks: {
+                        callback: (value) => this.formatMonetary(value, currencyId),
+                        color: CHART_AXIS_TICK_COLOR,
+                    },
+                    grid: { color: CHART_AXIS_GRID_COLOR },
                 },
             },
         };
