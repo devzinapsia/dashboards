@@ -15,37 +15,6 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.dashboard = cls.env["account.collection.dashboard"]
-        cls.date_from = "2024-01-01"
-        cls.date_to = "2024-01-31"
-
-    def test_invoiced_vs_collected(self):
-        invoice = self._create_invoice_one_line(
-            price_unit=1000.0,
-            tax_ids=[],
-            invoice_date="2024-01-15",
-            post=True,
-        )
-        self.env["account.payment.register"].with_context(
-            active_model="account.move", active_ids=invoice.ids
-        ).create({"amount": 400.0}).action_create_payments()
-
-        result = self.dashboard.get_invoiced_vs_collected(self.date_from, self.date_to)
-
-        self.assertAlmostEqual(result["invoiced"], 1000.0)
-        self.assertAlmostEqual(result["collected"], 400.0)
-        self.assertAlmostEqual(result["percentage"], 40.0)
-
-    def test_invoiced_vs_collected_nets_credit_notes(self):
-        self._create_invoice_one_line(
-            price_unit=1000.0, tax_ids=[], invoice_date="2024-01-10", post=True
-        )
-        self._create_invoice_one_line(
-            move_type="out_refund", price_unit=300.0, tax_ids=[], invoice_date="2024-01-20", post=True
-        )
-
-        result = self.dashboard.get_invoiced_vs_collected(self.date_from, self.date_to)
-
-        self.assertAlmostEqual(result["invoiced"], 700.0)
 
     def test_config_access_denied_for_dashboard_user(self):
         dashboard_user = self.env["res.users"].create({
@@ -80,29 +49,182 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
 
         self.assertEqual(config, existing)
 
-    def test_currency_filter_separates_indicators(self):
+    def test_total_receivable_converts_to_selected_currency(self):
+        """get_total_receivable must re-express company-currency residuals
+        in the selected currency using today's rate, not filter invoices
+        by matching currency like the other indicators do.
+        """
         company_currency = self.env.company.currency_id
         foreign_currency = self.env["res.currency"].with_context(active_test=False).search(
             [("id", "!=", company_currency.id)], limit=1
         )
         foreign_currency.active = True
+        self.env["res.currency.rate"].create({
+            "currency_id": foreign_currency.id,
+            "rate": 2.0,
+            "name": fields.Date.today(),
+            "company_id": self.env.company.id,
+        })
+        self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            invoice_date=fields.Date.today(),
+            invoice_payment_term_id=False,
+            post=True,
+        )
+
+        company_currency_result = self.dashboard.get_total_receivable()
+        foreign_currency_result = self.dashboard.get_total_receivable(currency_id=foreign_currency.id)
+
+        self.assertAlmostEqual(company_currency_result["amount"], 1000.0)
+        self.assertAlmostEqual(foreign_currency_result["amount"], 2000.0)
+
+    def test_total_receivable_restricted_to_sale_journals(self):
+        other_journal = self.company_data["default_journal_sale"].copy({
+            "name": "Other Sales Journal", "code": "OSJ",
+        })
+        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config.sale_journal_ids = [(6, 0, self.company_data["default_journal_sale"].ids)]
 
         self._create_invoice_one_line(
-            price_unit=1000.0, tax_ids=[], invoice_date="2024-01-05", post=True
+            price_unit=1000.0,
+            tax_ids=[],
+            invoice_date=fields.Date.today(),
+            invoice_payment_term_id=False,
+            journal_id=self.company_data["default_journal_sale"].id,
+            post=True,
         )
         self._create_invoice_one_line(
-            price_unit=500.0, tax_ids=[], currency_id=foreign_currency.id, invoice_date="2024-01-06", post=True
+            price_unit=500.0,
+            tax_ids=[],
+            invoice_date=fields.Date.today(),
+            invoice_payment_term_id=False,
+            journal_id=other_journal.id,
+            post=True,
         )
 
-        company_currency_result = self.dashboard.get_invoiced_vs_collected(
-            self.date_from, self.date_to, currency_id=company_currency.id
+        result = self.dashboard.get_total_receivable()
+
+        self.assertAlmostEqual(result["amount"], 1000.0)
+
+    def test_turnover_period_bounds(self):
+        company = self.env.company
+        today = fields.Date.today()
+
+        current_from, current_to = self.dashboard._get_turnover_period_bounds(
+            "current_fiscal_year", company, today
         )
-        foreign_currency_result = self.dashboard.get_invoiced_vs_collected(
-            self.date_from, self.date_to, currency_id=foreign_currency.id
+        previous_from, previous_to = self.dashboard._get_turnover_period_bounds(
+            "previous_fiscal_year", company, today
+        )
+        last_12_months_from, last_12_months_to = self.dashboard._get_turnover_period_bounds(
+            "last_12_months", company, today
         )
 
-        self.assertAlmostEqual(company_currency_result["invoiced"], 1000.0)
-        self.assertAlmostEqual(foreign_currency_result["invoiced"], 500.0)
+        self.assertEqual(current_to, today)
+        self.assertEqual(previous_to, current_from - timedelta(days=1))
+        self.assertEqual(last_12_months_to, today)
+        self.assertAlmostEqual((today - last_12_months_from).days, 365, delta=1)
+
+    def test_collection_turnover_current_fiscal_year(self):
+        self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            invoice_date=fields.Date.today(),
+            invoice_payment_term_id=False,
+            post=True,
+        )
+
+        result = self.dashboard.get_collection_turnover(period="current_fiscal_year")
+
+        # Average AR = (balance at fiscal year start [0] + balance today [1000]) / 2
+        self.assertAlmostEqual(result["net_credit_sales"], 1000.0)
+        self.assertAlmostEqual(result["average_receivable"], 500.0)
+        self.assertAlmostEqual(result["turnover"], 2.0)
+
+    def test_collection_turnover_average_ar_reflects_payment_from_other_journal(self):
+        """Regression test: a payment's reconciling GL line lives in the
+        payment's own journal (e.g. a bank journal), not the invoice's
+        sales journal. The AR balance used for the turnover average must
+        not be restricted by sale_journal_ids, or a paid invoice would
+        look like it's still fully outstanding forever.
+        """
+        today = fields.Date.today()
+        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config.sale_journal_ids = [(6, 0, self.company_data["default_journal_sale"].ids)]
+
+        invoice = self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            invoice_date=today,
+            invoice_payment_term_id=False,
+            journal_id=self.company_data["default_journal_sale"].id,
+            post=True,
+        )
+        self.env["account.payment.register"].with_context(
+            active_model="account.move", active_ids=invoice.ids
+        ).create({"amount": 1000.0, "payment_date": today}).action_create_payments()
+
+        result = self.dashboard.get_collection_turnover(period="current_fiscal_year")
+
+        self.assertAlmostEqual(result["average_receivable"], 0.0)
+
+    def test_collection_payment_ratio(self):
+        today = fields.Date.today()
+        invoice = self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            invoice_date=today,
+            invoice_payment_term_id=False,
+            post=True,
+        )
+        self.env["account.payment.register"].with_context(
+            active_model="account.move", active_ids=invoice.ids
+        ).create({"amount": 1000.0, "payment_date": today}).action_create_payments()
+
+        bill = self._create_invoice_one_line(
+            move_type="in_invoice",
+            price_unit=400.0,
+            tax_ids=[],
+            invoice_date=today,
+            invoice_payment_term_id=False,
+            post=True,
+        )
+        self.env["account.payment.register"].with_context(
+            active_model="account.move", active_ids=bill.ids
+        ).create({"amount": 400.0, "payment_date": today}).action_create_payments()
+
+        result = self.dashboard.get_collection_payment_ratio(today, today)
+
+        self.assertAlmostEqual(result["collected"], 1000.0)
+        self.assertAlmostEqual(result["paid"], 400.0)
+        self.assertAlmostEqual(result["ratio"], 2.5)
+
+    def test_collection_payment_ratio_restricted_to_sale_journals(self):
+        """Regression test: account.payment.reconciled_invoice_ids has a
+        custom search method that doesn't support dotted-path traversal
+        into a related field (e.g. ".journal_id") — this crashed with
+        "Unsupported operator" the first time this ran through the UI.
+        """
+        today = fields.Date.today()
+        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config.sale_journal_ids = [(6, 0, self.company_data["default_journal_sale"].ids)]
+
+        invoice = self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            invoice_date=today,
+            invoice_payment_term_id=False,
+            journal_id=self.company_data["default_journal_sale"].id,
+            post=True,
+        )
+        self.env["account.payment.register"].with_context(
+            active_model="account.move", active_ids=invoice.ids
+        ).create({"amount": 1000.0, "payment_date": today}).action_create_payments()
+
+        result = self.dashboard.get_collection_payment_ratio(today, today)
+
+        self.assertAlmostEqual(result["collected"], 1000.0)
 
     def test_overdue_by_age_buckets(self):
         today = fields.Date.today()
@@ -284,3 +406,29 @@ class TestThirdPartyChecksIndicator(L10nLatamCheckTest):
         self.assertEqual(result["by_currency"][0]["count"], 2)
         self.assertAlmostEqual(result["by_currency"][0]["amount"], 2.0)
         self.assertEqual(result["by_currency"][0]["overdue_count"], 0)
+
+    def test_rejected_checks(self):
+        """Odoo has no 'rejected' state for third-party checks (confirmed:
+        it's purely a matter of which journal the check currently sits
+        in). Simulate that convention: move a check into the journal
+        configured as 'rejected' and check it shows up.
+        """
+        company = self.company_data_3["company"]
+        dashboard = self.env["account.collection.dashboard"].with_company(company)
+        config = self.env["account.collection.dashboard.config"].sudo()._get_config(company)
+        config.rejected_check_journal_ids = [(6, 0, self.rejected_check_journal.ids)]
+
+        payment = self._create_third_party_check()
+        check = payment.l10n_latam_new_check_ids[0]
+
+        # Same mechanism used by l10n_latam_check's own test suite to
+        # simulate a check ending up in the rejected-checks journal:
+        # a mass-transfer between journals, not a fresh "receive".
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check", active_ids=[check.id]
+        ).create({"destination_journal_id": self.rejected_check_journal.id})._create_payments()
+
+        result = dashboard.get_rejected_checks()
+
+        self.assertEqual(result["count"], 1)
+        self.assertAlmostEqual(result["amount"], 1.0)

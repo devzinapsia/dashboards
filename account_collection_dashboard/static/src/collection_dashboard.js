@@ -16,35 +16,40 @@ export class CollectionDashboard extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.labels = {
-            invoicingSection: _t("Invoicing and collection"),
             treasurySection: _t("Treasury"),
             reconciliationSection: _t("Reconciliation"),
             multiCurrencySection: _t("Multi-currency"),
             bySalespersonSection: _t("By salesperson"),
-            invoiced: _t("Invoiced"),
-            collected: _t("Collected"),
-            collectionRate: _t("Collection rate"),
+            totalReceivable: _t("Total receivable"),
+            rejectedChecks: _t("Rejected checks"),
+            collectionTurnover: _t("Collection turnover"),
+            collectionPaymentRatio: _t("Collection/Payment ratio"),
             fixedFund: _t("Fixed fund"),
             dueSoonByLevel: _t("Due soon, by Follow-up level"),
             overdueByAge: _t("Overdue, by age"),
             topOverduePartners: _t("Top overdue customers"),
-            latePayments: _t("Collected late"),
             cashCollections: _t("Cash/transfer collections"),
             pendingReconciliation: _t("Pending reconciliation"),
             checksInPortfolio: _t("Third-party checks in portfolio"),
             pendingExchangeDifference: _t("Pending exchange difference"),
             allCurrencies: _t("All currencies"),
+            currentFiscalYear: _t("Current fiscal year"),
+            previousFiscalYear: _t("Previous fiscal year"),
+            last12Months: _t("Last 12 months"),
         };
         this.state = useState({
             dateFrom: today().startOf("month"),
             dateTo: today().endOf("month"),
             currencies: [],
             selectedCurrencyId: null,
-            invoicedVsCollected: null,
+            turnoverPeriod: "current_fiscal_year",
+            totalReceivable: null,
+            rejectedChecks: null,
+            collectionTurnover: null,
+            collectionPaymentRatio: null,
             dueSoonByLevel: [],
             overdueByAge: [],
             topOverduePartners: [],
-            latePayments: null,
             bankBalances: [],
             fixedFund: null,
             cashCollections: null,
@@ -71,11 +76,13 @@ export class CollectionDashboard extends Component {
         const currencyId = this.state.selectedCurrencyId || undefined;
         const [
             currencies,
-            invoicedVsCollected,
+            totalReceivable,
+            rejectedChecks,
+            collectionTurnover,
+            collectionPaymentRatio,
             dueSoonByLevel,
             overdueByAge,
             topOverduePartners,
-            latePayments,
             bankBalances,
             fixedFund,
             cashCollections,
@@ -85,11 +92,13 @@ export class CollectionDashboard extends Component {
             collectionByUser,
         ] = await Promise.all([
             this.orm.call("account.collection.dashboard", "get_active_currencies", []),
-            this.orm.call("account.collection.dashboard", "get_invoiced_vs_collected", [dateFrom, dateTo, currencyId]),
+            this.orm.call("account.collection.dashboard", "get_total_receivable", [currencyId]),
+            this.orm.call("account.collection.dashboard", "get_rejected_checks", [currencyId]),
+            this.orm.call("account.collection.dashboard", "get_collection_turnover", [this.state.turnoverPeriod]),
+            this.orm.call("account.collection.dashboard", "get_collection_payment_ratio", [dateFrom, dateTo]),
             this.orm.call("account.collection.dashboard", "get_due_soon_by_followup_level", [currencyId]),
             this.orm.call("account.collection.dashboard", "get_overdue_by_age", [currencyId]),
             this.orm.call("account.collection.dashboard", "get_top_overdue_partners", [currencyId]),
-            this.orm.call("account.collection.dashboard", "get_late_payments", [dateFrom, dateTo, currencyId]),
             this.orm.call("account.collection.dashboard", "get_bank_balances", []),
             this.orm.call("account.collection.dashboard", "get_fixed_fund_balance", []),
             this.orm.call("account.collection.dashboard", "get_cash_collections", [dateFrom, dateTo]),
@@ -100,11 +109,13 @@ export class CollectionDashboard extends Component {
         ]);
         Object.assign(this.state, {
             currencies,
-            invoicedVsCollected,
+            totalReceivable,
+            rejectedChecks,
+            collectionTurnover,
+            collectionPaymentRatio,
             dueSoonByLevel,
             overdueByAge,
             topOverduePartners,
-            latePayments,
             bankBalances,
             fixedFund,
             cashCollections,
@@ -117,6 +128,11 @@ export class CollectionDashboard extends Component {
 
     onCurrencyChange(ev) {
         this.state.selectedCurrencyId = ev.target.value ? Number(ev.target.value) : null;
+        this.fetchData();
+    }
+
+    onTurnoverPeriodChange(ev) {
+        this.state.turnoverPeriod = ev.target.value;
         this.fetchData();
     }
 

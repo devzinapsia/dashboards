@@ -37,6 +37,11 @@ msgstr "Configuración del tablero de cobranzas"
 
 #. module: account_collection_dashboard
 #: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+msgid "Invoicing"
+msgstr "Facturación"
+
+#. module: account_collection_dashboard
+#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 msgid "Treasury"
 msgstr "Tesorería"
 
@@ -49,6 +54,26 @@ msgstr "Cobranzas"
 #: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__company_id
 msgid "Company"
 msgstr "Compañía"
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__sale_journal_ids
+msgid "Sales voucher journals"
+msgstr "Diarios de comprobantes de venta"
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__sale_journal_ids
+msgid "Journals used to source customer invoices and their collections for every indicator on the dashboard."
+msgstr "Diarios usados para tomar las facturas de clientes y sus cobranzas, en todos los indicadores del tablero."
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__rejected_check_journal_ids
+msgid "Rejected check journals"
+msgstr "Diarios de cheques rechazados"
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__rejected_check_journal_ids
+msgid "Odoo has no formal 'rejected' state for third-party checks: a check counts as rejected here purely by convention, because it currently sits in one of these journals (e.g. the 'Rejected Third Party Checks' journal some localizations create)."
+msgstr "Odoo no tiene un estado formal de 'rechazado' para cheques de terceros: aquí un cheque se considera rechazado por convención, porque actualmente está en uno de estos diarios (por ejemplo el diario 'Cheques de Terceros Rechazados' que crean algunas localizaciones)."
 
 #. module: account_collection_dashboard
 #: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__fixed_fund_journal_id
@@ -92,8 +117,13 @@ msgstr "Diarios usados para mantener cheques de terceros en cartera, antes de se
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Invoices"
-msgstr "Facturas"
+msgid "Receivables"
+msgstr "Cuentas por cobrar"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Rejected Checks"
+msgstr "Cheques rechazados"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
@@ -117,11 +147,6 @@ msgstr "+90 días"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Late Payments"
-msgstr "Cobranzas fuera de término"
-
-#. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Cash/Transfer Collections"
 msgstr "Cobranzas en efectivo/transferencias"
 
@@ -142,8 +167,8 @@ msgstr "Sin asignar"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Invoicing and collection"
-msgstr "Facturación y cobranza"
+msgid "Treasury"
+msgstr "Tesorería"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
@@ -162,18 +187,23 @@ msgstr "Por vendedor"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Invoiced"
-msgstr "Facturado"
+msgid "Total receivable"
+msgstr "Total por cobrar"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Collected"
-msgstr "Cobrado"
+msgid "Rejected checks"
+msgstr "Cheques rechazados"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Collection rate"
-msgstr "Porcentaje de cobranza"
+msgid "Collection turnover"
+msgstr "Rotación de cobranza"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Collection/Payment ratio"
+msgstr "Ratio cobro/pago"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
@@ -194,11 +224,6 @@ msgstr "Vencido, por antigüedad"
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Top overdue customers"
 msgstr "Top de clientes morosos"
-
-#. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Collected late"
-msgstr "Cobrado fuera de término"
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
@@ -224,3 +249,18 @@ msgstr "Diferencia de cambio pendiente"
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "All currencies"
 msgstr "Todas las monedas"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Current fiscal year"
+msgstr "Año fiscal actual"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Previous fiscal year"
+msgstr "Año fiscal anterior"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Last 12 months"
+msgstr "Últimos 12 meses"

@@ -18,6 +18,28 @@ class AccountCollectionDashboardConfig(models.Model):
     company_id = fields.Many2one(
         "res.company", string="Company", required=True, default=lambda self: self.env.company
     )
+    sale_journal_ids = fields.Many2many(
+        "account.journal",
+        "account_collection_dashboard_config_sale_journal_rel",
+        "config_id",
+        "journal_id",
+        string="Sales voucher journals",
+        domain="[('type', '=', 'sale'), ('company_id', '=', company_id)]",
+        help="Journals used to source customer invoices and their collections"
+        " for every indicator on the dashboard.",
+    )
+    rejected_check_journal_ids = fields.Many2many(
+        "account.journal",
+        "account_collection_dashboard_config_rejected_check_journal_rel",
+        "config_id",
+        "journal_id",
+        string="Rejected check journals",
+        domain="[('company_id', '=', company_id)]",
+        help="Odoo has no formal 'rejected' state for third-party checks: a"
+        " check counts as rejected here purely by convention, because it"
+        " currently sits in one of these journals (e.g. the 'Rejected Third"
+        " Party Checks' journal some localizations create).",
+    )
     fixed_fund_journal_id = fields.Many2one(
         "account.journal",
         string="Fixed fund journal",

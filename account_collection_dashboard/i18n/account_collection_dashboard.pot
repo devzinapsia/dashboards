@@ -36,6 +36,11 @@ msgstr ""
 
 #. module: account_collection_dashboard
 #: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+msgid "Invoicing"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 msgid "Treasury"
 msgstr ""
 
@@ -47,6 +52,26 @@ msgstr ""
 #. module: account_collection_dashboard
 #: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__company_id
 msgid "Company"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__sale_journal_ids
+msgid "Sales voucher journals"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__sale_journal_ids
+msgid "Journals used to source customer invoices and their collections for every indicator on the dashboard."
+msgstr ""
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__rejected_check_journal_ids
+msgid "Rejected check journals"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__rejected_check_journal_ids
+msgid "Odoo has no formal 'rejected' state for third-party checks: a check counts as rejected here purely by convention, because it currently sits in one of these journals (e.g. the 'Rejected Third Party Checks' journal some localizations create)."
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -91,7 +116,12 @@ msgstr ""
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Invoices"
+msgid "Receivables"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Rejected Checks"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -116,11 +146,6 @@ msgstr ""
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Late Payments"
-msgstr ""
-
-#. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Cash/Transfer Collections"
 msgstr ""
 
@@ -141,7 +166,7 @@ msgstr ""
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Invoicing and collection"
+msgid "Treasury"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -161,17 +186,22 @@ msgstr ""
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Invoiced"
+msgid "Total receivable"
 msgstr ""
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Collected"
+msgid "Rejected checks"
 msgstr ""
 
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Collection rate"
+msgid "Collection turnover"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Collection/Payment ratio"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -192,11 +222,6 @@ msgstr ""
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Top overdue customers"
-msgstr ""
-
-#. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Collected late"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -222,4 +247,19 @@ msgstr ""
 #. module: account_collection_dashboard
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "All currencies"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Current fiscal year"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Previous fiscal year"
+msgstr ""
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Last 12 months"
 msgstr ""

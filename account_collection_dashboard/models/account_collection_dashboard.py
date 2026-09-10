@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from dateutil.relativedelta import relativedelta
+
 from odoo import api, fields, models
 from odoo.tools.safe_eval import safe_eval
 
@@ -24,48 +26,11 @@ class AccountCollectionDashboard(models.AbstractModel):
         currencies = self.env["res.currency"].search([("active", "=", True)])
         return [{"id": currency.id, "name": currency.name} for currency in currencies]
 
-    def _get_invoice_domain(self, date_from, date_to, currency_id=None):
-        domain = [
-            ("move_type", "in", ("out_invoice", "out_refund")),
-            ("state", "=", "posted"),
-            ("invoice_date", ">=", date_from),
-            ("invoice_date", "<=", date_to),
-            ("company_id", "=", self.env.company.id),
-        ]
-        if currency_id:
-            domain.append(("currency_id", "=", currency_id))
-        return domain
-
-    @api.model
-    def get_invoiced_vs_collected(self, date_from, date_to, currency_id=None):
-        """Indicator 1: invoiced amount for the period vs. amount already
-        collected from those same invoices (regardless of when they were
-        paid), netting out credit notes.
-        """
-        domain = self._get_invoice_domain(date_from, date_to, currency_id)
-        invoiced = 0.0
-        collected = 0.0
-        for move_type, sign in (("out_invoice", 1), ("out_refund", -1)):
-            [(total, residual)] = self.env["account.move"]._read_group(
-                domain + [("move_type", "=", move_type)],
-                aggregates=["amount_total:sum", "amount_residual:sum"],
-            )
-            invoiced += sign * (total or 0.0)
-            collected += sign * ((total or 0.0) - (residual or 0.0))
-
-        return {
-            "invoiced": invoiced,
-            "collected": collected,
-            "percentage": (collected / invoiced * 100.0) if invoiced else 0.0,
-            "currency_id": currency_id or self.env.company.currency_id.id,
-            "drilldown": self._get_drilldown_action(
-                "account.move",
-                domain=domain,
-                name=self.env._("Invoices"),
-            ),
-        }
+    def _get_dashboard_config(self):
+        return self.env["account.collection.dashboard.config"].sudo()._get_config()
 
     def _get_open_receivable_domain(self, currency_id=None, extra=None):
+        config = self._get_dashboard_config()
         domain = [
             ("account_id.account_type", "=", "asset_receivable"),
             ("parent_state", "=", "posted"),
@@ -73,9 +38,202 @@ class AccountCollectionDashboard(models.AbstractModel):
             ("company_id", "=", self.env.company.id),
             ("reconciled", "=", False),
         ]
+        if config.sale_journal_ids:
+            domain.append(("journal_id", "in", config.sale_journal_ids.ids))
         if currency_id:
             domain.append(("currency_id", "=", currency_id))
         return domain + (extra or [])
+
+    @api.model
+    def get_total_receivable(self, currency_id=None):
+        """New indicator: total open (uncollected) receivable balance,
+        re-expressed in the selected currency at today's exchange rate.
+
+        Every open invoice's already-booked company-currency residual
+        (amount_residual, which Odoo keeps normalized regardless of the
+        invoice's own currency) is converted once to the target currency,
+        rather than re-deriving each invoice from its own currency — this
+        is what lets invoices in any currency be re-expressed correctly in
+        whichever currency the user selects.
+        """
+        company = self.env.company
+        target_currency = self.env["res.currency"].browse(currency_id) if currency_id else company.currency_id
+        today = fields.Date.context_today(self)
+
+        domain = self._get_open_receivable_domain()
+        [(total_company_currency,)] = self.env["account.move.line"]._read_group(
+            domain, aggregates=["amount_residual:sum"]
+        )
+        rate = company.currency_id._get_conversion_rate(company.currency_id, target_currency, company, today)
+        total = (total_company_currency or 0.0) * rate
+
+        return {
+            "amount": total,
+            "currency_id": target_currency.id,
+            "drilldown": self._get_drilldown_action(
+                "account.move.line", domain=domain, name=self.env._("Receivables")
+            ),
+        }
+
+    def _ar_balance_as_of(self, date):
+        # Deliberately NOT restricted by config.sale_journal_ids: a
+        # customer payment's own reconciling entry in the receivable
+        # account lives in the payment's journal (e.g. a bank journal),
+        # not the invoice's sales journal, so filtering this GL balance by
+        # sale_journal_ids would exclude that offsetting entry and make
+        # the balance look like it never decreases as invoices get paid.
+        # (get_total_receivable and the other indicators don't have this
+        # problem: they read amount_residual straight off the invoice's
+        # own line, which already nets off payments from any journal.)
+        domain = [
+            ("account_id.account_type", "=", "asset_receivable"),
+            ("parent_state", "=", "posted"),
+            ("company_id", "=", self.env.company.id),
+            ("date", "<=", date),
+        ]
+        [(balance,)] = self.env["account.move.line"]._read_group(domain, aggregates=["balance:sum"])
+        return balance or 0.0
+
+    def _get_turnover_period_bounds(self, period, company, today):
+        if period == "previous_fiscal_year":
+            current_bounds = company.compute_fiscalyear_dates(today)
+            reference_date = current_bounds["date_from"] - timedelta(days=1)
+            bounds = company.compute_fiscalyear_dates(reference_date)
+            return bounds["date_from"], bounds["date_to"]
+        if period == "last_12_months":
+            return today - relativedelta(months=12), today
+        # current_fiscal_year (default): from the fiscal year's start up to
+        # today, not its (possibly future) theoretical end date.
+        bounds = company.compute_fiscalyear_dates(today)
+        return bounds["date_from"], today
+
+    @api.model
+    def get_collection_turnover(self, period="current_fiscal_year"):
+        """New indicator: Rotación de cobranza = Ventas netas a crédito /
+        Promedio de cuentas por cobrar, over a fixed period selected
+        independently of the dashboard's date range (current/previous
+        fiscal year, or trailing 12 months).
+
+        "Ventas netas a crédito" is taken net of tax (amount_untaxed) and
+        net of credit notes.
+        """
+        config = self._get_dashboard_config()
+        company = self.env.company
+        today = fields.Date.context_today(self)
+        date_from, date_to = self._get_turnover_period_bounds(period, company, today)
+
+        sales_domain = [
+            ("move_type", "in", ("out_invoice", "out_refund")),
+            ("state", "=", "posted"),
+            ("invoice_date", ">=", date_from),
+            ("invoice_date", "<=", date_to),
+            ("company_id", "=", company.id),
+        ]
+        if config.sale_journal_ids:
+            sales_domain.append(("journal_id", "in", config.sale_journal_ids.ids))
+
+        net_credit_sales = 0.0
+        for move_type, sign in (("out_invoice", 1), ("out_refund", -1)):
+            [(untaxed,)] = self.env["account.move"]._read_group(
+                sales_domain + [("move_type", "=", move_type)],
+                aggregates=["amount_untaxed:sum"],
+            )
+            net_credit_sales += sign * (untaxed or 0.0)
+
+        average_receivable = (
+            self._ar_balance_as_of(date_from) + self._ar_balance_as_of(date_to)
+        ) / 2.0
+
+        return {
+            "turnover": (net_credit_sales / average_receivable) if average_receivable else 0.0,
+            "net_credit_sales": net_credit_sales,
+            "average_receivable": average_receivable,
+            "currency_id": company.currency_id.id,
+        }
+
+    @api.model
+    def get_collection_payment_ratio(self, date_from, date_to):
+        """New indicator: Ratio Cobro/Pago = amount collected from
+        customers / amount paid to suppliers, over the dashboard's
+        selected date range.
+        """
+        config = self._get_dashboard_config()
+        company = self.env.company
+
+        collected_domain = [
+            ("payment_type", "=", "inbound"),
+            ("partner_type", "=", "customer"),
+            ("state", "in", ("in_process", "paid")),
+            ("date", ">=", date_from),
+            ("date", "<=", date_to),
+            ("company_id", "=", company.id),
+        ]
+        if config.sale_journal_ids:
+            # reconciled_invoice_ids is a computed field with a custom
+            # search method; it only supports plain operators on itself
+            # (e.g. "in" with explicit ids), not dotted-path traversal
+            # into a related field like ".journal_id".
+            sale_invoice_ids = self.env["account.move"].search([
+                ("journal_id", "in", config.sale_journal_ids.ids),
+                ("move_type", "in", ("out_invoice", "out_refund")),
+            ]).ids
+            collected_domain.append(("reconciled_invoice_ids", "in", sale_invoice_ids))
+        [(collected,)] = self.env["account.payment"]._read_group(collected_domain, aggregates=["amount:sum"])
+
+        paid_domain = [
+            ("payment_type", "=", "outbound"),
+            ("partner_type", "=", "supplier"),
+            ("state", "in", ("in_process", "paid")),
+            ("date", ">=", date_from),
+            ("date", "<=", date_to),
+            ("company_id", "=", company.id),
+        ]
+        [(paid,)] = self.env["account.payment"]._read_group(paid_domain, aggregates=["amount:sum"])
+
+        collected = collected or 0.0
+        paid = paid or 0.0
+        return {
+            "ratio": (collected / paid) if paid else 0.0,
+            "collected": collected,
+            "paid": paid,
+            "currency_id": company.currency_id.id,
+        }
+
+    @api.model
+    def get_rejected_checks(self, currency_id=None):
+        """New indicator: third-party checks currently sitting in a
+        journal configured as a "rejected checks" journal (see the
+        rejected_check_journal_ids help text for why this is the only
+        way to detect rejection), re-expressed in the selected currency
+        at today's rate.
+        """
+        config = self._get_dashboard_config()
+        if not config.rejected_check_journal_ids:
+            return None
+
+        company = self.env.company
+        target_currency = self.env["res.currency"].browse(currency_id) if currency_id else company.currency_id
+        today = fields.Date.context_today(self)
+        domain = [("current_journal_id", "in", config.rejected_check_journal_ids.ids)]
+        Check = self.env["l10n_latam.check"]
+
+        total = 0.0
+        count = 0
+        for currency, line_count, amount in Check._read_group(
+            domain, groupby=["currency_id"], aggregates=["__count", "amount:sum"]
+        ):
+            rate = currency._get_conversion_rate(currency, target_currency, company, today)
+            total += (amount or 0.0) * rate
+            count += line_count
+
+        return {
+            "amount": total,
+            "count": count,
+            "currency_id": target_currency.id,
+            "drilldown": self._get_drilldown_action(
+                "l10n_latam.check", domain=domain, name=self.env._("Rejected Checks")
+            ),
+        }
 
     def _residual_field(self, currency_id):
         return "amount_residual_currency" if currency_id else "amount_residual"
@@ -190,44 +348,11 @@ class AccountCollectionDashboard(models.AbstractModel):
         ]
 
     @api.model
-    def get_late_payments(self, date_from, date_to, currency_id=None):
-        """Indicator 5: customer payments collected after the due date of
-        the invoice(s) they settle.
-        """
-        domain = [
-            ("payment_type", "=", "inbound"),
-            ("partner_type", "=", "customer"),
-            ("state", "in", ("in_process", "paid")),
-            ("date", ">=", date_from),
-            ("date", "<=", date_to),
-            ("company_id", "=", self.env.company.id),
-        ]
-        if currency_id:
-            domain.append(("currency_id", "=", currency_id))
-        payments = self.env["account.payment"].search(domain)
-        late_payments = payments.filtered(
-            lambda p: any(
-                invoice.invoice_date_due and invoice.invoice_date_due < p.date
-                for invoice in p.reconciled_invoice_ids
-            )
-        )
-        return {
-            "count": len(late_payments),
-            "amount": sum(late_payments.mapped("amount")),
-            "currency_id": currency_id or self.env.company.currency_id.id,
-            "drilldown": self._get_drilldown_action(
-                "account.payment",
-                domain=[("id", "in", late_payments.ids)],
-                name=self.env._("Late Payments"),
-            ),
-        }
-
-    @api.model
     def get_cash_collections(self, date_from, date_to):
         """Indicator 9: cash/transfer customer collections for the period,
         restricted to the journals selected in the settings.
         """
-        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config = self._get_dashboard_config()
         if not config.cash_collection_journal_ids:
             return None
         domain = [
@@ -279,7 +404,7 @@ class AccountCollectionDashboard(models.AbstractModel):
         """Indicator 7: one balance per journal selected in the settings as
         a "bank balance" journal.
         """
-        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config = self._get_dashboard_config()
         results = []
         for journal in config.bank_balance_journal_ids:
             results.append(self._build_journal_balance(journal))
@@ -288,7 +413,7 @@ class AccountCollectionDashboard(models.AbstractModel):
     @api.model
     def get_fixed_fund_balance(self):
         """Indicator 8: balance of the journal configured as "Fixed fund"."""
-        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config = self._get_dashboard_config()
         if not config.fixed_fund_journal_id:
             return None
         return self._build_journal_balance(config.fixed_fund_journal_id)
@@ -319,7 +444,7 @@ class AccountCollectionDashboard(models.AbstractModel):
         different currencies); "overdue" means the check's cash-in date
         has already passed.
         """
-        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        config = self._get_dashboard_config()
         if not config.third_party_check_journal_ids:
             return None
 

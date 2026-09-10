@@ -5,7 +5,12 @@
         <Layout display="display">
             <div class="o_account_collection_dashboard p-3">
 
-                <div class="d-flex justify-content-end mb-3">
+                <div class="d-flex justify-content-end gap-2 mb-3">
+                    <select class="form-select w-auto" t-on-change="onTurnoverPeriodChange">
+                        <option value="current_fiscal_year" t-esc="labels.currentFiscalYear" t-att-selected="state.turnoverPeriod === 'current_fiscal_year'"/>
+                        <option value="previous_fiscal_year" t-esc="labels.previousFiscalYear" t-att-selected="state.turnoverPeriod === 'previous_fiscal_year'"/>
+                        <option value="last_12_months" t-esc="labels.last12Months" t-att-selected="state.turnoverPeriod === 'last_12_months'"/>
+                    </select>
                     <select class="form-select w-auto" t-on-change="onCurrencyChange">
                         <option value="" t-esc="labels.allCurrencies"/>
                         <t t-foreach="state.currencies" t-as="currency" t-key="currency.id">
@@ -18,37 +23,32 @@
                     </select>
                 </div>
 
-                <h5 class="mb-3" t-esc="labels.invoicingSection"/>
-                <div class="row g-3 mb-3" t-if="state.invoicedVsCollected">
-                    <div class="col-12 col-md-4">
+                <div class="row g-3 mb-4">
+                    <div t-if="state.totalReceivable" class="col-12 col-md-3">
                         <DashboardsKpiCard
-                            title="labels.invoiced"
-                            value="formatMonetary(state.invoicedVsCollected.invoiced, state.invoicedVsCollected.currency_id)"
-                            onClick="() => this.onDrilldownClick(state.invoicedVsCollected.drilldown)"
+                            title="labels.totalReceivable"
+                            value="formatMonetary(state.totalReceivable.amount, state.totalReceivable.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.totalReceivable.drilldown)"
                         />
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div t-if="state.rejectedChecks" class="col-12 col-md-3">
                         <DashboardsKpiCard
-                            title="labels.collected"
-                            value="formatMonetary(state.invoicedVsCollected.collected, state.invoicedVsCollected.currency_id)"
-                            onClick="() => this.onDrilldownClick(state.invoicedVsCollected.drilldown)"
+                            title="labels.rejectedChecks"
+                            value="formatMonetary(state.rejectedChecks.amount, state.rejectedChecks.currency_id)"
+                            secondaryValue="state.rejectedChecks.count"
+                            onClick="() => this.onDrilldownClick(state.rejectedChecks.drilldown)"
                         />
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div t-if="state.collectionTurnover" class="col-12 col-md-3">
                         <DashboardsKpiCard
-                            title="labels.collectionRate"
-                            value="Math.round(state.invoicedVsCollected.percentage) + '%'"
+                            title="labels.collectionTurnover"
+                            value="state.collectionTurnover.turnover.toFixed(1)"
                         />
                     </div>
-                </div>
-
-                <div class="row g-3 mb-3" t-if="state.latePayments">
-                    <div class="col-12 col-md-4">
+                    <div t-if="state.collectionPaymentRatio" class="col-12 col-md-3">
                         <DashboardsKpiCard
-                            title="labels.latePayments"
-                            value="formatMonetary(state.latePayments.amount, state.latePayments.currency_id)"
-                            secondaryValue="state.latePayments.count"
-                            onClick="() => this.onDrilldownClick(state.latePayments.drilldown)"
+                            title="labels.collectionPaymentRatio"
+                            value="state.collectionPaymentRatio.ratio.toFixed(2)"
                         />
                     </div>
                 </div>
@@ -162,7 +162,7 @@
                         <div class="col-12 col-md-4">
                             <DashboardsKpiCard
                                 title="userRow.user_name"
-                                value="formatMonetary(userRow.amount, state.invoicedVsCollected and state.invoicedVsCollected.currency_id)"
+                                value="formatMonetary(userRow.amount, state.totalReceivable and state.totalReceivable.currency_id)"
                                 onClick="() => this.onDrilldownClick(userRow.drilldown)"
                             />
                         </div>
