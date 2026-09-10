@@ -13,7 +13,6 @@ msgstr ""
 #. module: account_collection_dashboard
 #: model:ir.actions.client,name:account_collection_dashboard.action_account_collection_dashboard
 #: model:ir.actions.server,name:account_collection_dashboard.action_account_collection_dashboard_config
-#: model:ir.model.fields.selection,name:
 #: model:ir.ui.menu,name:account_collection_dashboard.menu_account_collection_dashboard
 #: model:ir.ui.menu,name:account_collection_dashboard.menu_account_collection_dashboard_config
 #: model:res.groups.privilege,name:account_collection_dashboard.res_groups_privilege_collection
@@ -32,7 +31,7 @@ msgstr "Administrador"
 
 #. module: account_collection_dashboard
 #: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard_config.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard_config.py:0
 msgid "Collection Dashboard Settings"
 msgstr "Configuración del tablero de cobranzas"
 
@@ -92,111 +91,136 @@ msgid "Journals used to hold third-party checks in portfolio, before they are de
 msgstr "Diarios usados para mantener cheques de terceros en cartera, antes de ser depositados o transferidos."
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Invoices"
 msgstr "Facturas"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
-msgid "Unassigned"
-msgstr "Sin asignar"
-
-#. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "0-30 days"
 msgstr "0-30 días"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "31-60 days"
 msgstr "31-60 días"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "61-90 days"
 msgstr "61-90 días"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "+90 days"
 msgstr "+90 días"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Late Payments"
 msgstr "Cobranzas fuera de término"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Cash/Transfer Collections"
 msgstr "Cobranzas en efectivo/transferencias"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Third-Party Checks in Portfolio"
+msgstr "Cheques de terceros en cartera"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Invoices with Pending Exchange Difference"
+msgstr "Facturas con diferencia de cambio pendiente"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Unassigned"
+msgstr "Sin asignar"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Invoicing and collection"
 msgstr "Facturación y cobranza"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Reconciliation"
 msgstr "Conciliación"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Multi-currency"
+msgstr "Multi-moneda"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "By salesperson"
 msgstr "Por vendedor"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Invoiced"
 msgstr "Facturado"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Collected"
 msgstr "Cobrado"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Collection rate"
 msgstr "Porcentaje de cobranza"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Fixed fund"
 msgstr "Fondo fijo"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Due soon, by Follow-up level"
 msgstr "Por vencer, por nivel de seguimiento"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Overdue, by age"
 msgstr "Vencido, por antigüedad"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Top overdue customers"
 msgstr "Top de clientes morosos"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Collected late"
 msgstr "Cobrado fuera de término"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Cash/transfer collections"
 msgstr "Cobranzas en efectivo/transferencias"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Pending reconciliation"
 msgstr "Pendiente de conciliar"
 
 #. module: account_collection_dashboard
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Third-party checks in portfolio"
+msgstr "Cheques de terceros en cartera"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Pending exchange difference"
+msgstr "Diferencia de cambio pendiente"
+
+#. module: account_collection_dashboard
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "All currencies"
 msgstr "Todas las monedas"

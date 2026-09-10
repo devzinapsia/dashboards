@@ -1,3 +1,5 @@
+from psycopg2 import errors as pgerrors
+
 from odoo import api, fields, models
 
 
@@ -61,7 +63,17 @@ class AccountCollectionDashboardConfig(models.Model):
         company = company or self.env.company
         config = self.search([("company_id", "=", company.id)], limit=1)
         if not config:
-            config = self.create({"company_id": company.id})
+            # The dashboard's client action fires several RPC calls
+            # concurrently, more than one of which may reach here before any
+            # config row exists for this company (search() above finding
+            # nothing in every one of them). Guard the create() with a
+            # savepoint and fall back to a re-search on a unique-constraint
+            # race instead of letting the losing request error out.
+            try:
+                with self.env.cr.savepoint():
+                    config = self.create({"company_id": company.id})
+            except pgerrors.UniqueViolation:
+                config = self.search([("company_id", "=", company.id)], limit=1)
         return config
 
     @api.model

@@ -1,7 +1,9 @@
 from datetime import timedelta
+from unittest.mock import patch
 
 from odoo import fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.addons.l10n_latam_check.tests.common import L10nLatamCheckTest
 from odoo.exceptions import AccessError
 from odoo.tests import tagged
 
@@ -53,6 +55,30 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         })
         with self.assertRaises(AccessError):
             self.env["account.collection.dashboard.config"].with_user(dashboard_user).search([])
+
+    def test_get_config_recovers_from_concurrent_creation_race(self):
+        """The dashboard's client action fires several RPC calls
+        concurrently on first load, several of which may call _get_config()
+        before any row exists yet for the company. Simulate the resulting
+        create() race (one request's create() hits the unique constraint
+        because another one just won it) and check it's recovered from
+        instead of raising to the user.
+        """
+        Config = self.env["account.collection.dashboard.config"].sudo()
+        existing = Config._get_config()
+        original_search = type(Config).search
+        call_count = {"n": 0}
+
+        def fake_search(self, *args, **kwargs):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return self.browse()
+            return original_search(self, *args, **kwargs)
+
+        with patch.object(type(Config), "search", fake_search):
+            config = Config._get_config()
+
+        self.assertEqual(config, existing)
 
     def test_currency_filter_separates_indicators(self):
         company_currency = self.env.company.currency_id
@@ -154,3 +180,107 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["level_id"], followup_level.id)
         self.assertAlmostEqual(results[0]["amount"], 1000.0)
+
+    def test_pending_exchange_difference_detects_rate_change(self):
+        today = fields.Date.today()
+        company_currency = self.env.company.currency_id
+        foreign_currency = self.env["res.currency"].with_context(active_test=False).search(
+            [("id", "!=", company_currency.id)], limit=1
+        )
+        foreign_currency.active = True
+        self.env["res.currency.rate"].create({
+            "currency_id": foreign_currency.id,
+            "rate": 2.0,
+            "name": today - timedelta(days=30),
+            "company_id": self.env.company.id,
+        })
+        invoice = self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            currency_id=foreign_currency.id,
+            invoice_date=today - timedelta(days=30),
+            invoice_payment_term_id=False,
+            post=True,
+        )
+        # Rate changes after the invoice was booked.
+        self.env["res.currency.rate"].create({
+            "currency_id": foreign_currency.id,
+            "rate": 4.0,
+            "name": today,
+            "company_id": self.env.company.id,
+        })
+
+        result = self.dashboard.get_pending_exchange_difference()
+
+        aml = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "asset_receivable")
+        expected_revalued = foreign_currency._convert(
+            aml.amount_residual_currency, company_currency, self.env.company, today
+        )
+        expected_adjustment = expected_revalued - aml.amount_residual
+
+        self.assertEqual(result["count"], 1)
+        self.assertAlmostEqual(result["amount"], expected_adjustment)
+        self.assertIn(invoice.id, result["drilldown"]["domain"][0][2])
+
+    def test_pending_exchange_difference_ignores_unchanged_rate(self):
+        today = fields.Date.today()
+        company_currency = self.env.company.currency_id
+        foreign_currency = self.env["res.currency"].with_context(active_test=False).search(
+            [("id", "!=", company_currency.id)], limit=1
+        )
+        foreign_currency.active = True
+        self.env["res.currency.rate"].create({
+            "currency_id": foreign_currency.id,
+            "rate": 3.0,
+            "name": today - timedelta(days=30),
+            "company_id": self.env.company.id,
+        })
+        invoice = self._create_invoice_one_line(
+            price_unit=1000.0,
+            tax_ids=[],
+            currency_id=foreign_currency.id,
+            invoice_date=today - timedelta(days=30),
+            invoice_payment_term_id=False,
+            post=True,
+        )
+
+        result = self.dashboard.get_pending_exchange_difference()
+
+        affected_ids = result["drilldown"]["domain"][0][2]
+        self.assertNotIn(invoice.id, affected_ids)
+
+
+@tagged("post_install_l10n", "post_install", "-at_install")
+class TestThirdPartyChecksIndicator(L10nLatamCheckTest):
+
+    def _create_third_party_check(self):
+        payment_method_line = self.third_party_check_journal._get_available_payment_method_lines(
+            "inbound"
+        ).filtered(lambda line: line.code == "new_third_party_checks")
+        payment = self.env["account.payment"].create({
+            "partner_id": self.partner_a.id,
+            "payment_type": "inbound",
+            "journal_id": self.third_party_check_journal.id,
+            "l10n_latam_new_check_ids": [
+                (0, 0, {"name": "00000001", "payment_date": fields.Date.today() + timedelta(days=30), "amount": 1}),
+                (0, 0, {"name": "00000002", "payment_date": fields.Date.today() + timedelta(days=30), "amount": 1}),
+            ],
+            "payment_method_line_id": payment_method_line.id,
+        })
+        payment.action_post()
+        return payment
+
+    def test_third_party_checks_in_portfolio(self):
+        company = self.company_data_3["company"]
+        dashboard = self.env["account.collection.dashboard"].with_company(company)
+        config = self.env["account.collection.dashboard.config"].sudo()._get_config(company)
+        config.third_party_check_journal_ids = [(6, 0, self.third_party_check_journal.ids)]
+
+        self._create_third_party_check()
+
+        result = dashboard.get_third_party_checks_in_portfolio()
+
+        self.assertEqual(len(result["by_currency"]), 1)
+        self.assertEqual(result["by_currency"][0]["count"], 2)
+        self.assertAlmostEqual(result["by_currency"][0]["amount"], 2.0)
+        self.assertEqual(result["by_currency"][0]["overdue_count"], 0)

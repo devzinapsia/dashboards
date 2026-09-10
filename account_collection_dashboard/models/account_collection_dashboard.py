@@ -310,6 +310,90 @@ class AccountCollectionDashboard(models.AbstractModel):
         }
 
     @api.model
+    def get_third_party_checks_in_portfolio(self):
+        """Indicator 6: third-party checks currently in portfolio (received
+        from customers, not yet deposited or transferred out), for the
+        journals configured as such in the settings.
+
+        Amounts are aggregated per currency (never summed across
+        different currencies); "overdue" means the check's cash-in date
+        has already passed.
+        """
+        config = self.env["account.collection.dashboard.config"].sudo()._get_config()
+        if not config.third_party_check_journal_ids:
+            return None
+
+        today = fields.Date.context_today(self)
+        domain = [("current_journal_id", "in", config.third_party_check_journal_ids.ids)]
+        Check = self.env["l10n_latam.check"]
+
+        by_currency = []
+        for currency, count, amount in Check._read_group(
+            domain, groupby=["currency_id"], aggregates=["__count", "amount:sum"]
+        ):
+            [(overdue_count, overdue_amount)] = Check._read_group(
+                domain + [("currency_id", "=", currency.id), ("payment_date", "<", today)],
+                aggregates=["__count", "amount:sum"],
+            )
+            by_currency.append({
+                "currency_id": currency.id,
+                "count": count,
+                "amount": amount or 0.0,
+                "overdue_count": overdue_count,
+                "overdue_amount": overdue_amount or 0.0,
+            })
+
+        return {
+            "by_currency": by_currency,
+            "drilldown": self._get_drilldown_action(
+                "l10n_latam.check", domain=domain, name=self.env._("Third-Party Checks in Portfolio")
+            ),
+        }
+
+    @api.model
+    def get_pending_exchange_difference(self):
+        """Indicator 13: invoices with an open (unreconciled) foreign
+        currency balance whose value at today's exchange rate no longer
+        matches the amount already booked in company currency — i.e. an
+        unrealized exchange gain/loss not yet recognized.
+
+        Same criterion as Odoo's own "Multicurrency Revaluation" report
+        (account_reports): revalue amount_residual_currency at today's
+        rate and compare it to the booked amount_residual.
+        """
+        company = self.env.company
+        company_currency = company.currency_id
+        today = fields.Date.context_today(self)
+        domain = [
+            ("account_id.account_type", "in", ("asset_receivable", "liability_payable")),
+            ("parent_state", "=", "posted"),
+            ("company_id", "=", company.id),
+            ("currency_id", "!=", company_currency.id),
+            ("amount_residual_currency", "!=", 0.0),
+        ]
+        lines = self.env["account.move.line"].search(domain)
+
+        affected_move_ids = set()
+        total_adjustment = 0.0
+        for line in lines:
+            revalued = line.currency_id._convert(line.amount_residual_currency, company_currency, company, today)
+            adjustment = revalued - line.amount_residual
+            if not company_currency.is_zero(adjustment):
+                affected_move_ids.add(line.move_id.id)
+                total_adjustment += adjustment
+
+        return {
+            "count": len(affected_move_ids),
+            "amount": total_adjustment,
+            "currency_id": company_currency.id,
+            "drilldown": self._get_drilldown_action(
+                "account.move",
+                domain=[("id", "in", list(affected_move_ids))],
+                name=self.env._("Invoices with Pending Exchange Difference"),
+            ),
+        }
+
+    @api.model
     def get_collection_by_user(self, date_from, date_to):
         """Indicator 11: collected amount for the period, grouped by the
         salesperson (invoice_user_id) of the invoice(s) each payment

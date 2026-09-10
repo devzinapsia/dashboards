@@ -19,6 +19,7 @@ export class CollectionDashboard extends Component {
             invoicingSection: _t("Invoicing and collection"),
             treasurySection: _t("Treasury"),
             reconciliationSection: _t("Reconciliation"),
+            multiCurrencySection: _t("Multi-currency"),
             bySalespersonSection: _t("By salesperson"),
             invoiced: _t("Invoiced"),
             collected: _t("Collected"),
@@ -30,6 +31,8 @@ export class CollectionDashboard extends Component {
             latePayments: _t("Collected late"),
             cashCollections: _t("Cash/transfer collections"),
             pendingReconciliation: _t("Pending reconciliation"),
+            checksInPortfolio: _t("Third-party checks in portfolio"),
+            pendingExchangeDifference: _t("Pending exchange difference"),
             allCurrencies: _t("All currencies"),
         };
         this.state = useState({
@@ -46,6 +49,8 @@ export class CollectionDashboard extends Component {
             fixedFund: null,
             cashCollections: null,
             pendingReconciliation: null,
+            checksInPortfolio: null,
+            pendingExchangeDifference: null,
             collectionByUser: [],
         });
 
@@ -75,6 +80,8 @@ export class CollectionDashboard extends Component {
             fixedFund,
             cashCollections,
             pendingReconciliation,
+            checksInPortfolio,
+            pendingExchangeDifference,
             collectionByUser,
         ] = await Promise.all([
             this.orm.call("account.collection.dashboard", "get_active_currencies", []),
@@ -87,6 +94,8 @@ export class CollectionDashboard extends Component {
             this.orm.call("account.collection.dashboard", "get_fixed_fund_balance", []),
             this.orm.call("account.collection.dashboard", "get_cash_collections", [dateFrom, dateTo]),
             this.orm.call("account.collection.dashboard", "get_pending_reconciliation", []),
+            this.orm.call("account.collection.dashboard", "get_third_party_checks_in_portfolio", []),
+            this.orm.call("account.collection.dashboard", "get_pending_exchange_difference", []),
             this.orm.call("account.collection.dashboard", "get_collection_by_user", [dateFrom, dateTo]),
         ]);
         Object.assign(this.state, {
@@ -100,6 +109,8 @@ export class CollectionDashboard extends Component {
             fixedFund,
             cashCollections,
             pendingReconciliation,
+            checksInPortfolio,
+            pendingExchangeDifference,
             collectionByUser,
         });
     }
