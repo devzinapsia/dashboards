@@ -95,6 +95,12 @@ repo you're in before doing anything:
 - Also put this module's own GitHub repo URL in `README.rst`'s "Bug
   Tracker" section (not in the manifest — the manifest `website` key only
   holds one URL, and that slot is reserved for the company site).
+- `name` (the display name shown in the Apps list): Spanish, sentence
+  case. This is the one exception to the "English source" rule below —
+  it's what the client actually sees when browsing installed apps. The
+  module's **technical name** (the folder name, used in `depends`, XML
+  ids, etc.) stays English snake_case as usual — only the manifest
+  `name` field itself is translated.
 
 ### Coding language rules (strict)
 1. All Python/XML/JS code and ALL comments/docstrings: English, no

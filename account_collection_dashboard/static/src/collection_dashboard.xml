@@ -97,30 +97,6 @@
                     </t>
                 </div>
 
-                <h5 class="mb-3" t-esc="labels.reconciliationSection"/>
-                <div class="row g-3 mb-4" t-if="state.pendingReconciliation">
-                    <div class="col-12 col-md-4">
-                        <DashboardsKpiCard
-                            title="labels.pendingReconciliation"
-                            value="formatMonetary(state.pendingReconciliation.amount, state.pendingReconciliation.currency_id)"
-                            secondaryValue="state.pendingReconciliation.count"
-                            onClick="() => this.onDrilldownClick(state.pendingReconciliation.drilldown)"
-                        />
-                    </div>
-                </div>
-
-                <h5 class="mb-3" t-esc="labels.multiCurrencySection"/>
-                <div class="row g-3 mb-4" t-if="state.pendingExchangeDifference">
-                    <div class="col-12 col-md-4">
-                        <DashboardsKpiCard
-                            title="labels.pendingExchangeDifference"
-                            value="formatMonetary(state.pendingExchangeDifference.amount, state.pendingExchangeDifference.currency_id)"
-                            secondaryValue="state.pendingExchangeDifference.count"
-                            onClick="() => this.onDrilldownClick(state.pendingExchangeDifference.drilldown)"
-                        />
-                    </div>
-                </div>
-
                 <h5 class="mb-3" t-esc="labels.bySalespersonSection"/>
                 <div class="row g-3 mb-4">
                     <t t-foreach="state.collectionByUser" t-as="userRow" t-key="userRow.user_id">

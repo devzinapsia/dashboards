@@ -49,21 +49,6 @@ pair.
 Every invoicing/collection indicator above is restricted to the journals
 selected as "Sales voucher journals" in *Configuration* (see below).
 
-Reconciliation
-===============
-
-- **Pending reconciliation**: count and amount of journal items pending
-  reconciliation, reusing the exact same domain as the standard
-  "Journal Items to reconcile" screen (``account_accountant``).
-
-Multi-currency
-===============
-
-- **Pending exchange difference**: invoices with an open foreign-currency
-  balance whose value at today's exchange rate no longer matches the
-  amount already booked in company currency — the same criterion Odoo's
-  own "Multicurrency Revaluation" report uses.
-
 By salesperson
 ===============
 

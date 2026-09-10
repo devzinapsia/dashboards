@@ -20,8 +20,6 @@ export class CollectionDashboard extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.labels = {
-            reconciliationSection: _t("Reconciliation"),
-            multiCurrencySection: _t("Multi-currency"),
             bySalespersonSection: _t("By salesperson"),
             totalReceivable: _t("Total receivable"),
             rejectedChecks: _t("Rejected checks"),
@@ -34,8 +32,6 @@ export class CollectionDashboard extends Component {
             dueSoonByLevel: _t("Due soon, by Follow-up level"),
             topSlowPayingCustomers: _t("Top 10 - Slowest paying customers (average days)"),
             collectionProjection: _t("Collection projection"),
-            pendingReconciliation: _t("Pending reconciliation"),
-            pendingExchangeDifference: _t("Pending exchange difference"),
             allCurrencies: _t("All currencies"),
             currentFiscalYear: _t("Current fiscal year"),
             previousFiscalYear: _t("Previous fiscal year"),
@@ -58,8 +54,6 @@ export class CollectionDashboard extends Component {
             dueSoonByLevel: [],
             topSlowPayingCustomers: [],
             collectionProjection: [],
-            pendingReconciliation: null,
-            pendingExchangeDifference: null,
             collectionByUser: [],
         });
 
@@ -177,8 +171,6 @@ export class CollectionDashboard extends Component {
             dueSoonByLevel,
             topSlowPayingCustomers,
             collectionProjection,
-            pendingReconciliation,
-            pendingExchangeDifference,
             collectionByUser,
         ] = await Promise.all([
             this.orm.call("account.collection.dashboard", "get_active_currencies", []),
@@ -193,8 +185,6 @@ export class CollectionDashboard extends Component {
             this.orm.call("account.collection.dashboard", "get_due_soon_by_followup_level", [currencyId]),
             this.orm.call("account.collection.dashboard", "get_top_slow_paying_customers", [this.state.turnoverPeriod]),
             this.orm.call("account.collection.dashboard", "get_collection_projection", [currencyId]),
-            this.orm.call("account.collection.dashboard", "get_pending_reconciliation", []),
-            this.orm.call("account.collection.dashboard", "get_pending_exchange_difference", []),
             this.orm.call("account.collection.dashboard", "get_collection_by_user", [dateFrom, dateTo]),
         ]);
         Object.assign(this.state, {
@@ -210,8 +200,6 @@ export class CollectionDashboard extends Component {
             dueSoonByLevel,
             topSlowPayingCustomers,
             collectionProjection,
-            pendingReconciliation,
-            pendingExchangeDifference,
             collectionByUser,
         });
     }

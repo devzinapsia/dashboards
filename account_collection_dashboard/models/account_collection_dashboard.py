@@ -4,7 +4,6 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
-from odoo.tools.safe_eval import safe_eval
 
 
 class AccountCollectionDashboard(models.AbstractModel):
@@ -455,72 +454,6 @@ class AccountCollectionDashboard(models.AbstractModel):
             "drilldown": self._get_drilldown_action(
                 "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due in Next 7 Days"),
                 view_id=self._invoice_list_view_id(),
-            ),
-        }
-
-    @api.model
-    def get_pending_reconciliation(self):
-        """Indicator 10: journal items pending reconciliation, reusing the
-        standard "Journal Items to reconcile" domain/action.
-        """
-        action = self.env.ref("account_accountant.action_move_line_posted_unreconciled", raise_if_not_found=False)
-        if not action:
-            return None
-        domain = (safe_eval(action.domain) if action.domain else []) + [
-            ("company_id", "=", self.env.company.id)
-        ]
-        [(count, total)] = self.env["account.move.line"]._read_group(
-            domain, aggregates=["__count", "balance:sum"]
-        )
-        return {
-            "count": count,
-            "amount": total or 0.0,
-            "currency_id": self.env.company.currency_id.id,
-            "drilldown": self._get_native_drilldown_action(
-                "account_accountant.action_move_line_posted_unreconciled"
-            ),
-        }
-
-    @api.model
-    def get_pending_exchange_difference(self):
-        """Indicator 13: invoices with an open (unreconciled) foreign
-        currency balance whose value at today's exchange rate no longer
-        matches the amount already booked in company currency — i.e. an
-        unrealized exchange gain/loss not yet recognized.
-
-        Same criterion as Odoo's own "Multicurrency Revaluation" report
-        (account_reports): revalue amount_residual_currency at today's
-        rate and compare it to the booked amount_residual.
-        """
-        company = self.env.company
-        company_currency = company.currency_id
-        today = fields.Date.context_today(self)
-        domain = [
-            ("account_id.account_type", "in", ("asset_receivable", "liability_payable")),
-            ("parent_state", "=", "posted"),
-            ("company_id", "=", company.id),
-            ("currency_id", "!=", company_currency.id),
-            ("amount_residual_currency", "!=", 0.0),
-        ]
-        lines = self.env["account.move.line"].search(domain)
-
-        affected_move_ids = set()
-        total_adjustment = 0.0
-        for line in lines:
-            revalued = line.currency_id._convert(line.amount_residual_currency, company_currency, company, today)
-            adjustment = revalued - line.amount_residual
-            if not company_currency.is_zero(adjustment):
-                affected_move_ids.add(line.move_id.id)
-                total_adjustment += adjustment
-
-        return {
-            "count": len(affected_move_ids),
-            "amount": total_adjustment,
-            "currency_id": company_currency.id,
-            "drilldown": self._get_drilldown_action(
-                "account.move",
-                domain=[("id", "in", list(affected_move_ids))],
-                name=self.env._("Invoices with Pending Exchange Difference"),
             ),
         }
 
