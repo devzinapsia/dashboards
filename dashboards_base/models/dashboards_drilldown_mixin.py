@@ -14,7 +14,7 @@ class DashboardsDrilldownMixin(models.AbstractModel):
     _name = "dashboards.drilldown.mixin"
     _description = "Dashboards Drilldown Mixin"
 
-    def _get_drilldown_action(self, res_model, domain=None, view_type=None, name=None, context=None):
+    def _get_drilldown_action(self, res_model, domain=None, view_type=None, name=None, context=None, view_id=None):
         """Build an ir.actions.act_window dict opening ``res_model`` filtered by ``domain``.
 
         :param str res_model: technical name of the model to open.
@@ -24,6 +24,9 @@ class DashboardsDrilldownMixin(models.AbstractModel):
             it is already the primary one.
         :param str name: action title.
         :param dict context: extra context passed to the target action.
+        :param int view_id: id of a specific view to use for the primary
+            view_type, instead of letting Odoo resolve the model's default
+            one. The fallback "form" view is unaffected.
         :return: an action dict, meant to be returned as-is to the client
             and passed to the "action" service's doAction().
         :rtype: dict
@@ -35,7 +38,7 @@ class DashboardsDrilldownMixin(models.AbstractModel):
             "name": name or self.env["ir.model"]._get(res_model).name,
             "res_model": res_model,
             "domain": domain or [],
-            "views": [(False, mode) for mode in view_modes],
+            "views": [((view_id or False) if mode == view_type else False, mode) for mode in view_modes],
             "target": "current",
             "context": context or {},
         }
