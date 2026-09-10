@@ -35,7 +35,14 @@ export class DashboardsChart extends Component {
         this.chart = new Chart(this.canvasRef.el, {
             type: this.props.type,
             data: this.props.data,
-            options: this.props.options || {},
+            // maintainAspectRatio defaults to true in Chart.js, which
+            // derives the canvas height from its *width* using a fixed
+            // ratio - unreliable inside a flex/grid column, and the
+            // cause of charts rendering with no usable height or with a
+            // runaway size. The wrapper (.o_dashboards_chart) gives the
+            // canvas a fixed height instead, so it should fill that
+            // instead of computing its own.
+            options: { maintainAspectRatio: false, ...(this.props.options || {}) },
         });
     }
 }

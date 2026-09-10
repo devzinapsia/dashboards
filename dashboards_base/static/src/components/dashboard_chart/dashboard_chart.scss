@@ -1,5 +1,8 @@
 .o_dashboards_chart {
-    canvas {
-        max-height: 220px;
-    }
+    // Chart.js (in responsive mode, the default) sizes the canvas off
+    // this element's own box, not the canvas's own CSS - it needs a
+    // real height here, not just a max-height on the canvas itself.
+    position: relative;
+    height: 260px;
+    width: 100%;
 }
