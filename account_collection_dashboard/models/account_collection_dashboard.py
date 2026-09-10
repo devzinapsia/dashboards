@@ -61,17 +61,27 @@ class AccountCollectionDashboard(models.AbstractModel):
         today = fields.Date.context_today(self)
 
         domain = self._get_open_receivable_domain()
-        [(total_company_currency,)] = self.env["account.move.line"]._read_group(
-            domain, aggregates=["amount_residual:sum"]
+        rows = self.env["account.move.line"]._read_group(
+            domain, groupby=["move_id"], aggregates=["amount_residual:sum"]
         )
+        total_company_currency = sum(amount or 0.0 for move, amount in rows if move)
+        move_ids = [move.id for move, amount in rows if move]
         rate = company.currency_id._get_conversion_rate(company.currency_id, target_currency, company, today)
-        total = (total_company_currency or 0.0) * rate
+        total = total_company_currency * rate
 
         return {
             "amount": total,
             "currency_id": target_currency.id,
             "drilldown": self._get_drilldown_action(
-                "account.move.line", domain=domain, name=self.env._("Receivables")
+                "account.move",
+                domain=[("id", "in", move_ids)],
+                name=self.env._("Receivables"),
+                view_id=self._invoice_list_view_id(),
+                # Group by due date (month) instead of an ad-hoc
+                # vencida/no vencida split, which would require a new
+                # field on account.move - Odoo already supports grouping
+                # by date granularity natively.
+                context={"group_by": ["invoice_date_due:month"]},
             ),
         }
 
@@ -352,23 +362,26 @@ class AccountCollectionDashboard(models.AbstractModel):
     def get_customers_with_debt(self, currency_id=None):
         """Indicator: count of distinct customers with at least one open
         receivable invoice (a customer with several outstanding invoices
-        counts once). Drill-down opens the list of those customers; the
-        standard "Open Customer Statements" action (bound to every
-        res.partner list view by account_reports) lets the user consult
-        any selected customer's running account from there, using that
-        report's own period filter.
+        counts once). Drill-down opens the list of those invoices
+        (Total / Amount due), clickable through to each invoice.
         """
         domain = self._get_open_receivable_domain(currency_id)
-        rows = self.env["account.move.line"]._read_group(domain, groupby=["partner_id"])
-        partner_ids = [partner.id for (partner,) in rows if partner]
+        partner_rows = self.env["account.move.line"]._read_group(domain, groupby=["partner_id"])
+        partner_ids = [partner.id for (partner,) in partner_rows if partner]
+        move_rows = self.env["account.move.line"]._read_group(domain, groupby=["move_id"])
+        move_ids = [move.id for (move,) in move_rows if move]
         return {
             "count": len(partner_ids),
             "drilldown": self._get_drilldown_action(
-                "res.partner",
-                domain=[("id", "in", partner_ids)],
+                "account.move",
+                domain=[("id", "in", move_ids)],
                 name=self.env._("Customers with Debt"),
+                view_id=self._invoice_list_view_id(),
             ),
         }
+
+    def _invoice_list_view_id(self):
+        return self.env.ref("account_collection_dashboard.view_account_collection_dashboard_invoice_list").id
 
     def _receivable_amount_and_moves(self, domain, residual_field):
         rows = self.env["account.move.line"]._read_group(
@@ -394,7 +407,8 @@ class AccountCollectionDashboard(models.AbstractModel):
             "amount": total,
             "currency_id": currency_id or self.env.company.currency_id.id,
             "drilldown": self._get_drilldown_action(
-                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Undue Debt")
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Undue Debt"),
+                view_id=self._invoice_list_view_id(),
             ),
         }
 
@@ -411,7 +425,8 @@ class AccountCollectionDashboard(models.AbstractModel):
             "amount": total,
             "currency_id": currency_id or self.env.company.currency_id.id,
             "drilldown": self._get_drilldown_action(
-                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due Today")
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due Today"),
+                view_id=self._invoice_list_view_id(),
             ),
         }
 
@@ -432,36 +447,8 @@ class AccountCollectionDashboard(models.AbstractModel):
             "amount": total,
             "currency_id": currency_id or self.env.company.currency_id.id,
             "drilldown": self._get_drilldown_action(
-                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due in Next 7 Days")
-            ),
-        }
-
-    @api.model
-    def get_cash_collections(self, date_from, date_to):
-        """Indicator 9: cash/transfer customer collections for the period,
-        restricted to the journals selected in the settings.
-        """
-        config = self._get_dashboard_config()
-        if not config.cash_collection_journal_ids:
-            return None
-        domain = [
-            ("payment_type", "=", "inbound"),
-            ("partner_type", "=", "customer"),
-            ("state", "in", ("in_process", "paid")),
-            ("date", ">=", date_from),
-            ("date", "<=", date_to),
-            ("company_id", "=", self.env.company.id),
-            ("journal_id", "in", config.cash_collection_journal_ids.ids),
-        ]
-        [(count, total)] = self.env["account.payment"]._read_group(
-            domain, aggregates=["__count", "amount:sum"]
-        )
-        return {
-            "count": count,
-            "amount": total or 0.0,
-            "currency_id": self.env.company.currency_id.id,
-            "drilldown": self._get_drilldown_action(
-                "account.payment", domain=domain, name=self.env._("Cash/Transfer Collections")
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due in Next 7 Days"),
+                view_id=self._invoice_list_view_id(),
             ),
         }
 
@@ -485,82 +472,6 @@ class AccountCollectionDashboard(models.AbstractModel):
             "currency_id": self.env.company.currency_id.id,
             "drilldown": self._get_native_drilldown_action(
                 "account_accountant.action_move_line_posted_unreconciled"
-            ),
-        }
-
-    @api.model
-    def get_bank_balances(self):
-        """Indicator 7: one balance per journal selected in the settings as
-        a "bank balance" journal.
-        """
-        config = self._get_dashboard_config()
-        results = []
-        for journal in config.bank_balance_journal_ids:
-            results.append(self._build_journal_balance(journal))
-        return results
-
-    @api.model
-    def get_fixed_fund_balance(self):
-        """Indicator 8: balance of the journal configured as "Fixed fund"."""
-        config = self._get_dashboard_config()
-        if not config.fixed_fund_journal_id:
-            return None
-        return self._build_journal_balance(config.fixed_fund_journal_id)
-
-    def _build_journal_balance(self, journal):
-        account = journal.default_account_id
-        return {
-            "journal_id": journal.id,
-            "journal_name": journal.name,
-            "balance": account.current_balance if account else 0.0,
-            "currency_id": journal.currency_id.id or self.env.company.currency_id.id,
-            "drilldown": self._get_drilldown_action(
-                "account.move.line",
-                domain=[("account_id", "=", account.id), ("parent_state", "=", "posted")],
-                name=journal.name,
-            )
-            if account
-            else None,
-        }
-
-    @api.model
-    def get_third_party_checks_in_portfolio(self):
-        """Indicator 6: third-party checks currently in portfolio (received
-        from customers, not yet deposited or transferred out), for the
-        journals configured as such in the settings.
-
-        Amounts are aggregated per currency (never summed across
-        different currencies); "overdue" means the check's cash-in date
-        has already passed.
-        """
-        config = self._get_dashboard_config()
-        if not config.third_party_check_journal_ids:
-            return None
-
-        today = fields.Date.context_today(self)
-        domain = [("current_journal_id", "in", config.third_party_check_journal_ids.ids)]
-        Check = self.env["l10n_latam.check"]
-
-        by_currency = []
-        for currency, count, amount in Check._read_group(
-            domain, groupby=["currency_id"], aggregates=["__count", "amount:sum"]
-        ):
-            [(overdue_count, overdue_amount)] = Check._read_group(
-                domain + [("currency_id", "=", currency.id), ("payment_date", "<", today)],
-                aggregates=["__count", "amount:sum"],
-            )
-            by_currency.append({
-                "currency_id": currency.id,
-                "count": count,
-                "amount": amount or 0.0,
-                "overdue_count": overdue_count,
-                "overdue_amount": overdue_amount or 0.0,
-            })
-
-        return {
-            "by_currency": by_currency,
-            "drilldown": self._get_drilldown_action(
-                "l10n_latam.check", domain=domain, name=self.env._("Third-Party Checks in Portfolio")
             ),
         }
 

@@ -30,23 +30,18 @@ msgstr ""
 
 #. module: account_collection_dashboard
 #. odoo-python
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard_config.py:0
 msgid "Collection Dashboard Settings"
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 msgid "Invoicing"
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
-msgid "Treasury"
-msgstr ""
-
-#. module: account_collection_dashboard
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 msgid "Collections"
 msgstr ""
 
@@ -76,43 +71,28 @@ msgid "Odoo has no formal 'rejected' state for third-party checks: a check count
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__fixed_fund_journal_id
-msgid "Fixed fund journal"
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Invoices"
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__fixed_fund_journal_id
-msgid "Journal whose balance is shown as the 'Fixed fund' KPI."
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Invoice date"
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__bank_balance_journal_ids
-msgid "Bank balance journals"
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Due date"
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__bank_balance_journal_ids
-msgid "One balance KPI card is shown for each selected journal."
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Total"
 msgstr ""
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__cash_collection_journal_ids
-msgid "Cash/transfer collection journals"
-msgstr ""
-
-#. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__cash_collection_journal_ids
-msgid "Journals considered for the 'Cash/transfers collected' KPI."
-msgstr ""
-
-#. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__third_party_check_journal_ids
-msgid "Third-party check journals"
-msgstr ""
-
-#. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__third_party_check_journal_ids
-msgid "Journals used to hold third-party checks in portfolio, before they are deposited or transferred."
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Amount due"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -154,18 +134,6 @@ msgstr ""
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Cash/Transfer Collections"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-python
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Third-Party Checks in Portfolio"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-python
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Invoices with Pending Exchange Difference"
 msgstr ""
 
@@ -197,12 +165,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Due in Next 7 Days"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Treasury"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -274,12 +236,6 @@ msgstr ""
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Fixed fund"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Due soon, by Follow-up level"
 msgstr ""
 
@@ -298,19 +254,7 @@ msgstr ""
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Cash/transfer collections"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Pending reconciliation"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Third-party checks in portfolio"
 msgstr ""
 
 #. module: account_collection_dashboard

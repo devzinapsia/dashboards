@@ -123,46 +123,6 @@
                     </t>
                 </div>
 
-                <h5 class="mb-3" t-esc="labels.treasurySection"/>
-                <div class="row g-3 mb-4">
-                    <div t-if="state.fixedFund" class="col-12 col-md-4">
-                        <DashboardsKpiCard
-                            title="labels.fixedFund"
-                            value="formatMonetary(state.fixedFund.balance, state.fixedFund.currency_id)"
-                            onClick="() => this.onDrilldownClick(state.fixedFund.drilldown)"
-                        />
-                    </div>
-                    <t t-foreach="state.bankBalances" t-as="bank" t-key="bank.journal_id">
-                        <div class="col-12 col-md-4">
-                            <DashboardsKpiCard
-                                title="bank.journal_name"
-                                value="formatMonetary(bank.balance, bank.currency_id)"
-                                onClick="() => this.onDrilldownClick(bank.drilldown)"
-                            />
-                        </div>
-                    </t>
-                    <div t-if="state.cashCollections" class="col-12 col-md-4">
-                        <DashboardsKpiCard
-                            title="labels.cashCollections"
-                            value="formatMonetary(state.cashCollections.amount, state.cashCollections.currency_id)"
-                            secondaryValue="state.cashCollections.count"
-                            onClick="() => this.onDrilldownClick(state.cashCollections.drilldown)"
-                        />
-                    </div>
-                    <t t-if="state.checksInPortfolio">
-                        <t t-foreach="state.checksInPortfolio.by_currency" t-as="checkRow" t-key="checkRow.currency_id">
-                            <div class="col-12 col-md-4">
-                                <DashboardsKpiCard
-                                    title="labels.checksInPortfolio"
-                                    value="formatMonetary(checkRow.amount, checkRow.currency_id)"
-                                    secondaryValue="checkRow.count"
-                                    onClick="() => this.onDrilldownClick(state.checksInPortfolio.drilldown)"
-                                />
-                            </div>
-                        </t>
-                    </t>
-                </div>
-
                 <h5 class="mb-3" t-esc="labels.reconciliationSection"/>
                 <div class="row g-3 mb-4" t-if="state.pendingReconciliation">
                     <div class="col-12 col-md-4">

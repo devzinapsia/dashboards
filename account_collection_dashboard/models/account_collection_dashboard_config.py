@@ -40,45 +40,17 @@ class AccountCollectionDashboardConfig(models.Model):
         " currently sits in one of these journals (e.g. the 'Rejected Third"
         " Party Checks' journal some localizations create).",
     )
-    fixed_fund_journal_id = fields.Many2one(
-        "account.journal",
-        string="Fixed fund journal",
-        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
-        help="Journal whose balance is shown as the 'Fixed fund' KPI.",
-    )
-    bank_balance_journal_ids = fields.Many2many(
-        "account.journal",
-        "account_collection_dashboard_config_bank_journal_rel",
-        "config_id",
-        "journal_id",
-        string="Bank balance journals",
-        domain="[('type', '=', 'bank'), ('company_id', '=', company_id)]",
-        help="One balance KPI card is shown for each selected journal.",
-    )
-    cash_collection_journal_ids = fields.Many2many(
-        "account.journal",
-        "account_collection_dashboard_config_cash_journal_rel",
-        "config_id",
-        "journal_id",
-        string="Cash/transfer collection journals",
-        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
-        help="Journals considered for the 'Cash/transfers collected' KPI.",
-    )
-    third_party_check_journal_ids = fields.Many2many(
-        "account.journal",
-        "account_collection_dashboard_config_check_journal_rel",
-        "config_id",
-        "journal_id",
-        string="Third-party check journals",
-        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
-        help="Journals used to hold third-party checks in portfolio, before they"
-        " are deposited or transferred.",
-    )
-
     _company_uniq = models.Constraint(
         "unique(company_id)",
         "Only one Collection Dashboard configuration is allowed per company.",
     )
+
+    def _compute_display_name(self):
+        # This is a singleton settings record with no natural "name" field;
+        # without this override, Odoo falls back to the technical
+        # "<model>,<id>" string as the breadcrumb/display label.
+        for config in self:
+            config.display_name = self.env._("Collection Dashboard Settings")
 
     @api.model
     def _get_config(self, company=None):
@@ -100,4 +72,9 @@ class AccountCollectionDashboardConfig(models.Model):
 
     @api.model
     def action_open_config(self):
-        return self._get_config()._get_records_action(name=self.env._("Collection Dashboard Settings"))
+        # This is a singleton per-company record (see _company_uniq above):
+        # no "New" button, since creating a second one would just hit the
+        # unique constraint, and no "Delete" either.
+        return self._get_config()._get_records_action(
+            name=self.env._("Collection Dashboard Settings"), create=False, delete=False
+        )

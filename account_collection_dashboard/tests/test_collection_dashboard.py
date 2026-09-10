@@ -79,6 +79,20 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         self.assertAlmostEqual(company_currency_result["amount"], 1000.0)
         self.assertAlmostEqual(foreign_currency_result["amount"], 2000.0)
 
+    def test_total_receivable_drilldown_opens_invoices_grouped_by_due_month(self):
+        invoice = self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], invoice_date=fields.Date.today(),
+            invoice_payment_term_id=False, post=True,
+        )
+
+        result = self.dashboard.get_total_receivable()
+
+        drilldown = result["drilldown"]
+        self.assertEqual(drilldown["res_model"], "account.move")
+        self.assertEqual(drilldown["domain"], [("id", "in", [invoice.id])])
+        self.assertEqual(drilldown["views"][0][0], self.dashboard._invoice_list_view_id())
+        self.assertEqual(drilldown["context"]["group_by"], ["invoice_date_due:month"])
+
     def test_total_receivable_restricted_to_sale_journals(self):
         other_journal = self.company_data["default_journal_sale"].copy({
             "name": "Other Sales Journal", "code": "OSJ",
@@ -307,17 +321,19 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         self.assertAlmostEqual(results[0]["amount"], 1000.0)
 
     def test_customers_with_debt_counts_distinct_partners(self):
-        """A customer with several outstanding invoices counts once."""
+        """A customer with several outstanding invoices counts once, but
+        the drill-down still lists every one of their open invoices.
+        """
         today = fields.Date.today()
-        self._create_invoice_one_line(
+        invoice_a1 = self._create_invoice_one_line(
             price_unit=1000.0, tax_ids=[], partner_id=self.partner_a.id,
             invoice_date=today, invoice_payment_term_id=False, post=True,
         )
-        self._create_invoice_one_line(
+        invoice_a2 = self._create_invoice_one_line(
             price_unit=500.0, tax_ids=[], partner_id=self.partner_a.id,
             invoice_date=today, invoice_payment_term_id=False, post=True,
         )
-        self._create_invoice_one_line(
+        invoice_b = self._create_invoice_one_line(
             price_unit=300.0, tax_ids=[], partner_id=self.partner_b.id,
             invoice_date=today, invoice_payment_term_id=False, post=True,
         )
@@ -325,8 +341,12 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         result = self.dashboard.get_customers_with_debt()
 
         self.assertEqual(result["count"], 2)
-        drilldown_partner_ids = result["drilldown"]["domain"][0][2]
-        self.assertEqual(set(drilldown_partner_ids), {self.partner_a.id, self.partner_b.id})
+        drilldown_move_ids = result["drilldown"]["domain"][0][2]
+        self.assertEqual(set(drilldown_move_ids), {invoice_a1.id, invoice_a2.id, invoice_b.id})
+        self.assertEqual(
+            result["drilldown"]["views"][0][0],
+            self.dashboard._invoice_list_view_id(),
+        )
 
     def test_undue_debt_includes_lines_without_followup_level(self):
         """Unlike "Due soon, by Follow-up level", this indicator sums every
@@ -491,21 +511,6 @@ class TestThirdPartyChecksIndicator(L10nLatamCheckTest):
         })
         payment.action_post()
         return payment
-
-    def test_third_party_checks_in_portfolio(self):
-        company = self.company_data_3["company"]
-        dashboard = self.env["account.collection.dashboard"].with_company(company)
-        config = self.env["account.collection.dashboard.config"].sudo()._get_config(company)
-        config.third_party_check_journal_ids = [(6, 0, self.third_party_check_journal.ids)]
-
-        self._create_third_party_check()
-
-        result = dashboard.get_third_party_checks_in_portfolio()
-
-        self.assertEqual(len(result["by_currency"]), 1)
-        self.assertEqual(result["by_currency"][0]["count"], 2)
-        self.assertAlmostEqual(result["by_currency"][0]["amount"], 2.0)
-        self.assertEqual(result["by_currency"][0]["overdue_count"], 0)
 
     def test_rejected_checks(self):
         """Odoo has no 'rejected' state for third-party checks (confirmed:

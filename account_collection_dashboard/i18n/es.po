@@ -31,23 +31,18 @@ msgstr "Administrador"
 
 #. module: account_collection_dashboard
 #. odoo-python
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard_config.py:0
 msgid "Collection Dashboard Settings"
 msgstr "Configuración del tablero de cobranzas"
 
 #. module: account_collection_dashboard
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 msgid "Invoicing"
 msgstr "Facturación"
 
 #. module: account_collection_dashboard
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
-msgid "Treasury"
-msgstr "Tesorería"
-
-#. module: account_collection_dashboard
-#: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 msgid "Collections"
 msgstr "Cobranzas"
 
@@ -77,44 +72,29 @@ msgid "Odoo has no formal 'rejected' state for third-party checks: a check count
 msgstr "Odoo no tiene un estado formal de 'rechazado' para cheques de terceros: aquí un cheque se considera rechazado por convención, porque actualmente está en uno de estos diarios (por ejemplo el diario 'Cheques de Terceros Rechazados' que crean algunas localizaciones)."
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__fixed_fund_journal_id
-msgid "Fixed fund journal"
-msgstr "Diario del fondo fijo"
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Invoices"
+msgstr "Facturas"
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__fixed_fund_journal_id
-msgid "Journal whose balance is shown as the 'Fixed fund' KPI."
-msgstr "Diario cuyo saldo se muestra como indicador de 'Fondo fijo'."
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Invoice date"
+msgstr "Fecha de factura"
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__bank_balance_journal_ids
-msgid "Bank balance journals"
-msgstr "Diarios de saldos bancarios"
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Due date"
+msgstr "Fecha de vencimiento"
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__bank_balance_journal_ids
-msgid "One balance KPI card is shown for each selected journal."
-msgstr "Se muestra una tarjeta de saldo por cada diario seleccionado."
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Total"
+msgstr "Total"
 
 #. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__cash_collection_journal_ids
-msgid "Cash/transfer collection journals"
-msgstr "Diarios de cobranzas en efectivo/transferencias"
-
-#. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__cash_collection_journal_ids
-msgid "Journals considered for the 'Cash/transfers collected' KPI."
-msgstr "Diarios considerados para el indicador de 'Cobranzas en efectivo/transferencias'."
-
-#. module: account_collection_dashboard
-#: model:ir.model.fields,field_description:account_collection_dashboard.field_account_collection_dashboard_config__third_party_check_journal_ids
-msgid "Third-party check journals"
-msgstr "Diarios de cheques de terceros"
-
-#. module: account_collection_dashboard
-#: model:ir.model.fields,help:account_collection_dashboard.field_account_collection_dashboard_config__third_party_check_journal_ids
-msgid "Journals used to hold third-party checks in portfolio, before they are deposited or transferred."
-msgstr "Diarios usados para mantener cheques de terceros en cartera, antes de ser depositados o transferidos."
+#: model_terms:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_invoice_list
+msgid "Amount due"
+msgstr "Importe adeudado"
 
 #. module: account_collection_dashboard
 #. odoo-python
@@ -155,18 +135,6 @@ msgstr "+90 días"
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Cash/Transfer Collections"
-msgstr "Cobranzas en efectivo/transferencias"
-
-#. module: account_collection_dashboard
-#. odoo-python
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Third-Party Checks in Portfolio"
-msgstr "Cheques de terceros en cartera"
-
-#. module: account_collection_dashboard
-#. odoo-python
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Invoices with Pending Exchange Difference"
 msgstr "Facturas con diferencia de cambio pendiente"
 
@@ -199,12 +167,6 @@ msgstr "A cobrar hoy"
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Due in Next 7 Days"
 msgstr "A cobrar en próximos 7 días"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Treasury"
-msgstr "Tesorería"
 
 #. module: account_collection_dashboard
 #. odoo-javascript
@@ -275,12 +237,6 @@ msgstr "A cobrar en próximos 7 días"
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Fixed fund"
-msgstr "Fondo fijo"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Due soon, by Follow-up level"
 msgstr "Por vencer, por nivel de seguimiento"
 
@@ -299,20 +255,8 @@ msgstr "Top de clientes morosos"
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Cash/transfer collections"
-msgstr "Cobranzas en efectivo/transferencias"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Pending reconciliation"
 msgstr "Pendiente de conciliar"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Third-party checks in portfolio"
-msgstr "Cheques de terceros en cartera"
 
 #. module: account_collection_dashboard
 #. odoo-javascript

@@ -1,4 +1,4 @@
-Executive dashboard for accounts receivable and treasury indicators, built
+Executive dashboard for accounts receivable indicators, built
 on top of ``dashboards_base``.
 
 Invoicing and collection
@@ -9,7 +9,9 @@ Invoicing and collection
   dashboard using **today's** exchange rate — an invoice in any currency
   contributes its already-booked company-currency residual, converted
   once to the selected currency, rather than being filtered out when it
-  doesn't match the selected currency.
+  doesn't match the selected currency. Drill-down opens the list of
+  those open invoices (Total / Amount due columns), grouped by due date
+  (month) and clickable through to each invoice.
 - **Rejected checks**: amount of third-party checks currently sitting in
   a journal configured as "rejected". Odoo has no formal rejected state
   for checks — see *Configuration* below.
@@ -33,11 +35,8 @@ Invoicing and collection
   version, it cannot be pre-seeded from the action that opens it.
 - **Customers with debt**: count of distinct customers with at least one
   open receivable invoice (a customer with several outstanding invoices
-  counts once). Drill-down opens the list of those customers; from there,
-  the standard "Open Customer Statements" action (added to every
-  ``res.partner`` list view by ``account_reports``) lets you consult any
-  selected customer's running account, using that report's own period
-  filter.
+  counts once). Drill-down opens the list of those open invoices (Total /
+  Amount due columns), clickable through to each invoice.
 - **Not yet due**: total amount of receivables not yet due, regardless of
   whether a Follow-up level has been assigned to them — a broader total
   than "Due soon, by Follow-up level" above, which only covers lines that
@@ -56,20 +55,6 @@ database — not hardcoded to any specific pair.
 
 Every invoicing/collection indicator above is restricted to the journals
 selected as "Sales voucher journals" in *Configuration* (see below).
-
-Treasury
-========
-
-- **Bank balances**: one KPI card per journal selected in
-  *Dashboards > Configuration > Collection* as a "bank balance" journal,
-  showing that journal's default account current balance.
-- **Fixed fund**: same as above, for the single journal configured as
-  the "Fixed fund" journal.
-- **Cash/transfer collections**: customer payments of the period through
-  the journals selected as "cash/transfer collection" journals.
-- **Third-party checks in portfolio**: checks received from customers,
-  not yet deposited or transferred out, grouped by currency (with an
-  overdue/upcoming split by cash-in date).
 
 Reconciliation
 ===============

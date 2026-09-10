@@ -8,19 +8,11 @@
             <form string="Collection Dashboard Settings">
                 <sheet>
                     <field name="company_id" invisible="1"/>
-                    <group>
-                        <group string="Invoicing">
-                            <field name="sale_journal_ids" widget="many2many_tags"/>
-                        </group>
-                        <group string="Treasury">
-                            <field name="fixed_fund_journal_id"/>
-                            <field name="bank_balance_journal_ids" widget="many2many_tags"/>
-                        </group>
-                        <group string="Collections">
-                            <field name="cash_collection_journal_ids" widget="many2many_tags"/>
-                            <field name="third_party_check_journal_ids" widget="many2many_tags"/>
-                            <field name="rejected_check_journal_ids" widget="many2many_tags"/>
-                        </group>
+                    <group string="Invoicing">
+                        <field name="sale_journal_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Collections">
+                        <field name="rejected_check_journal_ids" widget="many2many_tags"/>
                     </group>
                 </sheet>
             </form>

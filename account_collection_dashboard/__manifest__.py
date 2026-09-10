@@ -1,7 +1,7 @@
 {
     "name": "Collection Dashboard",
-    "summary": "Executive dashboard for accounts receivable and treasury indicators",
-    "version": "19.0.1.0.3",
+    "summary": "Executive dashboard for accounts receivable indicators",
+    "version": "19.0.1.0.5",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",
@@ -19,6 +19,7 @@
         "security/ir.model.access.csv",
         "views/account_collection_dashboard_config_views.xml",
         "views/account_collection_dashboard_menus.xml",
+        "views/account_move_views.xml",
     ],
     "assets": {
         "web.assets_backend": [

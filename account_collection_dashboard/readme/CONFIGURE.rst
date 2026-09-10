@@ -12,14 +12,6 @@ only) and set:
   localizations create automatically). Move a check into one of these
   journals (a mass transfer, or however your process records a
   rejection) to have it show up in the "Rejected checks" KPI.
-- **Fixed fund journal**: the single journal representing the company's
-  fixed/petty cash fund.
-- **Bank balance journals**: the bank journals that should each get a
-  balance KPI card on the dashboard.
-- **Cash/transfer collection journals**: the journals whose inbound
-  customer payments count towards the "Cash/transfer collections" KPI.
-- **Third-party check journals**: the journals used to hold third-party
-  checks in portfolio (received, not yet deposited or transferred out).
 
 Access to the dashboard itself is controlled by the "Dashboards /
 Collection" groups (User, Administrator) under

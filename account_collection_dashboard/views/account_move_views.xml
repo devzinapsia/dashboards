@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_account_collection_dashboard_invoice_list" model="ir.ui.view">
+        <field name="name">account.move.list.collection.dashboard</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <list string="Invoices" default_order="invoice_date_due">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="invoice_date" string="Invoice date"/>
+                <field name="invoice_date_due" string="Due date"/>
+                <field name="amount_total" string="Total"/>
+                <field name="amount_residual" string="Amount due"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+</odoo>
