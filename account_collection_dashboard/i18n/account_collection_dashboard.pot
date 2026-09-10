@@ -29,6 +29,7 @@ msgid "Administrator"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: model:ir.ui.view,arch_db:account_collection_dashboard.view_account_collection_dashboard_config_form
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard_config.py:0
 msgid "Collection Dashboard Settings"
@@ -115,151 +116,181 @@ msgid "Journals used to hold third-party checks in portfolio, before they are de
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Receivables"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Rejected Checks"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "0-30 days"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "31-60 days"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "61-90 days"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "+90 days"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Cash/Transfer Collections"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Third-Party Checks in Portfolio"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Invoices with Pending Exchange Difference"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Unassigned"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Treasury"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Reconciliation"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Multi-currency"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "By salesperson"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Total receivable"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Rejected checks"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Collection turnover"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Collection/Payment ratio"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Fixed fund"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Due soon, by Follow-up level"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Overdue, by age"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Top overdue customers"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Cash/transfer collections"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Pending reconciliation"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Third-party checks in portfolio"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Pending exchange difference"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "All currencies"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Current fiscal year"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Previous fiscal year"
 msgstr ""
 
 #. module: account_collection_dashboard
+#. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Last 12 months"
 msgstr ""
