@@ -1,7 +1,7 @@
 {
     "name": "Tablero de cobranzas",
     "summary": "Executive dashboard for accounts receivable indicators",
-    "version": "19.0.1.0.8",
+    "version": "19.0.1.0.9",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",

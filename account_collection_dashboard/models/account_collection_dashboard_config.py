@@ -74,7 +74,12 @@ class AccountCollectionDashboardConfig(models.Model):
     def action_open_config(self):
         # This is a singleton per-company record (see _company_uniq above):
         # no "New" button, since creating a second one would just hit the
-        # unique constraint, and no "Delete" either.
+        # unique constraint, and no "Delete" either. The web client only
+        # honors these through the action's context (create/delete as
+        # top-level ir.actions.act_window fields are not read by the
+        # View component for this), not through act_window's own
+        # create/delete fields.
         return self._get_config()._get_records_action(
-            name=self.env._("Collection Dashboard Settings"), create=False, delete=False
+            name=self.env._("Collection Dashboard Settings"),
+            context={**self.env.context, "create": False, "delete": False},
         )
