@@ -243,59 +243,59 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
 
         self.assertAlmostEqual(result["collected"], 1000.0)
 
-    def test_overdue_by_age_buckets(self):
+    def _pay_invoice(self, invoice, amount, payment_date):
+        self.env["account.payment.register"].with_context(
+            active_model="account.move", active_ids=invoice.ids
+        ).create({"amount": amount, "payment_date": payment_date}).action_create_payments()
+
+    def test_top_slow_paying_customers_averages_settlement_days(self):
         today = fields.Date.today()
-        self._create_invoice_one_line(
-            price_unit=100.0,
-            tax_ids=[],
-            invoice_date=today - timedelta(days=40),
-            invoice_date_due=today - timedelta(days=10),
-            invoice_payment_term_id=False,
-            post=True,
+        invoice_a1 = self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], partner_id=self.partner_a.id,
+            invoice_date=today - timedelta(days=20), invoice_payment_term_id=False, post=True,
         )
-        self._create_invoice_one_line(
-            price_unit=200.0,
-            tax_ids=[],
-            invoice_date=today - timedelta(days=130),
-            invoice_date_due=today - timedelta(days=100),
-            invoice_payment_term_id=False,
-            post=True,
+        self._pay_invoice(invoice_a1, 1000.0, today)
+        invoice_a2 = self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], partner_id=self.partner_a.id,
+            invoice_date=today - timedelta(days=10), invoice_payment_term_id=False, post=True,
         )
-
-        buckets = {bucket["label"]: bucket["amount"] for bucket in self.dashboard.get_overdue_by_age()}
-
-        self.assertAlmostEqual(buckets["0-30 days"], 100.0)
-        self.assertAlmostEqual(buckets["31-60 days"], 0.0)
-        self.assertAlmostEqual(buckets["61-90 days"], 0.0)
-        self.assertAlmostEqual(buckets["+90 days"], 200.0)
-
-    def test_top_overdue_partners(self):
-        today = fields.Date.today()
-        self._create_invoice_one_line(
-            price_unit=1000.0,
-            tax_ids=[],
-            partner_id=self.partner_a.id,
-            invoice_date=today - timedelta(days=40),
-            invoice_date_due=today - timedelta(days=10),
-            invoice_payment_term_id=False,
-            post=True,
+        self._pay_invoice(invoice_a2, 500.0, today)
+        invoice_b = self._create_invoice_one_line(
+            price_unit=300.0, tax_ids=[], partner_id=self.partner_b.id,
+            invoice_date=today - timedelta(days=5), invoice_payment_term_id=False, post=True,
         )
+        self._pay_invoice(invoice_b, 300.0, today)
+        # Not fully paid: must not count towards any average.
         self._create_invoice_one_line(
-            price_unit=500.0,
-            tax_ids=[],
-            partner_id=self.partner_b.id,
-            invoice_date=today - timedelta(days=40),
-            invoice_date_due=today - timedelta(days=10),
-            invoice_payment_term_id=False,
-            post=True,
+            price_unit=1000.0, tax_ids=[], partner_id=self.partner_b.id,
+            invoice_date=today - timedelta(days=200), invoice_payment_term_id=False, post=True,
         )
 
-        results = self.dashboard.get_top_overdue_partners()
+        results = self.dashboard.get_top_slow_paying_customers()
 
+        by_partner = {row["partner_id"]: row["days"] for row in results}
+        self.assertAlmostEqual(by_partner[self.partner_a.id], 15.0)
+        self.assertAlmostEqual(by_partner[self.partner_b.id], 5.0)
         self.assertEqual(results[0]["partner_id"], self.partner_a.id)
-        self.assertAlmostEqual(results[0]["amount"], 1000.0)
-        self.assertEqual(results[1]["partner_id"], self.partner_b.id)
-        self.assertAlmostEqual(results[1]["amount"], 500.0)
+
+    def test_collection_projection_buckets_and_percentage(self):
+        today = fields.Date.today()
+        for days_until_due, price_unit in ((0, 100.0), (20, 200.0), (45, 300.0), (75, 400.0), (200, 500.0)):
+            self._create_invoice_one_line(
+                price_unit=price_unit, tax_ids=[], invoice_date=today,
+                invoice_date_due=today + timedelta(days=days_until_due),
+                invoice_payment_term_id=False, post=True,
+            )
+
+        buckets = {bucket["label"]: bucket for bucket in self.dashboard.get_collection_projection()}
+
+        self.assertAlmostEqual(buckets["0-15 days"]["amount"], 100.0)
+        self.assertAlmostEqual(buckets["16-30 days"]["amount"], 200.0)
+        self.assertAlmostEqual(buckets["31-60 days"]["amount"], 300.0)
+        self.assertAlmostEqual(buckets["61-90 days"]["amount"], 400.0)
+        self.assertAlmostEqual(buckets["+90 days"]["amount"], 500.0)
+        total_percentage = sum(bucket["percentage"] for bucket in buckets.values())
+        self.assertAlmostEqual(total_percentage, 100.0)
 
     def test_due_soon_by_followup_level(self):
         today = fields.Date.today()

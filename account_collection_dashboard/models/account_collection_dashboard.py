@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
@@ -280,83 +281,88 @@ class AccountCollectionDashboard(models.AbstractModel):
             for level, amount in rows
         ]
 
-    def _age_bucket_domain(self, bucket, today):
-        bucket_domain = [("date_maturity", "<=", today - timedelta(days=bucket["min"]))]
-        if bucket["max"] is not None:
-            bucket_domain.append(("date_maturity", ">=", today - timedelta(days=bucket["max"])))
-        return bucket_domain
+    @api.model
+    def get_top_slow_paying_customers(self, period="current_fiscal_year", limit=10):
+        """Bottom chart 1: the customers who took the longest, on average,
+        to fully settle an invoice (settlement date - invoice date),
+        averaged over every fully-paid invoice issued within the selected
+        period (same period selector as "Collection turnover").
+
+        "Settlement date" is the latest reconciliation date
+        (account.partial.reconcile.max_date) among every partial that
+        cleared the invoice's receivable line - this covers payments,
+        credit notes or any other counterpart, not just account.payment.
+        """
+        config = self._get_dashboard_config()
+        company = self.env.company
+        today = fields.Date.context_today(self)
+        date_from, date_to = self._get_turnover_period_bounds(period, company, today)
+
+        domain = [
+            ("account_id.account_type", "=", "asset_receivable"),
+            ("parent_state", "=", "posted"),
+            ("move_id.move_type", "in", ("out_invoice", "out_refund")),
+            ("company_id", "=", company.id),
+            ("reconciled", "=", True),
+            ("move_id.invoice_date", ">=", date_from),
+            ("move_id.invoice_date", "<=", date_to),
+        ]
+        if config.sale_journal_ids:
+            domain.append(("journal_id", "in", config.sale_journal_ids.ids))
+
+        days_by_partner = defaultdict(list)
+        for line in self.env["account.move.line"].search(domain):
+            invoice_date = line.move_id.invoice_date
+            partials = line.matched_debit_ids | line.matched_credit_ids
+            if not invoice_date or not partials:
+                continue
+            settlement_date = max(partials.mapped("max_date"))
+            days_by_partner[line.partner_id].append((settlement_date - invoice_date).days)
+
+        averages = [
+            (partner, sum(days) / len(days))
+            for partner, days in days_by_partner.items()
+            if partner
+        ]
+        averages.sort(key=lambda row: row[1], reverse=True)
+        return [
+            {"partner_id": partner.id, "partner_name": partner.name, "days": round(avg_days, 1)}
+            for partner, avg_days in averages[:limit]
+        ]
 
     @api.model
-    def get_overdue_by_age(self, currency_id=None):
-        """Indicator 3: overdue, uncollected receivables, bucketed by age
-        (0-30 / 31-60 / 61-90 / +90 days overdue).
+    def get_collection_projection(self, currency_id=None):
+        """Bottom chart 2: open receivable balance bucketed by days left
+        until due (date_maturity), with already-overdue debt folded into
+        the first bucket (it needs collecting now, same as anything due
+        within the next 15 days). Each bucket also carries its share of
+        the total as a percentage.
         """
         today = fields.Date.context_today(self)
-        domain = self._get_open_receivable_domain(currency_id, [("date_maturity", "<", today)])
+        domain = self._get_open_receivable_domain(currency_id)
         residual_field = self._residual_field(currency_id)
         lines = self.env["account.move.line"].search_read(domain, ["date_maturity", residual_field])
 
         buckets = [
-            {"label": self.env._("0-30 days"), "min": 0, "max": 30, "amount": 0.0},
-            {"label": self.env._("31-60 days"), "min": 31, "max": 60, "amount": 0.0},
-            {"label": self.env._("61-90 days"), "min": 61, "max": 90, "amount": 0.0},
-            {"label": self.env._("+90 days"), "min": 91, "max": None, "amount": 0.0},
+            {"label": self.env._("0-15 days"), "max_days": 15, "amount": 0.0},
+            {"label": self.env._("16-30 days"), "max_days": 30, "amount": 0.0},
+            {"label": self.env._("31-60 days"), "max_days": 60, "amount": 0.0},
+            {"label": self.env._("61-90 days"), "max_days": 90, "amount": 0.0},
+            {"label": self.env._("+90 days"), "max_days": None, "amount": 0.0},
         ]
         for line in lines:
-            days_overdue = (today - line["date_maturity"]).days
+            date_maturity = line["date_maturity"] or today
+            days_until_due = max((date_maturity - today).days, 0)
             for bucket in buckets:
-                if days_overdue >= bucket["min"] and (bucket["max"] is None or days_overdue <= bucket["max"]):
+                if bucket["max_days"] is None or days_until_due <= bucket["max_days"]:
                     bucket["amount"] += line[residual_field]
                     break
 
+        total = sum(bucket["amount"] for bucket in buckets)
         for bucket in buckets:
             bucket["currency_id"] = currency_id or self.env.company.currency_id.id
-            bucket["drilldown"] = self._get_drilldown_action(
-                "account.move.line",
-                domain=domain + self._age_bucket_domain(bucket, today),
-                name=bucket["label"],
-            )
+            bucket["percentage"] = (bucket["amount"] / total * 100) if total else 0.0
         return buckets
-
-    @api.model
-    def get_top_overdue_partners(self, currency_id=None, limit=10):
-        """Indicator 4: top overdue customers by amount owed. Drill-down
-        reuses the standard Partner Ledger report, opened unfiltered (this
-        report's partner filter cannot be pre-seeded from the action
-        context in this Odoo version, only set interactively).
-        """
-        today = fields.Date.context_today(self)
-        domain = self._get_open_receivable_domain(currency_id, [("date_maturity", "<", today)])
-        residual_field = self._residual_field(currency_id)
-        rows = self.env["account.move.line"]._read_group(
-            domain,
-            groupby=["partner_id"],
-            aggregates=[f"{residual_field}:sum"],
-            order=f"{residual_field}:sum desc",
-            limit=limit,
-        )
-        return [
-            {
-                "partner_id": partner.id,
-                "partner_name": partner.name,
-                "amount": amount or 0.0,
-                "currency_id": currency_id or self.env.company.currency_id.id,
-                # NOTE: the Partner Ledger report's partner filter is a
-                # purely interactive client-side widget in this Odoo
-                # version (there is no context/option key that pre-seeds
-                # it on the initial action call, confirmed by inspecting
-                # AccountReportController and every other core caller of
-                # this action). So this opens the report unfiltered,
-                # reusing the standard action as requested; the user
-                # still has to pick the partner from the report's own
-                # "Partners" filter.
-                "drilldown": self._get_native_drilldown_action(
-                    "account_reports.action_account_report_partner_ledger"
-                ),
-            }
-            for partner, amount in rows
-            if partner
-        ]
 
     @api.model
     def get_customers_with_debt(self, currency_id=None):

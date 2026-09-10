@@ -97,32 +97,6 @@
                     </t>
                 </div>
 
-                <div class="mb-1 text-muted small" t-esc="labels.overdueByAge"/>
-                <div class="row g-3 mb-3">
-                    <t t-foreach="state.overdueByAge" t-as="bucket" t-key="bucket.label">
-                        <div class="col-12 col-md-3">
-                            <DashboardsKpiCard
-                                title="bucket.label"
-                                value="formatMonetary(bucket.amount, bucket.currency_id)"
-                                onClick="() => this.onDrilldownClick(bucket.drilldown)"
-                            />
-                        </div>
-                    </t>
-                </div>
-
-                <div class="mb-1 text-muted small" t-if="state.topOverduePartners.length" t-esc="labels.topOverduePartners"/>
-                <div class="row g-3 mb-4">
-                    <t t-foreach="state.topOverduePartners" t-as="partnerRow" t-key="partnerRow.partner_id">
-                        <div class="col-12 col-md-4">
-                            <DashboardsKpiCard
-                                title="partnerRow.partner_name"
-                                value="formatMonetary(partnerRow.amount, partnerRow.currency_id)"
-                                onClick="() => this.onDrilldownClick(partnerRow.drilldown)"
-                            />
-                        </div>
-                    </t>
-                </div>
-
                 <h5 class="mb-3" t-esc="labels.reconciliationSection"/>
                 <div class="row g-3 mb-4" t-if="state.pendingReconciliation">
                     <div class="col-12 col-md-4">
@@ -158,6 +132,33 @@
                             />
                         </div>
                     </t>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div t-if="state.topSlowPayingCustomers.length" class="col-12 col-md-3">
+                        <div class="card p-2">
+                            <div class="card-body">
+                                <h6 class="card-title" t-esc="labels.topSlowPayingCustomers"/>
+                                <DashboardsChart
+                                    type="'bar'"
+                                    data="topSlowPayingCustomersChartData"
+                                    options="topSlowPayingCustomersChartOptions"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div t-if="state.collectionProjection.length" class="col-12 col-md-9">
+                        <div class="card p-2">
+                            <div class="card-body">
+                                <h6 class="card-title" t-esc="labels.collectionProjection"/>
+                                <DashboardsChart
+                                    type="'bar'"
+                                    data="collectionProjectionChartData"
+                                    options="collectionProjectionChartOptions"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>

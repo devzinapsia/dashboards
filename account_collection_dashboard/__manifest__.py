@@ -1,7 +1,7 @@
 {
     "name": "Collection Dashboard",
     "summary": "Executive dashboard for accounts receivable indicators",
-    "version": "19.0.1.0.5",
+    "version": "19.0.1.0.6",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",

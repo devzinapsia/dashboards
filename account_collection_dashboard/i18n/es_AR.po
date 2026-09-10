@@ -111,8 +111,14 @@ msgstr "Cheques rechazados"
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "0-30 days"
-msgstr "0-30 días"
+msgid "0-15 days"
+msgstr "0-15 días"
+
+#. module: account_collection_dashboard
+#. odoo-python
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "16-30 days"
+msgstr "16-30 días"
 
 #. module: account_collection_dashboard
 #. odoo-python
@@ -237,20 +243,38 @@ msgstr "A cobrar en próximos 7 días"
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Top 10 - Slowest paying customers (average days)"
+msgstr "Top 10 - Peores pagadores (días promedio)"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Collection projection"
+msgstr "Proyección de cobranzas"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Days"
+msgstr "Días"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Balance"
+msgstr "Saldo"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Due soon, by Follow-up level"
 msgstr "Por vencer, por nivel de seguimiento"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Overdue, by age"
-msgstr "Vencido, por antigüedad"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Top overdue customers"
-msgstr "Top de clientes morosos"
 
 #. module: account_collection_dashboard
 #. odoo-javascript

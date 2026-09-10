@@ -30,13 +30,6 @@ Invoicing and collection
 - **Due soon, by Follow-up level**: not-yet-due receivables, grouped by
   the real Follow-up level (``account_followup.followup.line``) already
   assigned to them (only lines with a level assigned show up here).
-- **Overdue, by age**: overdue, uncollected receivables bucketed into
-  0-30 / 31-60 / 61-90 / +90 days overdue.
-- **Top overdue customers**: the 10 customers with the highest overdue
-  balance. Drill-down reuses the standard Partner Ledger report
-  (``account_reports``); note it opens **unfiltered** — this report's
-  partner filter is a purely interactive client-side widget in this Odoo
-  version, it cannot be pre-seeded from the action that opens it.
 - **Customers with debt**: count of distinct customers with at least one
   open receivable invoice (a customer with several outstanding invoices
   counts once). Drill-down opens the list of those open invoices (Total /
@@ -51,11 +44,11 @@ Invoicing and collection
   today included (so it overlaps with "Due today" by design). Drill-down
   opens the matching sales invoices.
 
-"Total receivable", "Rejected checks", "Due soon", "Overdue by age",
-"Top overdue customers", "Customers with debt", "Not yet due", "Due
-today" and "Due in 7 days" can be split by currency using the selector
-at the top of the dashboard, built from every currency active on this
-database — not hardcoded to any specific pair.
+"Total receivable", "Rejected checks", "Due soon", "Customers with
+debt", "Not yet due", "Due today" and "Due in 7 days" can be split by
+currency using the selector at the top of the dashboard, built from
+every currency active on this database — not hardcoded to any specific
+pair.
 
 Every invoicing/collection indicator above is restricted to the journals
 selected as "Sales voucher journals" in *Configuration* (see below).
@@ -84,6 +77,22 @@ By salesperson
   invoices from more than one salesperson, the whole payment is
   attributed to the first one — this is a known simplification, not a
   proportional split.
+
+Charts
+======
+
+- **Top 10 - Slowest paying customers**: the 10 customers who took the
+  longest, on average, to fully settle an invoice (settlement date minus
+  invoice date), averaged over every fully-paid invoice issued within
+  the period selected by the same selector used for "Collection
+  turnover" (current fiscal year / previous fiscal year / last 12
+  months). "Settlement date" is the latest reconciliation date among
+  every entry that cleared the invoice, whatever the counterpart
+  (payment, credit note, or otherwise).
+- **Collection projection**: the open receivable balance bucketed by
+  days left until due (0-15 / 16-30 / 31-60 / 61-90 / +90 days),
+  already-overdue debt folded into the first bucket. Each bar shows its
+  share of the total balance as a percentage.
 
 **Table of contents**
 
@@ -123,10 +132,11 @@ items, checks, or payments).
 Two selectors at the top of the dashboard:
 
 - **Period selector** (current fiscal year / previous fiscal year / last
-  12 months): only affects the "Collection turnover" KPI.
+  12 months): affects the "Collection turnover" KPI and the "Top 10 -
+  Slowest paying customers" chart.
 - **Currency selector**: splits "Total receivable", "Rejected checks",
-  "Due soon", "Overdue by age", "Top overdue customers", "Customers with
-  debt", "Not yet due", "Due today" and "Due in 7 days" by currency,
+  "Due soon", "Customers with debt", "Not yet due", "Due today", "Due in
+  7 days" and the "Collection projection" chart by currency,
   re-expressing every amount in the selected currency at today's rate.
 
 Bug Tracker
