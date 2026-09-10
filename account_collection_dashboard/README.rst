@@ -35,10 +35,27 @@ Invoicing and collection
   (``account_reports``); note it opens **unfiltered** — this report's
   partner filter is a purely interactive client-side widget in this Odoo
   version, it cannot be pre-seeded from the action that opens it.
+- **Customers with debt**: count of distinct customers with at least one
+  open receivable invoice (a customer with several outstanding invoices
+  counts once). Drill-down opens the list of those customers; from there,
+  the standard "Open Customer Statements" action (added to every
+  ``res.partner`` list view by ``account_reports``) lets you consult any
+  selected customer's running account, using that report's own period
+  filter.
+- **Not yet due**: total amount of receivables not yet due, regardless of
+  whether a Follow-up level has been assigned to them — a broader total
+  than "Due soon, by Follow-up level" above, which only covers lines that
+  already have one. Drill-down opens the matching sales invoices.
+- **Due today**: amount of receivables due exactly today. Drill-down
+  opens the matching sales invoices.
+- **Due in 7 days**: amount of receivables due within the next 7 days,
+  today included (so it overlaps with "Due today" by design). Drill-down
+  opens the matching sales invoices.
 
-"Total receivable", "Rejected checks", "Due soon", "Overdue by age" and
-"Top overdue customers" can be split by currency using the selector at
-the top of the dashboard, built from every currency active on this
+"Total receivable", "Rejected checks", "Due soon", "Overdue by age",
+"Top overdue customers", "Customers with debt", "Not yet due", "Due
+today" and "Due in 7 days" can be split by currency using the selector
+at the top of the dashboard, built from every currency active on this
 database — not hardcoded to any specific pair.
 
 Every invoicing/collection indicator above is restricted to the journals
@@ -131,7 +148,8 @@ Two selectors at the top of the dashboard:
 - **Period selector** (current fiscal year / previous fiscal year / last
   12 months): only affects the "Collection turnover" KPI.
 - **Currency selector**: splits "Total receivable", "Rejected checks",
-  "Due soon", "Overdue by age" and "Top overdue customers" by currency,
+  "Due soon", "Overdue by age", "Top overdue customers", "Customers with
+  debt", "Not yet due", "Due today" and "Due in 7 days" by currency,
   re-expressing every amount in the selected currency at today's rate.
 
 Bug Tracker

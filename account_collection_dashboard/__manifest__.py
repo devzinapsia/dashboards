@@ -1,7 +1,7 @@
 {
     "name": "Collection Dashboard",
     "summary": "Executive dashboard for accounts receivable and treasury indicators",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.3",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",
@@ -25,7 +25,7 @@
             "account_collection_dashboard/static/src/**/*",
         ],
     },
-    "auto_install": False,
+    "auto_install": True,
     "application": False,
     "installable": True,
 }

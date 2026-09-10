@@ -121,7 +121,7 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
             "last_12_months", company, today
         )
 
-        self.assertEqual(current_to, today)
+        self.assertEqual(current_to, company.compute_fiscalyear_dates(today)["date_to"])
         self.assertEqual(previous_to, current_from - timedelta(days=1))
         self.assertEqual(last_12_months_to, today)
         self.assertAlmostEqual((today - last_12_months_from).days, 365, delta=1)
@@ -137,6 +137,9 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
 
         result = self.dashboard.get_collection_turnover(period="current_fiscal_year")
 
+        # date_to is the fiscal year's end (which may be in the future), but
+        # since no entries are dated after today, the AR balance "as of
+        # fiscal year end" still equals the balance today [1000].
         # Average AR = (balance at fiscal year start [0] + balance today [1000]) / 2
         self.assertAlmostEqual(result["net_credit_sales"], 1000.0)
         self.assertAlmostEqual(result["average_receivable"], 500.0)
@@ -302,6 +305,103 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["level_id"], followup_level.id)
         self.assertAlmostEqual(results[0]["amount"], 1000.0)
+
+    def test_customers_with_debt_counts_distinct_partners(self):
+        """A customer with several outstanding invoices counts once."""
+        today = fields.Date.today()
+        self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], partner_id=self.partner_a.id,
+            invoice_date=today, invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], partner_id=self.partner_a.id,
+            invoice_date=today, invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=300.0, tax_ids=[], partner_id=self.partner_b.id,
+            invoice_date=today, invoice_payment_term_id=False, post=True,
+        )
+
+        result = self.dashboard.get_customers_with_debt()
+
+        self.assertEqual(result["count"], 2)
+        drilldown_partner_ids = result["drilldown"]["domain"][0][2]
+        self.assertEqual(set(drilldown_partner_ids), {self.partner_a.id, self.partner_b.id})
+
+    def test_undue_debt_includes_lines_without_followup_level(self):
+        """Unlike "Due soon, by Follow-up level", this indicator sums every
+        not-yet-due receivable, whether or not a level has been assigned.
+        """
+        today = fields.Date.today()
+        not_due_invoice = self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today + timedelta(days=5),
+            invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], invoice_date=today - timedelta(days=40),
+            invoice_date_due=today - timedelta(days=10),
+            invoice_payment_term_id=False, post=True,
+        )
+
+        result = self.dashboard.get_undue_debt()
+
+        self.assertAlmostEqual(result["amount"], 1000.0)
+        self.assertEqual(result["drilldown"]["domain"][0][2], [not_due_invoice.id])
+        # confirms the line has no Follow-up level and is still counted here
+        self.assertEqual(self.dashboard.get_due_soon_by_followup_level(), [])
+
+    def test_due_today(self):
+        today = fields.Date.today()
+        due_today_invoice = self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today, invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today + timedelta(days=1),
+            invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=300.0, tax_ids=[], invoice_date=today - timedelta(days=10),
+            invoice_date_due=today - timedelta(days=1),
+            invoice_payment_term_id=False, post=True,
+        )
+
+        result = self.dashboard.get_due_today()
+
+        self.assertAlmostEqual(result["amount"], 1000.0)
+        self.assertEqual(result["drilldown"]["domain"][0][2], [due_today_invoice.id])
+
+    def test_due_next_7_days_includes_due_today(self):
+        today = fields.Date.today()
+        due_today_invoice = self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today, invoice_payment_term_id=False, post=True,
+        )
+        due_in_5_days_invoice = self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today + timedelta(days=5),
+            invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=300.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today + timedelta(days=10),
+            invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=200.0, tax_ids=[], invoice_date=today - timedelta(days=10),
+            invoice_date_due=today - timedelta(days=1),
+            invoice_payment_term_id=False, post=True,
+        )
+
+        result = self.dashboard.get_due_next_7_days()
+
+        self.assertAlmostEqual(result["amount"], 1500.0)
+        self.assertEqual(
+            set(result["drilldown"]["domain"][0][2]),
+            {due_today_invoice.id, due_in_5_days_invoice.id},
+        )
 
     def test_pending_exchange_difference_detects_rate_change(self):
         today = fields.Date.today()

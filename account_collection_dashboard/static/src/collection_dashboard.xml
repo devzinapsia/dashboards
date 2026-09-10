@@ -53,6 +53,37 @@
                     </div>
                 </div>
 
+                <div class="row g-3 mb-4">
+                    <div t-if="state.customersWithDebt" class="col-12 col-md-3">
+                        <DashboardsKpiCard
+                            title="labels.customersWithDebt"
+                            value="state.customersWithDebt.count"
+                            onClick="() => this.onDrilldownClick(state.customersWithDebt.drilldown)"
+                        />
+                    </div>
+                    <div t-if="state.undueDebt" class="col-12 col-md-3">
+                        <DashboardsKpiCard
+                            title="labels.undueDebt"
+                            value="formatMonetary(state.undueDebt.amount, state.undueDebt.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.undueDebt.drilldown)"
+                        />
+                    </div>
+                    <div t-if="state.dueToday" class="col-12 col-md-3">
+                        <DashboardsKpiCard
+                            title="labels.dueToday"
+                            value="formatMonetary(state.dueToday.amount, state.dueToday.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.dueToday.drilldown)"
+                        />
+                    </div>
+                    <div t-if="state.dueNext7Days" class="col-12 col-md-3">
+                        <DashboardsKpiCard
+                            title="labels.dueNext7Days"
+                            value="formatMonetary(state.dueNext7Days.amount, state.dueNext7Days.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.dueNext7Days.drilldown)"
+                        />
+                    </div>
+                </div>
+
                 <div class="mb-1 text-muted small" t-if="state.dueSoonByLevel.length" t-esc="labels.dueSoonByLevel"/>
                 <div class="row g-3 mb-3">
                     <t t-foreach="state.dueSoonByLevel" t-as="level" t-key="level.level_id">

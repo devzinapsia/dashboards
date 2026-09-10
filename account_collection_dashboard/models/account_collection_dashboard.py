@@ -102,10 +102,11 @@ class AccountCollectionDashboard(models.AbstractModel):
             return bounds["date_from"], bounds["date_to"]
         if period == "last_12_months":
             return today - relativedelta(months=12), today
-        # current_fiscal_year (default): from the fiscal year's start up to
-        # today, not its (possibly future) theoretical end date.
+        # current_fiscal_year (default): the fiscal year's full start-to-end
+        # range, matching the other two periods rather than truncating at
+        # today.
         bounds = company.compute_fiscalyear_dates(today)
-        return bounds["date_from"], today
+        return bounds["date_from"], bounds["date_to"]
 
     @api.model
     def get_collection_turnover(self, period="current_fiscal_year"):
@@ -346,6 +347,94 @@ class AccountCollectionDashboard(models.AbstractModel):
             for partner, amount in rows
             if partner
         ]
+
+    @api.model
+    def get_customers_with_debt(self, currency_id=None):
+        """Indicator: count of distinct customers with at least one open
+        receivable invoice (a customer with several outstanding invoices
+        counts once). Drill-down opens the list of those customers; the
+        standard "Open Customer Statements" action (bound to every
+        res.partner list view by account_reports) lets the user consult
+        any selected customer's running account from there, using that
+        report's own period filter.
+        """
+        domain = self._get_open_receivable_domain(currency_id)
+        rows = self.env["account.move.line"]._read_group(domain, groupby=["partner_id"])
+        partner_ids = [partner.id for (partner,) in rows if partner]
+        return {
+            "count": len(partner_ids),
+            "drilldown": self._get_drilldown_action(
+                "res.partner",
+                domain=[("id", "in", partner_ids)],
+                name=self.env._("Customers with Debt"),
+            ),
+        }
+
+    def _receivable_amount_and_moves(self, domain, residual_field):
+        rows = self.env["account.move.line"]._read_group(
+            domain, groupby=["move_id"], aggregates=[f"{residual_field}:sum"]
+        )
+        total = sum(amount or 0.0 for move, amount in rows if move)
+        move_ids = [move.id for move, amount in rows if move]
+        return total, move_ids
+
+    @api.model
+    def get_undue_debt(self, currency_id=None):
+        """Indicator: total amount of receivables not yet due
+        (date_maturity >= today), regardless of whether a Follow-up level
+        has been assigned yet - a broader total than the "Due soon, by
+        Follow-up level" breakdown, which only covers lines that already
+        have a level. Drill-down opens the matching sales invoices.
+        """
+        today = fields.Date.context_today(self)
+        domain = self._get_open_receivable_domain(currency_id, [("date_maturity", ">=", today)])
+        residual_field = self._residual_field(currency_id)
+        total, move_ids = self._receivable_amount_and_moves(domain, residual_field)
+        return {
+            "amount": total,
+            "currency_id": currency_id or self.env.company.currency_id.id,
+            "drilldown": self._get_drilldown_action(
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Undue Debt")
+            ),
+        }
+
+    @api.model
+    def get_due_today(self, currency_id=None):
+        """Indicator: amount of receivables due exactly today. Drill-down
+        opens the matching sales invoices.
+        """
+        today = fields.Date.context_today(self)
+        domain = self._get_open_receivable_domain(currency_id, [("date_maturity", "=", today)])
+        residual_field = self._residual_field(currency_id)
+        total, move_ids = self._receivable_amount_and_moves(domain, residual_field)
+        return {
+            "amount": total,
+            "currency_id": currency_id or self.env.company.currency_id.id,
+            "drilldown": self._get_drilldown_action(
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due Today")
+            ),
+        }
+
+    @api.model
+    def get_due_next_7_days(self, currency_id=None):
+        """Indicator: amount of receivables due within the next 7 days,
+        today included (so it overlaps with the "Due today" indicator by
+        design). Drill-down opens the matching sales invoices.
+        """
+        today = fields.Date.context_today(self)
+        domain = self._get_open_receivable_domain(currency_id, [
+            ("date_maturity", ">=", today),
+            ("date_maturity", "<=", today + timedelta(days=7)),
+        ])
+        residual_field = self._residual_field(currency_id)
+        total, move_ids = self._receivable_amount_and_moves(domain, residual_field)
+        return {
+            "amount": total,
+            "currency_id": currency_id or self.env.company.currency_id.id,
+            "drilldown": self._get_drilldown_action(
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Due in Next 7 Days")
+            ),
+        }
 
     @api.model
     def get_cash_collections(self, date_from, date_to):

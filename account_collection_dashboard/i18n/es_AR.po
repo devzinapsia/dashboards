@@ -177,6 +177,30 @@ msgid "Unassigned"
 msgstr "Sin asignar"
 
 #. module: account_collection_dashboard
+#. odoo-python
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Customers with Debt"
+msgstr "Clientes con deudas"
+
+#. module: account_collection_dashboard
+#. odoo-python
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Undue Debt"
+msgstr "Deuda no vencida"
+
+#. module: account_collection_dashboard
+#. odoo-python
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Due Today"
+msgstr "A cobrar hoy"
+
+#. module: account_collection_dashboard
+#. odoo-python
+#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
+msgid "Due in Next 7 Days"
+msgstr "A cobrar en próximos 7 días"
+
+#. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Treasury"
@@ -223,6 +247,30 @@ msgstr "Rotación de cobranza"
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Collection/Payment ratio"
 msgstr "Ratio cobro/pago"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Customers with debt"
+msgstr "Clientes con deudas"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Not yet due"
+msgstr "Deuda no vencida"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Due today"
+msgstr "A cobrar hoy"
+
+#. module: account_collection_dashboard
+#. odoo-javascript
+#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
+msgid "Due in 7 days"
+msgstr "A cobrar en próximos 7 días"
 
 #. module: account_collection_dashboard
 #. odoo-javascript
