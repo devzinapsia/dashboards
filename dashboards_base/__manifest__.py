@@ -17,6 +17,7 @@
     "assets": {
         "web.assets_backend": [
             "dashboards_base/static/src/js/drilldown.js",
+            "dashboards_base/static/src/js/dashboards_theme.js",
             "dashboards_base/static/src/components/kpi_card/kpi_card.js",
             "dashboards_base/static/src/components/kpi_card/kpi_card.xml",
             "dashboards_base/static/src/components/kpi_card/kpi_card.scss",

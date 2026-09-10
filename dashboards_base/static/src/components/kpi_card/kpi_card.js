@@ -1,4 +1,5 @@
 import { Component } from "@odoo/owl";
+import { isDarkMode } from "@dashboards_base/js/dashboards_theme";
 
 /**
  * Generic KPI tile: a title, a main value, an optional secondary value, and
@@ -17,6 +18,8 @@ export class DashboardsKpiCard extends Component {
         onClick: { type: Function, optional: true },
         slots: { type: Object, optional: true },
     };
+
+    isDarkMode = isDarkMode;
 
     get isClickable() {
         return Boolean(this.props.onClick);

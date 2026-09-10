@@ -4,7 +4,7 @@
     <t t-name="dashboards_base.KpiCard">
         <div
             class="o_dashboards_kpi_card card h-100"
-            t-att-class="{ 'o_dashboards_kpi_card_clickable' : isClickable }"
+            t-att-class="{ 'o_dashboards_kpi_card_clickable' : isClickable, 'o_dashboards_kpi_card_dark' : isDarkMode }"
             t-att-role="isClickable ? 'button' : undefined"
             t-att-tabindex="isClickable ? 0 : undefined"
             t-on-click="onCardClick"

@@ -1,7 +1,15 @@
 .o_dashboards_kpi_card {
+    background-color: #fff;
+    border: none;
+
+    &.o_dashboards_kpi_card_dark {
+        background-color: #242631;
+    }
+
     .o_dashboards_kpi_card_value {
         line-height: 1.2;
         text-align: right;
+        font-size: calc(1.75rem + 2px);
     }
 
     .o_dashboards_kpi_card_secondary {
@@ -10,10 +18,9 @@
 
     &.o_dashboards_kpi_card_clickable {
         cursor: pointer;
-        transition: box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        transition: box-shadow 0.15s ease-in-out;
 
         &:hover, &:focus-visible {
-            border-color: var(--bs-primary);
             box-shadow: 0 0 0 1px var(--bs-primary);
         }
     }
