@@ -39,6 +39,21 @@ class TestDashboardsBase(TransactionCase):
         action = self.env["dashboards.drilldown.mixin"]._get_drilldown_action("res.partner")
         self.assertTrue(action["name"])
 
+    def test_drilldown_action_disables_create_and_delete_by_default(self):
+        """A drill-down is for inspecting the records behind a KPI, not for
+        creating unrelated new ones - the "New" button should not show.
+        """
+        action = self.env["dashboards.drilldown.mixin"]._get_drilldown_action("res.partner")
+        self.assertFalse(action["context"]["create"])
+        self.assertFalse(action["context"]["delete"])
+
+    def test_drilldown_action_create_can_be_enabled(self):
+        action = self.env["dashboards.drilldown.mixin"]._get_drilldown_action(
+            "res.partner", create=True, delete=True
+        )
+        self.assertNotIn("create", action["context"])
+        self.assertNotIn("delete", action["context"])
+
     def test_native_drilldown_action(self):
         action = self.env["dashboards.drilldown.mixin"]._get_native_drilldown_action(
             "base.action_partner_form",
