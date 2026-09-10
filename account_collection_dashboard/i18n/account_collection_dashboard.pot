@@ -146,7 +146,7 @@ msgstr ""
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Customers with Debt"
+msgid "Overdue Debt"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -200,7 +200,7 @@ msgstr ""
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Customers with debt"
+msgid "Overdue debt"
 msgstr ""
 
 #. module: account_collection_dashboard

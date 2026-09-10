@@ -8,6 +8,6 @@ Two selectors at the top of the dashboard:
   12 months): affects the "Collection turnover" KPI and the "Top 10 -
   Slowest paying customers" chart.
 - **Currency selector**: splits "Total receivable", "Rejected checks",
-  "Due soon", "Customers with debt", "Not yet due", "Due today", "Due in
-  7 days" and the "Collection projection" chart by currency,
+  "Due soon", "Overdue debt", "Not yet due", "Due today", "Due in 7
+  days" and the "Collection projection" chart by currency,
   re-expressing every amount in the selected currency at today's rate.

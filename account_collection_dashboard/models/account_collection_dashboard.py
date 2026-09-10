@@ -364,23 +364,20 @@ class AccountCollectionDashboard(models.AbstractModel):
         return buckets
 
     @api.model
-    def get_customers_with_debt(self, currency_id=None):
-        """Indicator: count of distinct customers with at least one open
-        receivable invoice (a customer with several outstanding invoices
-        counts once). Drill-down opens the list of those invoices
-        (Total / Amount due), clickable through to each invoice.
+    def get_overdue_debt(self, currency_id=None):
+        """Indicator: total amount of receivables that are overdue
+        (date_maturity < today). Drill-down opens the matching sales
+        invoices, using the same invoice list view as "Not yet due".
         """
-        domain = self._get_open_receivable_domain(currency_id)
-        partner_rows = self.env["account.move.line"]._read_group(domain, groupby=["partner_id"])
-        partner_ids = [partner.id for (partner,) in partner_rows if partner]
-        move_rows = self.env["account.move.line"]._read_group(domain, groupby=["move_id"])
-        move_ids = [move.id for (move,) in move_rows if move]
+        today = fields.Date.context_today(self)
+        domain = self._get_open_receivable_domain(currency_id, [("date_maturity", "<", today)])
+        residual_field = self._residual_field(currency_id)
+        total, move_ids = self._receivable_amount_and_moves(domain, residual_field)
         return {
-            "count": len(partner_ids),
+            "amount": total,
+            "currency_id": currency_id or self.env.company.currency_id.id,
             "drilldown": self._get_drilldown_action(
-                "account.move",
-                domain=[("id", "in", move_ids)],
-                name=self.env._("Customers with Debt"),
+                "account.move", domain=[("id", "in", move_ids)], name=self.env._("Overdue Debt"),
                 view_id=self._invoice_list_view_id(),
             ),
         }

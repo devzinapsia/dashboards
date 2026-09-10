@@ -54,11 +54,11 @@
                 </div>
 
                 <div class="row g-3 mb-4">
-                    <div t-if="state.customersWithDebt" class="col-12 col-md-3">
+                    <div t-if="state.overdueDebt" class="col-12 col-md-3">
                         <DashboardsKpiCard
-                            title="labels.customersWithDebt"
-                            value="state.customersWithDebt.count"
-                            onClick="() => this.onDrilldownClick(state.customersWithDebt.drilldown)"
+                            title="labels.overdueDebt"
+                            value="formatMonetary(state.overdueDebt.amount, state.overdueDebt.currency_id)"
+                            onClick="() => this.onDrilldownClick(state.overdueDebt.drilldown)"
                         />
                     </div>
                     <div t-if="state.undueDebt" class="col-12 col-md-3">
@@ -97,7 +97,7 @@
                     </t>
                 </div>
 
-                <h5 class="mb-3" t-esc="labels.bySalespersonSection"/>
+                <h5 class="mb-3" t-if="state.collectionByUser.length" t-esc="labels.bySalespersonSection"/>
                 <div class="row g-3 mb-4">
                     <t t-foreach="state.collectionByUser" t-as="userRow" t-key="userRow.user_id">
                         <div class="col-12 col-md-4">

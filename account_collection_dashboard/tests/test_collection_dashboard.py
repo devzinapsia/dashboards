@@ -320,33 +320,54 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         self.assertEqual(results[0]["level_id"], followup_level.id)
         self.assertAlmostEqual(results[0]["amount"], 1000.0)
 
-    def test_customers_with_debt_counts_distinct_partners(self):
-        """A customer with several outstanding invoices counts once, but
-        the drill-down still lists every one of their open invoices.
+    def test_overdue_debt_excludes_not_yet_due_lines(self):
+        """The mirror image of "Not yet due": only date_maturity < today
+        counts here, using the same invoice list view for the drill-down.
         """
         today = fields.Date.today()
-        invoice_a1 = self._create_invoice_one_line(
-            price_unit=1000.0, tax_ids=[], partner_id=self.partner_a.id,
-            invoice_date=today, invoice_payment_term_id=False, post=True,
+        overdue_invoice = self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], invoice_date=today - timedelta(days=40),
+            invoice_date_due=today - timedelta(days=10),
+            invoice_payment_term_id=False, post=True,
         )
-        invoice_a2 = self._create_invoice_one_line(
-            price_unit=500.0, tax_ids=[], partner_id=self.partner_a.id,
-            invoice_date=today, invoice_payment_term_id=False, post=True,
-        )
-        invoice_b = self._create_invoice_one_line(
-            price_unit=300.0, tax_ids=[], partner_id=self.partner_b.id,
-            invoice_date=today, invoice_payment_term_id=False, post=True,
+        self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today + timedelta(days=5),
+            invoice_payment_term_id=False, post=True,
         )
 
-        result = self.dashboard.get_customers_with_debt()
+        result = self.dashboard.get_overdue_debt()
 
-        self.assertEqual(result["count"], 2)
-        drilldown_move_ids = result["drilldown"]["domain"][0][2]
-        self.assertEqual(set(drilldown_move_ids), {invoice_a1.id, invoice_a2.id, invoice_b.id})
+        self.assertAlmostEqual(result["amount"], 500.0)
+        self.assertEqual(result["drilldown"]["domain"][0][2], [overdue_invoice.id])
         self.assertEqual(
             result["drilldown"]["views"][0][0],
             self.dashboard._invoice_list_view_id(),
         )
+
+    def test_total_receivable_equals_undue_plus_overdue_debt(self):
+        """"Total receivable" is the whole open balance; "Not yet due" and
+        "Overdue debt" partition it exhaustively by due date, so the two
+        must always add back up to the total.
+        """
+        today = fields.Date.today()
+        self._create_invoice_one_line(
+            price_unit=500.0, tax_ids=[], invoice_date=today - timedelta(days=40),
+            invoice_date_due=today - timedelta(days=10),
+            invoice_payment_term_id=False, post=True,
+        )
+        self._create_invoice_one_line(
+            price_unit=1000.0, tax_ids=[], invoice_date=today,
+            invoice_date_due=today + timedelta(days=5),
+            invoice_payment_term_id=False, post=True,
+        )
+
+        total = self.dashboard.get_total_receivable()["amount"]
+        undue = self.dashboard.get_undue_debt()["amount"]
+        overdue = self.dashboard.get_overdue_debt()["amount"]
+
+        self.assertAlmostEqual(total, undue + overdue)
+        self.assertAlmostEqual(total, 1500.0)
 
     def test_undue_debt_includes_lines_without_followup_level(self):
         """Unlike "Due soon, by Follow-up level", this indicator sums every

@@ -26,10 +26,10 @@ Invoicing and collection
 - **Due soon, by Follow-up level**: not-yet-due receivables, grouped by
   the real Follow-up level (``account_followup.followup.line``) already
   assigned to them (only lines with a level assigned show up here).
-- **Customers with debt**: count of distinct customers with at least one
-  open receivable invoice (a customer with several outstanding invoices
-  counts once). Drill-down opens the list of those open invoices (Total /
-  Amount due columns), clickable through to each invoice.
+- **Overdue debt**: total amount of receivables already past their due
+  date (date_maturity < today). Together with "Not yet due" it always
+  adds up to "Total receivable". Drill-down opens the same invoice list
+  view as "Not yet due" (Total / Amount due columns).
 - **Not yet due**: total amount of receivables not yet due, regardless of
   whether a Follow-up level has been assigned to them — a broader total
   than "Due soon, by Follow-up level" above, which only covers lines that
@@ -40,8 +40,8 @@ Invoicing and collection
   today included (so it overlaps with "Due today" by design). Drill-down
   opens the matching sales invoices.
 
-"Total receivable", "Rejected checks", "Due soon", "Customers with
-debt", "Not yet due", "Due today" and "Due in 7 days" can be split by
+"Total receivable", "Rejected checks", "Due soon", "Overdue debt",
+"Not yet due", "Due today" and "Due in 7 days" can be split by
 currency using the selector at the top of the dashboard, built from
 every currency active on this database — not hardcoded to any specific
 pair.

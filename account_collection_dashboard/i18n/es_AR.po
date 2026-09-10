@@ -147,8 +147,8 @@ msgstr "Sin asignar"
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Customers with Debt"
-msgstr "Clientes con deudas"
+msgid "Overdue Debt"
+msgstr "Deuda vencida"
 
 #. module: account_collection_dashboard
 #. odoo-python
@@ -201,8 +201,8 @@ msgstr "Ratio cobro/pago"
 #. module: account_collection_dashboard
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Customers with debt"
-msgstr "Clientes con deudas"
+msgid "Overdue debt"
+msgstr "Deuda vencida"
 
 #. module: account_collection_dashboard
 #. odoo-javascript
