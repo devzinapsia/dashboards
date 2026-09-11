@@ -140,12 +140,6 @@ msgstr ""
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Unassigned"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-python
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Overdue Debt"
 msgstr ""
 
@@ -165,12 +159,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Due in Next 7 Days"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "By salesperson"
 msgstr ""
 
 #. module: account_collection_dashboard
@@ -249,12 +237,6 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Balance"
-msgstr ""
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Due soon, by Follow-up level"
 msgstr ""
 
 #. module: account_collection_dashboard

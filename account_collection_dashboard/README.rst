@@ -27,41 +27,26 @@ Invoicing and collection
   balance at the start and at the end of that period, averaged.
 - **Collection/Payment ratio**: amount collected from customers ÷ amount
   paid to suppliers, over the dashboard's selected date range.
-- **Due soon, by Follow-up level**: not-yet-due receivables, grouped by
-  the real Follow-up level (``account_followup.followup.line``) already
-  assigned to them (only lines with a level assigned show up here).
 - **Overdue debt**: total amount of receivables already past their due
   date (date_maturity < today). Together with "Not yet due" it always
   adds up to "Total receivable". Drill-down opens the same invoice list
   view as "Not yet due" (Total / Amount due columns).
 - **Not yet due**: total amount of receivables not yet due, regardless of
-  whether a Follow-up level has been assigned to them — a broader total
-  than "Due soon, by Follow-up level" above, which only covers lines that
-  already have one. Drill-down opens the matching sales invoices.
+  whether a Follow-up level has been assigned to them. Drill-down opens
+  the matching sales invoices.
 - **Due today**: amount of receivables due exactly today. Drill-down
   opens the matching sales invoices.
 - **Due in 7 days**: amount of receivables due within the next 7 days,
   today included (so it overlaps with "Due today" by design). Drill-down
   opens the matching sales invoices.
 
-"Total receivable", "Rejected checks", "Due soon", "Overdue debt",
-"Not yet due", "Due today" and "Due in 7 days" can be split by
-currency using the selector at the top of the dashboard, built from
-every currency active on this database — not hardcoded to any specific
-pair.
+"Total receivable", "Rejected checks", "Overdue debt", "Not yet due",
+"Due today" and "Due in 7 days" can be split by currency using the
+selector at the top of the dashboard, built from every currency active
+on this database — not hardcoded to any specific pair.
 
 Every invoicing/collection indicator above is restricted to the journals
 selected as "Sales voucher journals" in *Configuration* (see below).
-
-By salesperson
-===============
-
-- **Collection by salesperson**: customer payments of the period,
-  attributed to the salesperson (``invoice_user_id``) of the first
-  invoice each payment reconciles. When a single payment settles
-  invoices from more than one salesperson, the whole payment is
-  attributed to the first one — this is a known simplification, not a
-  proportional split.
 
 Charts
 ======
@@ -120,9 +105,9 @@ Two selectors at the top of the dashboard:
   12 months): affects the "Collection turnover" KPI and the "Top 10 -
   Slowest paying customers" chart.
 - **Currency selector**: splits "Total receivable", "Rejected checks",
-  "Due soon", "Overdue debt", "Not yet due", "Due today", "Due in 7
-  days" and the "Collection projection" chart by currency,
-  re-expressing every amount in the selected currency at today's rate.
+  "Overdue debt", "Not yet due", "Due today", "Due in 7 days" and the
+  "Collection projection" chart by currency, re-expressing every amount
+  in the selected currency at today's rate.
 
 Bug Tracker
 ===========

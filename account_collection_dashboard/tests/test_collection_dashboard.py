@@ -297,29 +297,6 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         total_percentage = sum(bucket["percentage"] for bucket in buckets.values())
         self.assertAlmostEqual(total_percentage, 100.0)
 
-    def test_due_soon_by_followup_level(self):
-        today = fields.Date.today()
-        invoice = self._create_invoice_one_line(
-            price_unit=1000.0,
-            tax_ids=[],
-            invoice_date=today,
-            invoice_date_due=today + timedelta(days=5),
-            invoice_payment_term_id=False,
-            post=True,
-        )
-        followup_level = self.env["account_followup.followup.line"].create({
-            "name": "Test pre-due reminder",
-            "delay": -3,
-            "company_id": self.env.company.id,
-        })
-        invoice.line_ids.filtered(lambda l: l.account_id.account_type == "asset_receivable").followup_line_id = followup_level
-
-        results = self.dashboard.get_due_soon_by_followup_level()
-
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["level_id"], followup_level.id)
-        self.assertAlmostEqual(results[0]["amount"], 1000.0)
-
     def test_overdue_debt_excludes_not_yet_due_lines(self):
         """The mirror image of "Not yet due": only date_maturity < today
         counts here, using the same invoice list view for the drill-down.
@@ -370,8 +347,8 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
         self.assertAlmostEqual(total, 1500.0)
 
     def test_undue_debt_includes_lines_without_followup_level(self):
-        """Unlike "Due soon, by Follow-up level", this indicator sums every
-        not-yet-due receivable, whether or not a level has been assigned.
+        """Sums every not-yet-due receivable, whether or not a Follow-up
+        level has been assigned to it - the domain doesn't filter on it.
         """
         today = fields.Date.today()
         not_due_invoice = self._create_invoice_one_line(
@@ -389,8 +366,6 @@ class TestCollectionDashboard(AccountTestInvoicingCommon):
 
         self.assertAlmostEqual(result["amount"], 1000.0)
         self.assertEqual(result["drilldown"]["domain"][0][2], [not_due_invoice.id])
-        # confirms the line has no Follow-up level and is still counted here
-        self.assertEqual(self.dashboard.get_due_soon_by_followup_level(), [])
 
     def test_due_today(self):
         today = fields.Date.today()

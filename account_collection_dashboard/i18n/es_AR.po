@@ -141,12 +141,6 @@ msgstr "+90 días"
 #. module: account_collection_dashboard
 #. odoo-python
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
-msgid "Unassigned"
-msgstr "Sin asignar"
-
-#. module: account_collection_dashboard
-#. odoo-python
-#: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Overdue Debt"
 msgstr "Deuda vencida"
 
@@ -167,12 +161,6 @@ msgstr "A cobrar hoy"
 #: code:addons/account_collection_dashboard/models/account_collection_dashboard.py:0
 msgid "Due in Next 7 Days"
 msgstr "A cobrar en próximos 7 días"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "By salesperson"
-msgstr "Por vendedor"
 
 #. module: account_collection_dashboard
 #. odoo-javascript
@@ -251,12 +239,6 @@ msgstr "Cliente"
 #: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
 msgid "Balance"
 msgstr "Saldo"
-
-#. module: account_collection_dashboard
-#. odoo-javascript
-#: code:addons/account_collection_dashboard/static/src/collection_dashboard.js:0
-msgid "Due soon, by Follow-up level"
-msgstr "Por vencer, por nivel de seguimiento"
 
 #. module: account_collection_dashboard
 #. odoo-javascript

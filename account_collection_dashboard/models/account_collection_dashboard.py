@@ -250,37 +250,6 @@ class AccountCollectionDashboard(models.AbstractModel):
         return "amount_residual_currency" if currency_id else "amount_residual"
 
     @api.model
-    def get_due_soon_by_followup_level(self, currency_id=None):
-        """Indicator 2: not-yet-due receivables, grouped by the Follow-up
-        level already assigned to them. Only lines with a (possibly
-        pre-due) Follow-up level assigned show up here; lines with no
-        level assigned yet are not part of this breakdown.
-        """
-        today = fields.Date.context_today(self)
-        domain = self._get_open_receivable_domain(currency_id, [
-            ("date_maturity", ">=", today),
-            ("followup_line_id", "!=", False),
-        ])
-        residual_field = self._residual_field(currency_id)
-        rows = self.env["account.move.line"]._read_group(
-            domain, groupby=["followup_line_id"], aggregates=[f"{residual_field}:sum"]
-        )
-        return [
-            {
-                "level_id": level.id,
-                "level_name": level.name,
-                "amount": amount or 0.0,
-                "currency_id": currency_id or self.env.company.currency_id.id,
-                "drilldown": self._get_drilldown_action(
-                    "account.move.line",
-                    domain=domain + [("followup_line_id", "=", level.id)],
-                    name=level.name,
-                ),
-            }
-            for level, amount in rows
-        ]
-
-    @api.model
     def get_top_slow_paying_customers(self, period="current_fiscal_year", limit=10):
         """Bottom chart 1: the customers who took the longest, on average,
         to fully settle an invoice (settlement date - invoice date),
@@ -454,43 +423,3 @@ class AccountCollectionDashboard(models.AbstractModel):
             ),
         }
 
-    @api.model
-    def get_collection_by_user(self, date_from, date_to):
-        """Indicator 11: collected amount for the period, grouped by the
-        salesperson (invoice_user_id) of the invoice(s) each payment
-        reconciles.
-
-        Simplification: when a single payment reconciles invoices from more
-        than one salesperson, the whole payment amount is attributed to the
-        salesperson of the first reconciled invoice, rather than being
-        split proportionally. This is documented as a known limitation.
-        """
-        payments = self.env["account.payment"].search([
-            ("payment_type", "=", "inbound"),
-            ("partner_type", "=", "customer"),
-            ("state", "in", ("in_process", "paid")),
-            ("date", ">=", date_from),
-            ("date", "<=", date_to),
-            ("company_id", "=", self.env.company.id),
-        ])
-        buckets = {}
-        for payment in payments:
-            invoice = payment.reconciled_invoice_ids[:1]
-            user = invoice.invoice_user_id if invoice else self.env["res.users"]
-            key = user.id or False
-            bucket = buckets.setdefault(
-                key, {"user_id": key, "user_name": user.name or self.env._("Unassigned"), "amount": 0.0, "payment_ids": []}
-            )
-            bucket["amount"] += payment.amount
-            bucket["payment_ids"].append(payment.id)
-
-        results = []
-        for bucket in sorted(buckets.values(), key=lambda r: r["amount"], reverse=True):
-            payment_ids = bucket.pop("payment_ids")
-            bucket["drilldown"] = self._get_drilldown_action(
-                "account.payment",
-                domain=[("id", "in", payment_ids)],
-                name=bucket["user_name"],
-            )
-            results.append(bucket)
-        return results

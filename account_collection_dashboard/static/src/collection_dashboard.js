@@ -23,7 +23,6 @@ export class CollectionDashboard extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.labels = {
-            bySalespersonSection: _t("By salesperson"),
             totalReceivable: _t("Total receivable"),
             rejectedChecks: _t("Rejected checks"),
             collectionTurnover: _t("Collection turnover"),
@@ -32,7 +31,6 @@ export class CollectionDashboard extends Component {
             undueDebt: _t("Not yet due"),
             dueToday: _t("Due today"),
             dueNext7Days: _t("Due in 7 days"),
-            dueSoonByLevel: _t("Due soon, by Follow-up level"),
             topSlowPayingCustomers: _t("Top 10 - Slowest paying customers (average days)"),
             collectionProjection: _t("Collection projection"),
             allCurrencies: _t("All currencies"),
@@ -54,10 +52,8 @@ export class CollectionDashboard extends Component {
             undueDebt: null,
             dueToday: null,
             dueNext7Days: null,
-            dueSoonByLevel: [],
             topSlowPayingCustomers: [],
             collectionProjection: [],
-            collectionByUser: [],
         });
 
         onWillStart(async () => {
@@ -187,10 +183,8 @@ export class CollectionDashboard extends Component {
             undueDebt,
             dueToday,
             dueNext7Days,
-            dueSoonByLevel,
             topSlowPayingCustomers,
             collectionProjection,
-            collectionByUser,
         ] = await Promise.all([
             this.orm.call("account.collection.dashboard", "get_active_currencies", []),
             this.orm.call("account.collection.dashboard", "get_total_receivable", [currencyId]),
@@ -201,10 +195,8 @@ export class CollectionDashboard extends Component {
             this.orm.call("account.collection.dashboard", "get_undue_debt", [currencyId]),
             this.orm.call("account.collection.dashboard", "get_due_today", [currencyId]),
             this.orm.call("account.collection.dashboard", "get_due_next_7_days", [currencyId]),
-            this.orm.call("account.collection.dashboard", "get_due_soon_by_followup_level", [currencyId]),
             this.orm.call("account.collection.dashboard", "get_top_slow_paying_customers", [this.state.turnoverPeriod]),
             this.orm.call("account.collection.dashboard", "get_collection_projection", [currencyId]),
-            this.orm.call("account.collection.dashboard", "get_collection_by_user", [dateFrom, dateTo]),
         ]);
         Object.assign(this.state, {
             currencies,
@@ -216,10 +208,8 @@ export class CollectionDashboard extends Component {
             undueDebt,
             dueToday,
             dueNext7Days,
-            dueSoonByLevel,
             topSlowPayingCustomers,
             collectionProjection,
-            collectionByUser,
         });
     }
 

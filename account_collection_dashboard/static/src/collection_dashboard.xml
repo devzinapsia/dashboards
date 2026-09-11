@@ -84,32 +84,6 @@
                     </div>
                 </div>
 
-                <div class="mb-1 text-muted small" t-if="state.dueSoonByLevel.length" t-esc="labels.dueSoonByLevel"/>
-                <div class="row g-3 mb-3">
-                    <t t-foreach="state.dueSoonByLevel" t-as="level" t-key="level.level_id">
-                        <div class="col-12 col-md-4">
-                            <DashboardsKpiCard
-                                title="level.level_name"
-                                value="formatMonetary(level.amount, level.currency_id)"
-                                onClick="() => this.onDrilldownClick(level.drilldown)"
-                            />
-                        </div>
-                    </t>
-                </div>
-
-                <h5 class="mb-3" t-if="state.collectionByUser.length" t-esc="labels.bySalespersonSection"/>
-                <div class="row g-3 mb-4">
-                    <t t-foreach="state.collectionByUser" t-as="userRow" t-key="userRow.user_id">
-                        <div class="col-12 col-md-4">
-                            <DashboardsKpiCard
-                                title="userRow.user_name"
-                                value="formatMonetary(userRow.amount, state.totalReceivable and state.totalReceivable.currency_id)"
-                                onClick="() => this.onDrilldownClick(userRow.drilldown)"
-                            />
-                        </div>
-                    </t>
-                </div>
-
                 <div class="row g-3 mb-4">
                     <div t-if="state.topSlowPayingCustomers.length" class="col-12 col-md-3">
                         <div class="card p-2 o_account_collection_dashboard_chart_card" t-att-class="{ 'o_account_collection_dashboard_chart_card_dark': isDarkMode }">

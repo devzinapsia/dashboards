@@ -1,7 +1,7 @@
 {
     "name": "Tablero de cobranzas",
     "summary": "Executive dashboard for accounts receivable indicators",
-    "version": "19.0.1.0.10",
+    "version": "19.0.1.0.11",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",
@@ -9,10 +9,7 @@
     "depends": [
         "dashboards_base",
         "account",
-        "account_followup",
         "l10n_latam_check",
-        "account_reports",
-        "account_accountant",
     ],
     "data": [
         "security/account_collection_dashboard_security.xml",
