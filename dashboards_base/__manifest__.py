@@ -1,7 +1,7 @@
 {
     "name": "Dashboards",
     "summary": "Base app and shared infrastructure for executive dashboards",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Productivity",
     "license": "AGPL-3",
     "author": "Zinapsia",
