@@ -221,6 +221,69 @@ repo you're in before doing anything:
   only reliable way to reproduce a client-specific bug — the "never touch
   `ingadhoc/*`/`OCA/*`" rule (Section B) is about not *modifying* them, not
   about being unable to read/install them locally for diagnosis.
+- Odoo 19's translation import (`TranslationImporter._load()`) treats
+  `.po` location-type comments differently depending on the field: for a
+  plain `translate=True` field (like most `ir.model.fields` labels/help
+  text), the location must read `model:<model>,<field>:...`, but for a
+  field that stores translated *view arch content* term-by-term
+  (`ir.ui.view.arch_db`), it must read `model_terms:ir.ui.view,arch_db:...`
+  — a `model:` location for `arch_db` is silently ignored, so any
+  translatable string inside a view's arch (group headers, `<field
+  string="...">` overrides) never gets its Spanish value even though
+  the `.po` entry parses fine and looks identical in shape to a working
+  one. If field labels translate but group/section headers inside the
+  same view don't, check the location-type prefix first. (Separately,
+  `code:`-type entries — `_t()`/`self.env._()` calls in
+  JS/Python — need an `#. odoo-python` or `#. odoo-javascript` comment
+  marker line to be picked up by Odoo's `CodeTranslations` runtime
+  reader; `TranslationImporter._load()` skips all `code:` entries
+  entirely, by design, so those two mechanisms need to be right
+  independently of each other.)
+- Setting `create`/`delete`/`edit` as top-level fields on an
+  `ir.actions.act_window` dict (or on the `ir.actions.act_window`
+  record's own boolean fields) does **not** suppress those buttons in
+  the Odoo 19 web client — verified by grepping `View.js`, which reads
+  `create`/`delete`/`edit` only from the action's own **context**
+  (`context: {create: False, delete: False}`), not from the action
+  dict's top-level keys. A "New"/"Delete" button that stubbornly stays
+  visible after setting `create=False` on the action is this, not a
+  caching issue.
+- Odoo 19's dark theme is not exposed as live CSS custom properties on
+  `:root` — it's an entirely separate compiled CSS bundle
+  (`web.assets_backend_lazy_dark` / `.dark.scss` files bundled into
+  `web.assets_web_dark`), swapped in based on the `color_scheme` cookie.
+  A `var(--some-bootstrap-token, #fallback)` with an undefined
+  `--some-bootstrap-token` silently always resolves to the fallback in
+  *both* themes — verified live via
+  `getComputedStyle(document.documentElement)` in the browser, which
+  returned an empty string for `--bs-tertiary-bg`, `--bs-body-bg`,
+  `--bs-secondary-bg`, etc. For anything that needs to look right in
+  both themes (custom component backgrounds, Chart.js canvas colors),
+  detect the theme once in JS from the same cookie Odoo's own native
+  charts use (`cookie.get("color_scheme") === "dark"`, from
+  `@web/core/browser/cookie` — confirmed by grepping
+  `graph_renderer.js`, `journal_dashboard_graph_field.js`,
+  `ace_field.js`), then drive a CSS class or a literal color value from
+  that — don't rely on the `.dark.scss` bundle-splitting convention for
+  a plain `ir.actions.client` component either, since `View.js` (not a
+  raw OWL client action) is what triggers that bundle's lazy load.
+- A `<menuitem web_icon="module,path/to/icon.png">` does **not** serve
+  that file live. Odoo converts it once, at record write time, into a
+  stored `ir.ui.menu.web_icon_data` binary attachment
+  (`_compute_web_icon_data` in `ir_ui_menu.py`) — confirmed by grepping
+  the source and by a real local install/update cycle (installed with
+  icon A, swapped the file for icon B on disk, `-u <module>`, checked
+  `web_icon_data`'s bytes matched B exactly). Replacing the icon file and
+  pushing/rebuilding does nothing on its own: the record only gets
+  rewritten, and the attachment recomputed, when the module is actually
+  **updated** (`-u`), because the `<menuitem>` XML tag is reprocessed on
+  every module update regardless of whether the `web_icon` attribute
+  string itself changed. Separately, odoo.sh's own auto-update-on-push
+  only runs `-u` for a module when it detects the manifest `version`
+  string changed — so a static-asset-only change like this needs an
+  explicit version bump to actually reach any environment automatically;
+  without it, every deployment keeps the old icon until someone manually
+  clicks Update in Apps.
 
 ---
 
