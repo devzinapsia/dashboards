@@ -69,15 +69,16 @@ class TestPlBudget(BudgetMixin, PlDashboardAnalyticMixin, PlDashboardCommon):
         self.assertEqual(direct["budget"]["2026-02"], 290.0)
         self.assertAlmostEqual(direct["deviation"]["2026-02"], (250.0 - 290.0) / 290.0 * 100.0)
 
-    def test_sales_budget_only_at_section_level(self):
+    def test_sales_budget(self):
+        # Income budgets are stored negative, like their balance.
         data = self._data()
+        leaf = self._line_row(data, self.leaf_sales)
+        self.assertEqual(leaf["budget"]["2026-02"], 800.0)
+        self.assertAlmostEqual(leaf["deviation"]["2026-02"], 25.0)
+        self.assertEqual(leaf["budget"]["total"], 800.0)
         sales = self._line_row(data, self.root_income)
         self.assertEqual(sales["budget"]["2026-02"], 800.0)
         self.assertAlmostEqual(sales["deviation"]["2026-02"], 25.0)
-        customers = self._line_row(data, self.leaf_customers)
-        self.assertIsNone(customers["budget"]["2026-02"])
-        self.assertIsNone(customers["budget"]["total"])
-        self.assertIsNone(customers["deviation"]["2026-02"])
 
     def test_month_period(self):
         with freeze_time("2026-02-20"):
@@ -115,12 +116,15 @@ class TestPlBudget(BudgetMixin, PlDashboardAnalyticMixin, PlDashboardCommon):
         self.assertEqual(detail["total_budget"], 105.0)
         self.assertAlmostEqual(sum(entry["budget"] for entry in detail["entries"]), 105.0)
 
-    def test_detail_sales_leaf_has_no_budget(self):
-        detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_customers.id, "2026-02")
-        self.assertIsNone(detail["total_budget"])
+    def test_detail_sales_line_budget(self):
+        # The line has a budget, its customers don't (budgets are by account).
+        detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "2026-02")
+        self.assertEqual(detail["total_budget"], 800.0)
+        self.assertAlmostEqual(detail["total_deviation"], 25.0)
         self.assertTrue(all(entry["budget"] is None for entry in detail["entries"]))
         detail = self.Dashboard.get_cell_detail("line-%d" % self.root_income.id, "2026-02")
         self.assertEqual(detail["total_budget"], 800.0)
+        self.assertEqual([entry["budget"] for entry in detail["entries"]], [800.0])
 
 
 @tagged("post_install", "-at_install")

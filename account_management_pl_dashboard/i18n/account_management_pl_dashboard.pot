@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 01:19+0000\n"
-"PO-Revision-Date: 2026-10-07 01:19+0000\n"
+"POT-Creation-Date: 2026-10-07 17:17+0000\n"
+"PO-Revision-Date: 2026-10-07 17:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -28,14 +28,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/pl_currency_converter.py:0
 msgid "%(dates)s and %(count)s more"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"%(partner)s (line %(line)s) is a contact of %(company)s: assign the company "
-"instead, its contacts are added up automatically."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -67,14 +59,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid ""
-"Account %(account)s is a Sales account of the structure; it can't also be in"
-" line %(line)s (it would be counted twice)."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
 "Account %(account)s is already used in line %(other)s; it can't also be in "
 "line %(line)s (it would be counted twice)."
 msgstr ""
@@ -94,6 +78,7 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__account_ids
+#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
 msgid "Accounts"
 msgstr ""
 
@@ -145,42 +130,12 @@ msgid ""
 msgstr ""
 
 #. module: account_management_pl_dashboard
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__sales_dimension__analytic
-msgid "Analytic"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"Analytic account %(analytic)s (line %(line)s) belongs to another company."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"Analytic account %(analytic)s (line %(line)s) doesn't belong to the analytic"
-" plan %(plan)s used by the structure."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"Analytic account %(analytic)s is already used in line %(other)s; it can't "
-"also be in line %(line)s."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__analytic_account_ids
 #: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__analytic_mode__analytic
 msgid "Analytic accounts"
 msgstr ""
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__analytic_plan_id
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__analytic_plan_id
 msgid "Analytic plan"
 msgstr ""
 
@@ -192,12 +147,6 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
 msgid "Analytics"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_search
-msgid "Archived"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -250,7 +199,6 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__company_id
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__company_id
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_search
 msgid "Company"
 msgstr ""
 
@@ -274,6 +222,13 @@ msgid "Compare with budget"
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
+#: model:ir.actions.server,name:account_management_pl_dashboard.action_account_pl_structure_config
+msgid "Configure management P&L structure"
+msgstr ""
+
+#. module: account_management_pl_dashboard
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid "Configure the structure"
@@ -286,11 +241,6 @@ msgid ""
 "Control row: movements of P&L accounts, customers or analytic accounts not "
 "included in any line. Not included in the totals. Net profit + Unassigned = "
 "accounting result of the period."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model_terms:ir.actions.act_window,help:account_management_pl_dashboard.action_account_pl_structure
-msgid "Create the management P&amp;L structure of the company"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -320,30 +270,6 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid "Current month"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__sales_dimension__partner
-msgid "Customer"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid "Customer %(partner)s (line %(line)s) belongs to another company."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"Customer %(partner)s is already used in line %(other)s; it can't also be in "
-"line %(line)s."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__partner_ids
-msgid "Customers"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -379,11 +305,6 @@ msgid "Display currency"
 msgstr ""
 
 #. module: account_management_pl_dashboard
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
-msgid "Every account of type Income"
-msgstr ""
-
-#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__excluded_journal_ids
 msgid "Excluded journals"
 msgstr ""
@@ -400,6 +321,11 @@ msgid "Full name"
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
+msgid "General"
+msgstr ""
+
+#. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid "Gross profit"
@@ -409,13 +335,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid "Gross profit %"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model_terms:ir.actions.act_window,help:account_management_pl_dashboard.action_account_pl_structure
-msgid ""
-"Group income and expense accounts, customers or analytic accounts in your "
-"own rows."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -431,13 +350,6 @@ msgid ""
 "In the secondary currency view, a day whose most recent exchange rate is "
 "older than this many days is reported as missing a rate (covers weekends and"
 " bank holidays)."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__sales_account_ids
-msgid ""
-"Income accounts considered as Sales. Leave empty to use every account of "
-"type Income."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -496,9 +408,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid ""
-"Line %(parent)s has accounts, customers or analytic accounts assigned, so it"
-" can't have sub-lines. Remove its assignments first, or add %(line)s "
-"somewhere else."
+"Line %(parent)s has accounts assigned, so it can't have sub-lines. Remove "
+"its accounts first, or add %(line)s somewhere else."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -511,32 +422,16 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid ""
-"Line %s belongs to Sales: assign customers or analytic accounts to it, not "
-"accounts. Sales accounts are set on the structure."
+"Line %s has accounts assigned, so it can't have sub-lines. Remove its "
+"accounts first."
 msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid ""
-"Line %s has accounts, customers or analytic accounts assigned, so it can't "
-"have sub-lines. Remove its assignments first."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"Line %s is a cost line: assign accounts to it, not customers or analytic "
-"accounts."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid ""
-"Line %s is a group (it has sub-lines), so it can't have accounts, customers "
-"or analytic accounts assigned. Assign them to its sub-lines instead."
+"Line %s is a group (it has sub-lines), so it can't have accounts assigned. "
+"Assign them to its sub-lines instead."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -552,6 +447,8 @@ msgid "Lines"
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
 #: model:ir.actions.client,name:account_management_pl_dashboard.action_account_pl_dashboard
 #: model:ir.ui.menu,name:account_management_pl_dashboard.menu_account_pl_dashboard
 #: model:ir.ui.menu,name:account_management_pl_dashboard.menu_account_pl_structure
@@ -572,14 +469,8 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #: model:ir.model,name:account_management_pl_dashboard.model_account_pl_structure_line
+#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
 msgid "Management P&L structure line"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.actions.act_window,name:account_management_pl_dashboard.action_account_pl_structure
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_list
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_search
-msgid "Management P&L structures"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -675,39 +566,7 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__root_section__income
 #: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__section__income
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
 msgid "Sales"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__sales_account_ids
-msgid "Sales accounts"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
-msgid ""
-"Sales can only be grouped by analytic account when the analytic usage is "
-"set."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__sales_dimension
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__sales_dimension
-msgid "Sales dimension"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
-msgid "Sales not distributed on the analytic plan"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
-msgid "Sales: %s"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -737,7 +596,7 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid "Section %s can't have assignments of its own: add a line below it."
+msgid "Section %s can't have accounts of its own: add a line below it."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -854,9 +713,10 @@ msgid "There is no active management P&L structure."
 msgstr ""
 
 #. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
-msgid "There is no list of journal items for this entry."
+#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
+msgid ""
+"This line is a section or group: its amount is the sum of its sub-lines, so "
+"it has no accounts of its own."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -897,16 +757,14 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
-msgid "View in company currency"
+#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
+msgid "View all journal items"
 msgstr ""
 
 #. module: account_management_pl_dashboard
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__sales_dimension
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure_line__sales_dimension
-msgid ""
-"What the Sales leaves group by: commercial customers, or analytic accounts "
-"of the analytic plan selected below."
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "View in company currency"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -914,7 +772,7 @@ msgstr ""
 msgid ""
 "Whether the dashboard works with analytic accounts (of a given plan) or with"
 " projects. When used, the dashboard toolbar offers a filter by those "
-"analytic accounts or projects, and Sales leaves can be grouped by them."
+"analytic accounts or projects."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -926,25 +784,7 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
-msgid "Without analytic account"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid "Without analytic accounts"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid "Without customer"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
-msgid "Without customers"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -957,11 +797,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid "You are not allowed to see the management P&L dashboard."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
-msgid "e.g. Management P&L"
 msgstr ""
 
 #. module: account_management_pl_dashboard

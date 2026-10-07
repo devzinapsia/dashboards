@@ -61,11 +61,11 @@ class PlDashboardCommon(AccountTestInvoicingCommon):
             cls.structure.line_ids.filtered(lambda line, section=section: line.section == section)
             for section in ("income", "direct_cost", "indirect_cost")
         )
-        cls.leaf_customers = cls.Line.create({
+        cls.leaf_sales = cls.Line.create({
             "structure_id": cls.structure.id,
             "parent_id": cls.root_income.id,
-            "name": "Main customers",
-            "partner_ids": [Command.set(cls.customer_a.ids)],
+            "name": "Services sales",
+            "account_ids": [Command.set(cls.account_sales.ids)],
         })
         cls.group_staff = cls.Line.create({
             "structure_id": cls.structure.id,
@@ -148,9 +148,8 @@ class PlDashboardCommon(AccountTestInvoicingCommon):
 
 
 class PlDashboardAnalyticMixin:
-    """Analytic fixtures: a plan with two business units, Sales grouped by
-    analytic account with unit 1 assigned to the "Main customers" leaf
-    (which keeps its customer assignment)."""
+    """Analytic fixtures: a plan with two business units, used by the
+    structure's analytic usage (toolbar filter)."""
 
     @classmethod
     def _setup_analytics(cls):
@@ -160,7 +159,6 @@ class PlDashboardAnalyticMixin:
             {"name": "Unit 2", "plan_id": cls.plan.id, "company_id": cls.company.id},
         ])
         cls.structure.write({"analytic_mode": "analytic", "analytic_plan_id": cls.plan.id})
-        cls.leaf_customers.analytic_account_ids = [Command.set(cls.unit_1.ids)]
 
 
 class PlDashboardArsCommon(PlDashboardCommon):

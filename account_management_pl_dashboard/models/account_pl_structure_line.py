@@ -4,7 +4,6 @@ from odoo.exceptions import UserError, ValidationError
 from .account_pl_structure import PL_ACCOUNT_TYPES, SECTIONS
 
 SECTION_ORDER = {section: index for index, (section, _label) in enumerate(SECTIONS, start=1)}
-COST_SECTIONS = ("direct_cost", "indirect_cost")
 
 
 class AccountPlStructureLine(models.Model):
@@ -13,8 +12,8 @@ class AccountPlStructureLine(models.Model):
     The three root lines (one per section) are created with the structure and
     can't be removed or retyped. Below them, a line with sub-lines is a
     *group* (its amount is the sum of its sub-lines) and a line without
-    sub-lines is a *leaf*, the only kind of line that gets accounts (cost
-    sections) or customers / analytic accounts (Sales) assigned.
+    sub-lines is a *leaf*, the only kind of line that gets accounts assigned
+    (income accounts for Sales, expense accounts for costs).
     """
 
     _name = "account.pl.structure.line"
@@ -45,10 +44,6 @@ class AccountPlStructureLine(models.Model):
     sort_key = fields.Char(string="Sort key", compute="_compute_hierarchy", store=True, recursive=True)
     complete_name = fields.Char(string="Full name", compute="_compute_complete_name", recursive=True)
     is_group = fields.Boolean(string="Is a group", compute="_compute_is_group")
-    sales_dimension = fields.Selection(related="structure_id.sales_dimension", string="Sales dimension")
-    analytic_plan_id = fields.Many2one(
-        "account.analytic.plan", string="Analytic plan", compute="_compute_analytic_plan_id",
-    )
 
     account_ids = fields.Many2many(
         "account.account",
@@ -57,22 +52,6 @@ class AccountPlStructureLine(models.Model):
         "account_id",
         string="Accounts",
         domain="[('account_type', 'in', %s), ('company_ids', 'parent_of', company_id)]" % (PL_ACCOUNT_TYPES,),
-    )
-    partner_ids = fields.Many2many(
-        "res.partner",
-        "account_pl_structure_line_partner_rel",
-        "line_id",
-        "partner_id",
-        string="Customers",
-        domain="[('parent_id', '=', False)]",
-    )
-    analytic_account_ids = fields.Many2many(
-        "account.analytic.account",
-        "account_pl_structure_line_analytic_rel",
-        "line_id",
-        "analytic_account_id",
-        string="Analytic accounts",
-        domain="[('root_plan_id', '=', analytic_plan_id)]",
     )
     assignment_status = fields.Char(string="Assignment status", compute="_compute_assignment_status")
 
@@ -110,29 +89,15 @@ class AccountPlStructureLine(models.Model):
         for line in self:
             line.is_group = bool(line.child_ids)
 
-    @api.depends("structure_id.analytic_mode", "structure_id.analytic_plan_id")
-    def _compute_analytic_plan_id(self):
-        for line in self:
-            line.analytic_plan_id = line.structure_id._get_analytic_plan() if line.structure_id else False
-
-    @api.depends("is_root", "child_ids", "section", "sales_dimension",
-                 "account_ids", "partner_ids", "analytic_account_ids")
+    @api.depends("is_root", "child_ids", "account_ids")
     def _compute_assignment_status(self):
         for line in self:
-            status = False
-            if not line.is_root and not line.child_ids:
-                if line.section == "income":
-                    if line.sales_dimension == "analytic" and not line.analytic_account_ids:
-                        status = self.env._("Without analytic accounts")
-                    elif line.sales_dimension != "analytic" and not line.partner_ids:
-                        status = self.env._("Without customers")
-                elif not line.account_ids:
-                    status = self.env._("Without accounts")
-            line.assignment_status = status
+            is_empty_leaf = not line.is_root and not line.child_ids and not line.account_ids
+            line.assignment_status = self.env._("Without accounts") if is_empty_leaf else False
 
     def _has_assignments(self):
         self.ensure_one()
-        return bool(self.account_ids or self.partner_ids or self.analytic_account_ids)
+        return bool(self.account_ids)
 
     # -------------------------------------------------------------------------
     # Constraints
@@ -157,36 +122,25 @@ class AccountPlStructureLine(models.Model):
                 ))
             if line.parent_id and line.parent_id._has_assignments():
                 raise ValidationError(self.env._(
-                    "Line %(parent)s has accounts, customers or analytic accounts assigned, so it can't "
-                    "have sub-lines. Remove its assignments first, or add %(line)s somewhere else.",
+                    "Line %(parent)s has accounts assigned, so it can't have sub-lines. Remove its accounts "
+                    "first, or add %(line)s somewhere else.",
                     parent=line.parent_id.complete_name,
                     line=line.name,
                 ))
 
-    @api.constrains("account_ids", "partner_ids", "analytic_account_ids", "section", "child_ids")
+    @api.constrains("account_ids", "section", "child_ids")
     def _check_assignments(self):
         for line in self:
             if not line._has_assignments():
                 continue
             if line.is_root:
                 raise ValidationError(self.env._(
-                    "Section %s can't have assignments of its own: add a line below it.", line.name
+                    "Section %s can't have accounts of its own: add a line below it.", line.name
                 ))
             if line.child_ids:
                 raise ValidationError(self.env._(
-                    "Line %s is a group (it has sub-lines), so it can't have accounts, customers or "
-                    "analytic accounts assigned. Assign them to its sub-lines instead.",
-                    line.complete_name,
-                ))
-            if line.section == "income" and line.account_ids:
-                raise ValidationError(self.env._(
-                    "Line %s belongs to Sales: assign customers or analytic accounts to it, not accounts. "
-                    "Sales accounts are set on the structure.",
-                    line.complete_name,
-                ))
-            if line.section in COST_SECTIONS and (line.partner_ids or line.analytic_account_ids):
-                raise ValidationError(self.env._(
-                    "Line %s is a cost line: assign accounts to it, not customers or analytic accounts.",
+                    "Line %s is a group (it has sub-lines), so it can't have accounts assigned. Assign them "
+                    "to its sub-lines instead.",
                     line.complete_name,
                 ))
             for account in line.account_ids:
@@ -197,59 +151,14 @@ class AccountPlStructureLine(models.Model):
                         line=line.complete_name,
                     ))
             line.structure_id._check_accounts_company(line.account_ids)
-            allowed_companies = line.company_id.parent_ids
-            for partner in line.partner_ids:
-                if partner.commercial_partner_id != partner:
-                    raise ValidationError(self.env._(
-                        "%(partner)s (line %(line)s) is a contact of %(company)s: assign the company instead, "
-                        "its contacts are added up automatically.",
-                        partner=partner.display_name,
-                        line=line.complete_name,
-                        company=partner.commercial_partner_id.display_name,
-                    ))
-                if partner.company_id and partner.company_id not in allowed_companies:
-                    raise ValidationError(self.env._(
-                        "Customer %(partner)s (line %(line)s) belongs to another company.",
-                        partner=partner.display_name,
-                        line=line.complete_name,
-                    ))
-            for analytic in line.analytic_account_ids:
-                if analytic.company_id and analytic.company_id not in allowed_companies:
-                    raise ValidationError(self.env._(
-                        "Analytic account %(analytic)s (line %(line)s) belongs to another company.",
-                        analytic=analytic.display_name,
-                        line=line.complete_name,
-                    ))
-        self._check_analytic_accounts()
         self._check_unique_assignments()
 
-    def _check_analytic_accounts(self):
-        """Analytic accounts must belong to the structure's analytic plan: with
-        several plans, the same journal item is split at 100% on each plan, so
-        mixing plans would count it more than once."""
-        for line in self.filtered("analytic_account_ids"):
-            plan = line.structure_id._get_analytic_plan()
-            if not plan:
-                # Analytic usage turned off: assignments are kept but unused.
-                continue
-            wrong = line.analytic_account_ids.filtered(lambda a: a.root_plan_id != plan)
-            if wrong:
-                raise ValidationError(self.env._(
-                    "Analytic account %(analytic)s (line %(line)s) doesn't belong to the analytic plan "
-                    "%(plan)s used by the structure.",
-                    analytic=wrong[0].display_name,
-                    line=line.complete_name,
-                    plan=plan.display_name,
-                ))
-
     def _check_unique_assignments(self):
-        """An account, customer or analytic account can only be counted once
-        per structure (both cost sections together), and a Sales account
-        can't be reused by a cost leaf."""
+        """An account can only be counted once per structure, whatever the
+        section: in two lines, its amount would be counted twice."""
         for structure in self.structure_id:
-            all_lines = structure.line_ids
-            account_owner, partner_owner, analytic_owner = {}, {}, {}
-            for line in all_lines:
+            account_owner = {}
+            for line in structure.line_ids:
                 for account in line.account_ids:
                     if account in account_owner:
                         raise ValidationError(self.env._(
@@ -260,37 +169,6 @@ class AccountPlStructureLine(models.Model):
                             line=line.complete_name,
                         ))
                     account_owner[account] = line
-                for partner in line.partner_ids:
-                    if partner in partner_owner:
-                        raise ValidationError(self.env._(
-                            "Customer %(partner)s is already used in line %(other)s; it can't also be in line "
-                            "%(line)s.",
-                            partner=partner.display_name,
-                            other=partner_owner[partner].complete_name,
-                            line=line.complete_name,
-                        ))
-                    partner_owner[partner] = line
-                for analytic in line.analytic_account_ids:
-                    if analytic in analytic_owner:
-                        raise ValidationError(self.env._(
-                            "Analytic account %(analytic)s is already used in line %(other)s; it can't also "
-                            "be in line %(line)s.",
-                            analytic=analytic.display_name,
-                            other=analytic_owner[analytic].complete_name,
-                            line=line.complete_name,
-                        ))
-                    analytic_owner[analytic] = line
-            if not account_owner:
-                continue
-            sales_accounts = structure._get_sales_accounts()
-            for account, line in account_owner.items():
-                if account in sales_accounts:
-                    raise ValidationError(self.env._(
-                        "Account %(account)s is a Sales account of the structure; it can't also be in line "
-                        "%(line)s (it would be counted twice).",
-                        account=account.display_name,
-                        line=line.complete_name,
-                    ))
 
     # -------------------------------------------------------------------------
     # CRUD
@@ -325,8 +203,7 @@ class AccountPlStructureLine(models.Model):
         self.ensure_one()
         if self._has_assignments():
             raise UserError(self.env._(
-                "Line %s has accounts, customers or analytic accounts assigned, so it can't have sub-lines. "
-                "Remove its assignments first.",
+                "Line %s has accounts assigned, so it can't have sub-lines. Remove its accounts first.",
                 self.complete_name,
             ))
         last_sequence = max(self.child_ids.mapped("sequence"), default=0)

@@ -62,10 +62,6 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
     def test_invariant_with_analytic_filter(self):
         self._assert_details_match_cells(period="fiscal_year", analytic_ids=self.unit_1.ids)
 
-    def test_invariant_sales_by_analytic(self):
-        self.structure.sales_dimension = "analytic"
-        self._assert_details_match_cells(period="fiscal_year")
-
     def test_group_detail_lists_its_leaves(self):
         detail = self.Dashboard.get_cell_detail("line-%d" % self.root_direct.id, "total")
         self.assertEqual(detail["kind"], "lines")
@@ -84,14 +80,39 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
         )
         self.assertAlmostEqual(detail["total"], 133.33)
 
+    def test_sales_detail_by_customer(self):
+        detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "total")
+        self.assertEqual(
+            {entry["label"]: entry["amount"] for entry in detail["entries"]},
+            {"Customer A": 1500.0, "Customer B": 100.0},
+        )
+        self.assertTrue(detail["can_open_all"])
+        self.assertTrue(all(entry["open"] == "items" for entry in detail["entries"]))
+
     def test_unassigned_detail(self):
         detail = self.Dashboard.get_cell_detail("unassigned", "2026-02")
         labels = {entry["label"]: entry["amount"] for entry in detail["entries"]}
         # Effect-on-result sign: income counts positive.
-        self.assertEqual(set(labels), {"Other income", "Sales: Customer B"})
-        self.assertAlmostEqual(labels["Other income"], 7.0)
-        self.assertAlmostEqual(labels["Sales: Customer B"], 100.0)
+        self.assertEqual(labels, {"Other income": 7.0})
         self.assertTrue(all(entry["open"] == "items" for entry in detail["entries"]))
+        self.assertFalse(detail["can_open_all"])
+
+    def test_rpcs_accept_the_dashboard_request_params(self):
+        """The popup sends the dashboard's whole set of request parameters
+        to every RPC."""
+        params = {"period": "fiscal_year", "display_currency": "company", "analytic_ids": [], "show_budget": True}
+        self.Dashboard.get_dashboard_data(**params)
+        self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "total", **params)
+        action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "total", "all", **params)
+        self.assertEqual(action["res_model"], "account.move.line")
+
+    def test_open_all_journal_items_of_the_line(self):
+        # Every journal item of the line's accounts, for the clicked column.
+        action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "2026-02", "all")
+        lines = self.env["account.move.line"].search(action["domain"])
+        self.assertEqual(sorted(lines.mapped("balance")), [-1000.0, -100.0])
+        action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "total", "all")
+        self.assertEqual(len(self.env["account.move.line"].search(action["domain"])), 3)
 
     def test_open_account_journal_items(self):
         action = self.Dashboard.get_detail_action(
@@ -104,7 +125,7 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
 
     def test_open_customer_includes_contacts(self):
         action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_customers.id, "total", "partner-%d" % self.customer_a.id,
+            "line-%d" % self.leaf_sales.id, "total", "partner-%d" % self.customer_a.id,
         )
         lines = self.env["account.move.line"].search(action["domain"])
         self.assertEqual(sorted(lines.mapped("balance")), [-1000.0, -500.0])
@@ -112,23 +133,16 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
 
     def test_open_with_analytic_filter_lists_analytic_lines(self):
         detail = self.Dashboard.get_cell_detail(
-            "line-%d" % self.leaf_customers.id, "total", analytic_ids=self.unit_1.ids,
+            "line-%d" % self.leaf_sales.id, "total", analytic_ids=self.unit_1.ids,
         )
         self.assertAlmostEqual(detail["total"], 200.0)
         action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_customers.id, "total", "partner-%d" % self.customer_a.id,
+            "line-%d" % self.leaf_sales.id, "total", "partner-%d" % self.customer_a.id,
             analytic_ids=self.unit_1.ids,
         )
         self.assertEqual(action["res_model"], "account.analytic.line")
         analytic_lines = self.env["account.analytic.line"].search(action["domain"])
         self.assertEqual(analytic_lines.mapped("amount"), [200.0])
-
-    def test_sales_not_distributed_has_no_list(self):
-        self.structure.sales_dimension = "analytic"
-        detail = self.Dashboard.get_cell_detail("unassigned", "2026-02")
-        entry = next(entry for entry in detail["entries"] if entry["key"] == "sales-no-analytic")
-        self.assertFalse(entry["open"])
-        self.assertAlmostEqual(entry["amount"], 1100.0)
 
     def test_detail_requires_module_group(self):
         user = self.env["res.users"].create({
@@ -171,7 +185,7 @@ class TestPlDrilldownSecondary(DrilldownAssertions, PlDashboardAnalyticMixin, Pl
         data = self._assert_details_match_cells(period="fiscal_year", display_currency="secondary")
         self.assertEqual(data["currency_id"], self.usd.id)
         detail = self.Dashboard.get_cell_detail(
-            "line-%d" % self.leaf_customers.id, "total", display_currency="secondary",
+            "line-%d" % self.leaf_sales.id, "total", display_currency="secondary",
         )
         self.assertEqual(detail["display_currency"], "secondary")
         self.assertEqual(detail["company_currency_name"], "ARS")
@@ -182,5 +196,3 @@ class TestPlDrilldownSecondary(DrilldownAssertions, PlDashboardAnalyticMixin, Pl
     def test_invariant_secondary_with_analytic(self):
         self._assert_details_match_cells(period="fiscal_year", display_currency="secondary",
                                          analytic_ids=self.unit_1.ids)
-        self.structure.sales_dimension = "analytic"
-        self._assert_details_match_cells(period="fiscal_year", display_currency="secondary")

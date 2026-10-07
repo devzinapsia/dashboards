@@ -32,7 +32,7 @@ class TestPlStructure(PlDashboardCommon):
     def test_hierarchical_order(self):
         lines = self.structure.line_ids
         self.assertEqual(lines.mapped("name"), [
-            "Sales", "Main customers",
+            "Sales", "Services sales",
             "Direct costs", "Staff", "Salaries", "Sales commissions",
             "Indirect costs", "Rent",
         ])
@@ -84,14 +84,15 @@ class TestPlStructure(PlDashboardCommon):
             "account_ids": [Command.set(self.account_commissions.ids)],
         })
 
-    def test_sales_account_cannot_be_cost(self):
-        # With no explicit sales accounts, every Income account is a sales one.
-        with self.assertRaisesRegex(ValidationError, "is a Sales account"):
+    def test_account_once_across_sections(self):
+        # A Sales account can't be counted again by a cost line.
+        with self.assertRaisesRegex(ValidationError, "already used in line Sales / Services sales"):
             self.leaf_rent.account_ids = [Command.link(self.account_sales.id)]
-        # An "Other income" account is not a sales account by default.
-        self.leaf_rent.account_ids = [Command.set((self.account_rent | self.account_other_income).ids)]
-        with self.assertRaisesRegex(ValidationError, "is a Sales account"):
-            self.structure.sales_account_ids = [Command.set(self.account_other_income.ids)]
+
+    def test_sales_line_takes_accounts(self):
+        self.leaf_sales.account_ids = [Command.link(self.account_other_income.id)]
+        self.assertEqual(self.structure._get_sales_accounts(), self.account_sales | self.account_other_income)
+        self.assertFalse(self.leaf_sales.assignment_status)
 
     def test_cost_account_must_be_pl(self):
         balance_account = self.company_data["default_account_receivable"]
@@ -111,70 +112,6 @@ class TestPlStructure(PlDashboardCommon):
                 Command.link(other_company_account.id),
             ]
 
-    def test_section_specific_assignments(self):
-        with self.assertRaisesRegex(ValidationError, "belongs to Sales"):
-            self.leaf_customers.account_ids = [Command.link(self.account_social.id)]
-        with self.assertRaisesRegex(ValidationError, "is a cost line"):
-            self.leaf_rent.partner_ids = [Command.link(self.customer_b.id)]
-
-    def test_duplicate_customer(self):
-        with self.assertRaisesRegex(ValidationError, "Customer A is already used in line Sales / Main customers"):
-            self.Line.create({
-                "structure_id": self.structure.id,
-                "parent_id": self.root_income.id,
-                "name": "Other customers",
-                "partner_ids": [Command.set(self.customer_a.ids)],
-            })
-
-    def test_customer_must_be_commercial_entity(self):
-        with self.assertRaisesRegex(ValidationError, "assign the company instead"):
-            self.leaf_customers.partner_ids = [Command.link(self.customer_a_contact.id)]
-
-    def test_duplicate_analytic_account(self):
-        plan = self.env["account.analytic.plan"].create({"name": "Business units"})
-        analytic = self.env["account.analytic.account"].create({"name": "Unit 1", "plan_id": plan.id})
-        self.structure.write({"analytic_mode": "analytic", "analytic_plan_id": plan.id})
-        leaf = self.Line.create({
-            "structure_id": self.structure.id,
-            "parent_id": self.root_income.id,
-            "name": "Unit 1 sales",
-            "analytic_account_ids": [Command.set(analytic.ids)],
-        })
-        with self.assertRaisesRegex(ValidationError, "already used in line Sales / Unit 1 sales"):
-            self.Line.create({
-                "structure_id": self.structure.id,
-                "parent_id": self.root_income.id,
-                "name": "Duplicate",
-                "analytic_account_ids": [Command.set(analytic.ids)],
-            })
-        self.assertTrue(leaf.analytic_account_ids)
-
-    def test_analytic_account_must_belong_to_plan(self):
-        plan = self.env["account.analytic.plan"].create({"name": "Business units"})
-        other_plan = self.env["account.analytic.plan"].create({"name": "Regions"})
-        region = self.env["account.analytic.account"].create({"name": "North", "plan_id": other_plan.id})
-        self.structure.write({"analytic_mode": "analytic", "analytic_plan_id": plan.id})
-        with self.assertRaisesRegex(ValidationError, "doesn't belong to the analytic plan"):
-            self.leaf_customers.write({
-                "partner_ids": [Command.clear()],
-                "analytic_account_ids": [Command.set(region.ids)],
-            })
-
-    def test_switching_sales_dimension_keeps_assignments(self):
-        plan = self.env["account.analytic.plan"].create({"name": "Business units"})
-        analytic = self.env["account.analytic.account"].create({"name": "Unit 1", "plan_id": plan.id})
-        self.structure.write({"analytic_mode": "analytic", "analytic_plan_id": plan.id})
-        self.leaf_customers.analytic_account_ids = [Command.set(analytic.ids)]
-        self.structure.sales_dimension = "analytic"
-        self.assertEqual(self.leaf_customers.partner_ids, self.customer_a)
-        self.assertEqual(self.leaf_customers.analytic_account_ids, analytic)
-        self.structure.sales_dimension = "partner"
-        self.assertEqual(self.leaf_customers.analytic_account_ids, analytic)
-
-    def test_sales_by_analytic_requires_analytic_usage(self):
-        with self.assertRaises(ValidationError):
-            self.structure.sales_dimension = "analytic"
-
     def test_assignment_status(self):
         empty_leaf = self.Line.create({
             "structure_id": self.structure.id,
@@ -189,7 +126,7 @@ class TestPlStructure(PlDashboardCommon):
             "parent_id": self.root_income.id,
             "name": "Others",
         })
-        self.assertEqual(empty_sales.assignment_status, "Without customers")
+        self.assertEqual(empty_sales.assignment_status, "Without accounts")
 
     def test_single_active_structure_per_company(self):
         with self.assertRaisesRegex(ValidationError, "already has an active"):
@@ -216,3 +153,34 @@ class TestPlStructure(PlDashboardCommon):
             self.structure.budget_enabled = True
         budget = self.env["account.report.budget"].create({"name": "Budget 2026", "company_id": self.company.id})
         self.structure.write({"budget_enabled": True, "budget_id": budget.id})
+
+    def test_views_load(self):
+        """Structure form (with its lines list, "View" link included) and the
+        line form opened from it."""
+        form = self.Structure.get_views([(False, "form")])["views"]["form"]["arch"]
+        self.assertIn('open_form_view="True"', form)
+        self.assertIn('name="account_ids"', form)
+        # Without "active" in the form there is no Archive action (no gear menu).
+        self.assertNotIn('name="active"', form)
+        line_form = self.Line.get_views([(False, "form")])["views"]["form"]["arch"]
+        self.assertIn('name="account_ids"', line_form)
+
+    def test_configuration_opens_company_structure(self):
+        action = self.Structure.action_open_config()
+        self.assertEqual(action["res_model"], "account.pl.structure")
+        self.assertEqual(action["res_id"], self.structure.id)
+        self.assertEqual(action["name"], "Configure management P&L structure")
+        self.assertFalse(action["context"]["create"])
+        self.assertFalse(action["context"]["delete"])
+        self.assertEqual(self.structure.display_name, "Configure management P&L structure")
+
+    def test_configuration_creates_structure_on_first_use(self):
+        self.structure.active = False
+        action = self.Structure.action_open_config()
+        created = self.Structure.browse(action["res_id"])
+        self.assertNotEqual(created, self.structure)
+        self.assertEqual(created.company_id, self.company)
+        self.assertEqual(created.name, "Management P&L")
+        self.assertEqual(len(created.line_ids), 3)
+        # Opening it again reuses it.
+        self.assertEqual(self.Structure.action_open_config()["res_id"], created.id)

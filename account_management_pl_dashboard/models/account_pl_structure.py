@@ -10,11 +10,6 @@ PL_ACCOUNT_TYPES = (
     "expense_depreciation",
     "expense_direct_cost",
 )
-# Account types considered "Sales" when the structure doesn't list its own
-# sales accounts. "income_other" (exchange gains, interests, ...) is left
-# out on purpose: it is not a sale, and falls under "Unassigned" unless an
-# administrator maps it to a cost leaf explicitly.
-DEFAULT_SALES_ACCOUNT_TYPES = ("income",)
 
 # Fixed root sections, in display order.
 SECTIONS = [
@@ -30,7 +25,7 @@ class AccountPlStructure(models.Model):
     _order = "company_id, name, id"
     _check_company_auto = True
 
-    name = fields.Char(string="Name", required=True)
+    name = fields.Char(string="Name", required=True, default=lambda self: self.env._("Management P&L"))
     company_id = fields.Many2one(
         "res.company", string="Company", required=True, default=lambda self: self.env.company, index=True,
     )
@@ -38,37 +33,19 @@ class AccountPlStructure(models.Model):
     active = fields.Boolean(string="Active", default=True)
     line_ids = fields.One2many("account.pl.structure.line", "structure_id", string="Lines", copy=False)
 
-    sales_dimension = fields.Selection(
-        [("partner", "Customer"), ("analytic", "Analytic")],
-        string="Sales dimension",
-        required=True,
-        default="partner",
-        help="What the Sales leaves group by: commercial customers, or analytic accounts of the "
-        "analytic plan selected below.",
-    )
     analytic_mode = fields.Selection(
         [("none", "Not used"), ("analytic", "Analytic accounts"), ("project", "Projects")],
         string="Analytic usage",
         required=True,
         default="none",
         help="Whether the dashboard works with analytic accounts (of a given plan) or with projects. "
-        "When used, the dashboard toolbar offers a filter by those analytic accounts or projects, "
-        "and Sales leaves can be grouped by them.",
+        "When used, the dashboard toolbar offers a filter by those analytic accounts or projects.",
     )
     analytic_plan_id = fields.Many2one(
         "account.analytic.plan",
         string="Analytic plan",
         domain="[('parent_id', '=', False)]",
         help="Root analytic plan used when the analytic usage is 'Analytic accounts'.",
-    )
-    sales_account_ids = fields.Many2many(
-        "account.account",
-        "account_pl_structure_sales_account_rel",
-        "structure_id",
-        "account_id",
-        string="Sales accounts",
-        domain="[('account_type', 'in', %s), ('company_ids', 'parent_of', company_id)]" % (PL_ACCOUNT_TYPES,),
-        help="Income accounts considered as Sales. Leave empty to use every account of type Income.",
     )
     excluded_journal_ids = fields.Many2many(
         "account.journal",
@@ -130,7 +107,7 @@ class AccountPlStructure(models.Model):
                     "Company %(company)s already has an active management P&L structure (%(structure)s). "
                     "Archive it before activating another one.",
                     company=structure.company_id.display_name,
-                    structure=duplicate.display_name,
+                    structure=duplicate.name,
                 ))
 
     @api.constrains("secondary_currency_id", "company_id", "default_display_currency")
@@ -157,31 +134,16 @@ class AccountPlStructure(models.Model):
         if any(structure.rate_max_age_days < 0 for structure in self):
             raise ValidationError(self.env._("The maximum rate age can't be negative."))
 
-    @api.constrains("analytic_mode", "analytic_plan_id", "sales_dimension")
+    @api.constrains("analytic_mode", "analytic_plan_id")
     def _check_analytic_settings(self):
         for structure in self:
             if structure.analytic_mode == "analytic" and not structure.analytic_plan_id:
                 raise ValidationError(self.env._("Select the analytic plan to use."))
-            if structure.sales_dimension == "analytic" and structure.analytic_mode == "none":
-                raise ValidationError(self.env._(
-                    "Sales can only be grouped by analytic account when the analytic usage is set."
-                ))
 
     @api.constrains("budget_enabled", "budget_id")
     def _check_budget(self):
         if any(structure.budget_enabled and not structure.budget_id for structure in self):
             raise ValidationError(self.env._("Select the budget to compare with."))
-
-    @api.constrains("sales_account_ids", "company_id")
-    def _check_sales_accounts(self):
-        for structure in self:
-            structure._check_accounts_company(structure.sales_account_ids)
-        # Sales accounts can't be used by a cost leaf either.
-        self.line_ids._check_unique_assignments()
-
-    @api.constrains("analytic_mode", "analytic_plan_id")
-    def _check_analytic_plan_of_lines(self):
-        self.line_ids._check_analytic_accounts()
 
     def _check_accounts_company(self, accounts):
         """Accounts are shared between companies through ``company_ids``; an
@@ -213,20 +175,36 @@ class AccountPlStructure(models.Model):
         return self.env["account.analytic.plan"]
 
     def _get_sales_accounts(self):
-        """Accounts whose movements make up Sales (explicit list, or every
-        Income account of the company when the list is empty)."""
+        """Accounts whose movements make up Sales: those of the Sales lines."""
         self.ensure_one()
-        if self.sales_account_ids:
-            return self.sales_account_ids
-        return self.env["account.account"].sudo().with_context(active_test=False).search([
-            ("account_type", "in", DEFAULT_SALES_ACCOUNT_TYPES),
-            ("company_ids", "parent_of", self.company_id.id),
-        ])
+        return self.line_ids.filtered(lambda line: line.section == "income").account_ids
 
     @api.model
     def _get_active_structure(self, company=None):
         company = company or self.env.company
         return self.search([("company_id", "=", company.id)], limit=1)
+
+    def _compute_display_name(self):
+        # The structure is a per-company setting, opened straight from the
+        # Configuration menu: the breadcrumb shows what the screen is for
+        # rather than the structure's own name.
+        for structure in self:
+            structure.display_name = self.env._("Configure management P&L structure")
+
+    @api.model
+    def action_open_config(self):
+        """Configuration menu entry: open the current company's structure
+        directly (creating it on first use), like a per-company setting.
+
+        No "New" nor "Delete": one structure per company. The web client
+        only honors these through the action's context, not through
+        act_window's own create/delete fields.
+        """
+        structure = self._get_active_structure() or self.create({"company_id": self.env.company.id})
+        return structure._get_records_action(
+            name=self.env._("Configure management P&L structure"),
+            context={**self.env.context, "create": False, "delete": False},
+        )
 
     # -------------------------------------------------------------------------
     # CRUD

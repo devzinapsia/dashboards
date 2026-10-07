@@ -156,8 +156,8 @@ class AccountPlDashboard(models.AbstractModel):
             domain.append(("journal_id", "not in", structure.excluded_journal_ids.ids))
         return domain
 
-    def _read_move_line_amounts(self, domain, key_field, converter=None):
-        """Sum journal items by ``key_field`` and month, in the display
+    def _read_move_line_amounts(self, domain, key_fields, converter=None):
+        """Sum journal items by ``key_fields`` and month, in the display
         currency.
 
         One query whatever the number of journal items. In company currency
@@ -166,32 +166,40 @@ class AccountPlDashboard(models.AbstractModel):
         is the granularity the conversion needs (one rate per day, original
         amount for items already in the secondary currency).
 
+        :param list key_fields: many2one fields to group by (e.g.
+            ["account_id"] or ["account_id", "partner_id"]).
         :param PlCurrencyConverter converter: None for the company currency.
-        :return: list of (key_id, month_key, amount) tuples; amounts keep the
-            accounting sign (debit positive).
+        :return: list of (key_ids, month_key, amount) tuples, key_ids being a
+            tuple of record ids (0 when empty); amounts keep the accounting
+            sign (debit positive).
         """
         MoveLine = self.env["account.move.line"].sudo()
+        size = len(key_fields)
         if not converter:
-            rows = MoveLine._read_group(domain, groupby=[key_field, "date:month"], aggregates=["balance:sum"])
-            return [(record.id, self._column_key_of(month), balance or 0.0) for record, month, balance in rows]
+            rows = MoveLine._read_group(domain, groupby=[*key_fields, "date:month"], aggregates=["balance:sum"])
+            return [
+                (tuple(record.id or 0 for record in row[:size]), self._column_key_of(row[size]), row[size + 1] or 0.0)
+                for row in rows
+            ]
         rows = MoveLine._read_group(
             domain,
-            groupby=[key_field, "date:day", "currency_id"],
+            groupby=[*key_fields, "date:day", "currency_id"],
             aggregates=["balance:sum", "amount_currency:sum"],
         )
         return [
             (
-                record.id,
-                self._column_key_of(day),
-                converter.convert_move_lines(day, currency.id, balance or 0.0, amount_currency or 0.0),
+                tuple(record.id or 0 for record in row[:size]),
+                self._column_key_of(row[size]),
+                converter.convert_move_lines(row[size], row[size + 1].id, row[size + 2] or 0.0, row[size + 3] or 0.0),
             )
-            for record, day, currency, balance, amount_currency in rows
+            for row in rows
         ]
 
-    def _read_analytic_amounts(self, structure, date_from, date_to, key, accounts, analytic_ids=None,
+    def _read_analytic_amounts(self, structure, date_from, date_to, key_fields, accounts, analytic_ids,
                                converter=None):
-        """Sum the analytic lines of the structure's analytic plan, i.e. the
-        journal items' amounts already split by their analytic distribution.
+        """Sum the analytic lines of the structure's analytic plan for the
+        selected analytic accounts (toolbar filter), i.e. only the share of
+        each journal item distributed to them.
 
         Analytic lines are read through their journal item, so the same rules
         apply as everywhere else: posted entries only, accounting date of the
@@ -200,29 +208,23 @@ class AccountPlDashboard(models.AbstractModel):
         secondary amount as of its company-currency balance (exact, because
         both conversion cases are linear).
 
-        :param str key: "account" (journal item account), "partner" (journal
-            item partner) or "analytic" (analytic account of the plan).
+        :param list key_fields: journal item fields to group by ("account_id",
+            "partner_id").
         :param tuple accounts: ("in", account_ids) or ("pl_except", account_ids),
             the latter meaning every P&L account except those.
-        :param list analytic_ids: restrict to these analytic accounts of the plan.
-        :return: same shape as _read_move_line_amounts: (key_id, month_key,
-            amount) with the accounting sign (debit positive).
+        :return: same shape as _read_move_line_amounts.
         """
         plan = structure._get_analytic_plan()
         self.env["account.move.line"].flush_model()
         self.env["account.analytic.line"].flush_model()
         self.env["account.account"].flush_model(["account_type"])
         plan_column = SQL.identifier("aal", plan._column_name())
-        key_sql = {
-            "account": SQL("aml.account_id"),
-            "partner": SQL("aml.partner_id"),
-            "analytic": plan_column,
-        }[key]
+        keys_sql = SQL(", ").join(SQL.identifier("aml", key_field) for key_field in key_fields)
         conditions = [
             SQL("aml.company_id = %s", structure.company_id.id),
             SQL("aml.parent_state = 'posted'"),
             SQL("aml.date BETWEEN %s AND %s", date_from, date_to),
-            SQL("%s IS NOT NULL", plan_column),
+            SQL("%s = ANY(%s)", plan_column, list(analytic_ids)),
         ]
         if structure.excluded_journal_ids:
             conditions.append(SQL("aml.journal_id <> ALL(%s)", structure.excluded_journal_ids.ids))
@@ -232,144 +234,121 @@ class AccountPlDashboard(models.AbstractModel):
         else:
             conditions.append(SQL("aa.account_type IN %s", PL_ACCOUNT_TYPES))
             conditions.append(SQL("aml.account_id <> ALL(%s)", list(account_ids)))
-        if analytic_ids is not None:
-            conditions.append(SQL("%s = ANY(%s)", plan_column, list(analytic_ids)))
+        size = len(key_fields)
 
         # aal.amount = -balance x distribution, so -aal.amount is the share of
         # the journal item's balance (accounting sign).
         if converter:
             query = SQL(
                 """
-                SELECT %(key)s, aml.date, aml.currency_id,
+                SELECT %(keys)s, aml.date, aml.currency_id,
                        SUM(-aal.amount),
                        SUM(aml.amount_currency * -aal.amount / NULLIF(aml.balance, 0))
                   FROM account_analytic_line aal
                   JOIN account_move_line aml ON aml.id = aal.move_line_id
                   JOIN account_account aa ON aa.id = aml.account_id
                  WHERE %(where)s
-              GROUP BY 1, 2, 3
+              GROUP BY %(keys)s, aml.date, aml.currency_id
                 """,
-                key=key_sql,
+                keys=keys_sql,
                 where=SQL(" AND ").join(conditions),
             )
             self.env.cr.execute(query)
             return [
-                (key_id or 0, self._column_key_of(day),
-                 converter.convert_move_lines(day, currency_id, balance or 0.0, amount_currency or 0.0))
-                for key_id, day, currency_id, balance, amount_currency in self.env.cr.fetchall()
+                (
+                    tuple(key_id or 0 for key_id in row[:size]),
+                    self._column_key_of(row[size]),
+                    converter.convert_move_lines(row[size], row[size + 1], row[size + 2] or 0.0, row[size + 3] or 0.0),
+                )
+                for row in self.env.cr.fetchall()
             ]
         query = SQL(
             """
-            SELECT %(key)s, date_trunc('month', aml.date)::date, SUM(-aal.amount)
+            SELECT %(keys)s, date_trunc('month', aml.date)::date, SUM(-aal.amount)
               FROM account_analytic_line aal
               JOIN account_move_line aml ON aml.id = aal.move_line_id
               JOIN account_account aa ON aa.id = aml.account_id
              WHERE %(where)s
-          GROUP BY 1, 2
+          GROUP BY %(keys)s, date_trunc('month', aml.date)::date
             """,
-            key=key_sql,
+            keys=keys_sql,
             where=SQL(" AND ").join(conditions),
         )
         self.env.cr.execute(query)
         return [
-            (key_id or 0, self._column_key_of(month), balance or 0.0)
-            for key_id, month, balance in self.env.cr.fetchall()
+            (tuple(key_id or 0 for key_id in row[:size]), self._column_key_of(row[size]), row[size + 1] or 0.0)
+            for row in self.env.cr.fetchall()
         ]
 
     def _collect_amounts(self, structure, date_from, date_to, converter=None, analytic_ids=None):
         """Gather the period's amounts, classified by structure leaf.
 
+        Every leaf adds up the balance of its accounts, with its section's
+        sign (Sales: credit - debit, costs: debit - credit). Sales leaves are
+        also broken down by commercial customer, for their drill-down.
+
         :param list analytic_ids: toolbar analytic/project filter. When set,
-            every section is read from the analytic lines of those analytic
+            amounts are read from the analytic lines of those analytic
             accounts (i.e. only the share of each journal item distributed to
             them), instead of from the journal items.
         :return: dict with
-            - ``leaf``: {(line_id, month_key): amount}, with the section's own
-              sign (Sales: credit - debit, costs: debit - credit);
-            - ``unassigned``: {(detail_key, month_key): amount}, with the
-              "effect on the result" sign (credit - debit), so that net profit
-              + unassigned = the accounting result of the period;
-            - ``leaf_detail``: {(line_id, detail_key, month_key): amount},
-              the per-account / per-customer / per-analytic breakdown of each
-              leaf.
+            - ``leaf``: {(line_id, month_key): amount};
+            - ``leaf_detail``: {(line_id, detail_key, month_key): amount}, the
+              per-account (costs) or per-customer (Sales) breakdown of each
+              leaf;
+            - ``unassigned``: {(detail_key, month_key): amount} for the P&L
+              accounts no line includes, with the "effect on the result" sign
+              (credit - debit), so that net profit + unassigned = the
+              accounting result of the period.
         """
         leaf = defaultdict(float)
         leaf_detail = defaultdict(float)
         unassigned = defaultdict(float)
-        lines = structure.line_ids
-        base_domain = self._base_move_line_domain(structure, date_from, date_to)
-        sales_accounts = structure._get_sales_accounts()
-        sales_lines = lines.filtered(lambda line: line.section == "income")
-
-        def classify(rows, owner_of, detail_prefix, sign, unassigned_prefix=""):
-            """Dispatch (key_id, month_key, balance) rows to their leaf, or to
-            Unassigned. ``sign`` turns the accounting balance into the
-            section's sign (+1 for costs, -1 for Sales)."""
-            for key_id, month_key, balance in rows:
-                line_id = owner_of.get(key_id)
-                detail_key = "%s-%d" % (detail_prefix, key_id)
-                if line_id:
-                    leaf[line_id, month_key] += sign * balance
-                    leaf_detail[line_id, detail_key, month_key] += sign * balance
-                else:
-                    unassigned[unassigned_prefix + detail_key, month_key] -= balance
-
-        # Costs, and every other P&L account that isn't a Sales account.
         account_leaf = {
-            account.id: line.id
-            for line in lines.filtered(lambda line: line.section != "income")
-            for account in line.account_ids
+            account.id: line for line in structure.line_ids for account in line.account_ids
         }
-        if analytic_ids is not None:
-            rows = self._read_analytic_amounts(
-                structure, date_from, date_to, "account", ("pl_except", sales_accounts.ids),
-                analytic_ids, converter,
-            )
-        else:
-            cost_domain = base_domain + [
-                ("account_id.account_type", "in", PL_ACCOUNT_TYPES),
-                ("account_id", "not in", sales_accounts.ids),
-            ]
-            rows = self._read_move_line_amounts(cost_domain, "account_id", converter)
-        classify(rows, account_leaf, "account", 1)
+        sales_accounts = structure._get_sales_accounts()
 
-        # Sales, by analytic account of the plan.
-        if structure.sales_dimension == "analytic":
-            analytic_leaf = {
-                analytic.id: line.id for line in sales_lines for analytic in line.analytic_account_ids
-            }
-            rows = self._read_analytic_amounts(
-                structure, date_from, date_to, "analytic", ("in", sales_accounts.ids), analytic_ids, converter,
-            )
-            classify(rows, analytic_leaf, "analytic", -1, unassigned_prefix="sales-")
-            if analytic_ids is None:
-                # The part of sales not distributed on the plan at all (no
-                # analytic distribution, or less than 100%).
-                sales_domain = base_domain + [("account_id", "in", sales_accounts.ids)]
-                distributed = defaultdict(float)
-                for _key_id, month_key, balance in rows:
-                    distributed[month_key] += balance
-                for _company_id, month_key, balance in self._read_move_line_amounts(
-                    sales_domain, "company_id", converter,
-                ):
-                    unassigned["sales-no-analytic", month_key] -= balance - distributed[month_key]
-            return {"leaf": leaf, "leaf_detail": leaf_detail, "unassigned": unassigned}
+        def read(domain_or_accounts, key_fields):
+            if analytic_ids is not None:
+                return self._read_analytic_amounts(
+                    structure, date_from, date_to, key_fields, domain_or_accounts, analytic_ids, converter,
+                )
+            operator, account_ids = domain_or_accounts
+            domain = self._base_move_line_domain(structure, date_from, date_to)
+            if operator == "in":
+                domain.append(("account_id", "in", list(account_ids)))
+            else:
+                domain += [
+                    ("account_id.account_type", "in", PL_ACCOUNT_TYPES),
+                    ("account_id", "not in", list(account_ids)),
+                ]
+            return self._read_move_line_amounts(domain, key_fields, converter)
 
-        # Sales, by commercial customer.
-        partner_leaf = {partner.id: line.id for line in sales_lines for partner in line.partner_ids}
-        if analytic_ids is not None:
-            rows = self._read_analytic_amounts(
-                structure, date_from, date_to, "partner", ("in", sales_accounts.ids), analytic_ids, converter,
+        # Cost lines, and the P&L accounts no line includes, by account.
+        for (account_id,), month_key, balance in read(("pl_except", sales_accounts.ids), ["account_id"]):
+            line = account_leaf.get(account_id)
+            detail_key = "account-%d" % account_id
+            if line:
+                sign = -1 if line.section == "income" else 1
+                leaf[line.id, month_key] += sign * balance
+                leaf_detail[line.id, detail_key, month_key] += sign * balance
+            else:
+                unassigned[detail_key, month_key] -= balance
+
+        # Sales lines, by account and commercial customer.
+        if sales_accounts:
+            rows = read(("in", sales_accounts.ids), ["account_id", "partner_id"])
+            partners = self.env["res.partner"].sudo().browse(
+                {partner_id for (_account_id, partner_id), _month, _balance in rows if partner_id}
             )
-        else:
-            sales_domain = base_domain + [("account_id", "in", sales_accounts.ids)]
-            rows = self._read_move_line_amounts(sales_domain, "partner_id", converter)
-        partners = self.env["res.partner"].sudo().browse({partner_id for partner_id, _m, _b in rows if partner_id})
-        commercial_of = {partner.id: partner.commercial_partner_id.id for partner in partners}
-        classify(
-            [(commercial_of.get(partner_id, 0), month_key, balance) for partner_id, month_key, balance in rows],
-            partner_leaf, "partner", -1, unassigned_prefix="sales-",
-        )
+            commercial_of = {partner.id: partner.commercial_partner_id.id for partner in partners}
+            for (account_id, partner_id), month_key, balance in rows:
+                line = account_leaf[account_id]
+                detail_key = "partner-%d" % commercial_of.get(partner_id, 0)
+                leaf[line.id, month_key] -= balance
+                leaf_detail[line.id, detail_key, month_key] -= balance
+
         return {"leaf": leaf, "leaf_detail": leaf_detail, "unassigned": unassigned}
 
     # -------------------------------------------------------------------------
@@ -533,39 +512,29 @@ class AccountPlDashboard(models.AbstractModel):
     def _build_budget_values(self, request, budget):
         """Budget of every structure line and column, in the section's sign.
 
-        Cost leaves add up the budget of their accounts; cost groups and
-        sections add up their sub-lines. Sales budgets are by account only
-        (never by customer or analytic account), so Sales leaves and groups
-        have none (None, shown as "—") and the Sales section gets the budget
-        of the Sales accounts.
+        Leaves add up the budget of their accounts (Sales: income budgets are
+        stored negative, like their balance); groups and sections add up their
+        sub-lines.
 
         :return: {line_id: {column_key: amount or None}}
         """
         structure, columns = request["structure"], request["columns"]
         month_columns = [column for column in columns if not column["is_total"]]
         has_total = len(columns) > len(month_columns)
-        sales_accounts = set(structure._get_sales_accounts().ids)
         values = {}
         for line in structure.line_ids.sorted(lambda line: line.level, reverse=True):
+            sign = -1 if line.section == "income" else 1
             row = {}
             for column in month_columns:
                 key = column["key"]
                 if column["is_future"]:
                     row[key] = None
-                elif line.section == "income":
-                    row[key] = -sum(
-                        amount for (account_id, month_key), amount in budget.items()
-                        if month_key == key and account_id in sales_accounts
-                    ) if line.is_root else None
                 elif line.child_ids:
                     row[key] = sum(values[child.id][key] or 0.0 for child in line.child_ids)
                 else:
-                    row[key] = sum(budget.get((account.id, key), 0.0) for account in line.account_ids)
+                    row[key] = sign * sum(budget.get((account.id, key), 0.0) for account in line.account_ids)
             if has_total:
-                row[TOTAL_COLUMN] = (
-                    None if line.section == "income" and not line.is_root
-                    else self._sum_columns(row, month_columns)
-                )
+                row[TOTAL_COLUMN] = self._sum_columns(row, month_columns)
             values[line.id] = row
         return values
 
@@ -773,51 +742,36 @@ class AccountPlDashboard(models.AbstractModel):
             raise UserError(self.env._("This row has no detail."))
         return line
 
-    def _describe_detail_keys(self, request, detail_keys):
+    def _describe_detail_keys(self, request, line, detail_keys):
         """Labels (and account codes) of drill-down detail keys, read in batch.
 
-        Keys look like "account-<id>", "partner-<id>", "analytic-<id>"
-        (0 = none), optionally prefixed with "sales-" for the Sales part of
-        the Unassigned row, or "sales-no-analytic".
+        Keys are "account-<id>", "partner-<id>" (0 = no customer) or "all"
+        (every journal item of the line's accounts).
         """
         ids = defaultdict(set)
         for key in detail_keys:
-            if key == "sales-no-analytic":
-                continue
-            kind, record_id = key.removeprefix("sales-").rsplit("-", 1)
-            ids[kind].add(int(record_id))
+            if key != "all":
+                kind, record_id = key.rsplit("-", 1)
+                ids[kind].add(int(record_id))
         records = {
             "account": self.env["account.account"].sudo().with_company(request["company"]).browse(ids["account"]),
             "partner": self.env["res.partner"].sudo().browse(ids["partner"] - {0}),
-            "analytic": self.env["account.analytic.account"].sudo().browse(ids["analytic"] - {0}),
         }
-        names = {
-            kind: {record.id: record for record in recordset} for kind, recordset in records.items()
-        }
+        names = {kind: {record.id: record for record in recordset} for kind, recordset in records.items()}
         descriptions = {}
         for key in detail_keys:
-            is_sales = key.startswith("sales-")
-            if key == "sales-no-analytic":
-                descriptions[key] = {
-                    "label": self.env._("Sales not distributed on the analytic plan"),
-                    "code": False,
-                }
+            if key == "all":
+                descriptions[key] = {"label": line.name, "code": False}
                 continue
-            kind, record_id = key.removeprefix("sales-").rsplit("-", 1)
+            kind, record_id = key.rsplit("-", 1)
             record = names[kind].get(int(record_id))
             if kind == "account":
-                description = {"label": record.name, "code": record.code}
-            elif record:
-                description = {"label": record.display_name, "code": False}
+                descriptions[key] = {"label": record.name, "code": record.code}
             else:
-                description = {
-                    "label": (self.env._("Without customer") if kind == "partner"
-                              else self.env._("Without analytic account")),
+                descriptions[key] = {
+                    "label": record.display_name if record else self.env._("Without customer"),
                     "code": False,
                 }
-            if is_sales:
-                description["label"] = self.env._("Sales: %s", description["label"])
-            descriptions[key] = description
         return descriptions
 
     @api.model
@@ -826,14 +780,14 @@ class AccountPlDashboard(models.AbstractModel):
         """Detail of one grid cell, loaded on demand by the drill-down popup.
 
         - a section or group: its leaves, each one can be opened in turn;
-        - a leaf: its accounts, customers or analytic accounts;
-        - the Unassigned row: the unclassified accounts / customers /
-          analytic accounts.
+        - a cost line: its accounts;
+        - a Sales line: its amount by commercial customer;
+        - the Unassigned row: the P&L accounts no line includes.
 
         Amounts are in the display currency and add up exactly to the cell's
-        value (same computation as the grid); so do the budgets of a cost
-        line's accounts or sub-lines. Sales budgets only exist for the whole
-        Sales section (None elsewhere, shown as "—").
+        value (same computation as the grid); so do the budgets of a line's
+        sub-lines or of a cost line's accounts. Budgets are by account, so a
+        Sales line's customers have none (only the line itself).
         """
         request = self._prepare_request(period, display_currency, analytic_ids)
         if not request:
@@ -845,11 +799,9 @@ class AccountPlDashboard(models.AbstractModel):
         budget_shown = self._is_budget_shown(request, show_budget) and line is not None
         amounts, budget = self._compute_request_amounts(request, with_budget=budget_shown)
         budget_values = self._build_budget_values(request, budget) if budget_shown else {}
-
-        def leaf_budget(leaf):
-            if leaf.section == "income":
-                return None
-            return sum(budget_values[leaf.id][month_key] or 0.0 for month_key in month_keys)
+        can_read = {
+            model: self.env[model].has_access("read") for model in ("account.move.line", "account.analytic.line")
+        }
 
         entries = []
         if line and (line.is_root or line.child_ids):
@@ -866,12 +818,14 @@ class AccountPlDashboard(models.AbstractModel):
                     "open": "line",
                 })
                 if budget_shown:
-                    entries[-1]["budget"] = leaf_budget(leaf)
+                    entries[-1]["budget"] = sum(
+                        budget_values[leaf.id][month_key] or 0.0 for month_key in month_keys
+                    )
             kind = "lines"
         else:
+            totals = defaultdict(float)
             account_budgets = {}
             if line:
-                totals = defaultdict(float)
                 for (line_id, detail_key, month_key), amount in amounts["leaf_detail"].items():
                     if line_id == line.id and month_key in month_keys:
                         totals[detail_key] += amount
@@ -884,22 +838,17 @@ class AccountPlDashboard(models.AbstractModel):
                         if account_budget:
                             totals.setdefault("account-%d" % account.id, 0.0)
             else:
-                totals = defaultdict(float)
                 for (detail_key, month_key), amount in amounts["unassigned"].items():
                     if month_key in month_keys:
                         totals[detail_key] += amount
-            descriptions = self._describe_detail_keys(request, totals)
-            can_read = {
-                model: self.env[model].has_access("read")
-                for model in ("account.move.line", "account.analytic.line")
-            }
+            descriptions = self._describe_detail_keys(request, line, totals)
             for detail_key, amount in totals.items():
-                target = self._get_detail_target(request, line, detail_key)
+                model, _domain = self._get_detail_target(request, line, detail_key)
                 entries.append({
                     "key": detail_key,
                     **descriptions[detail_key],
                     "amount": amount,
-                    "open": "items" if target and can_read[target[0]] else False,
+                    "open": "items" if can_read[model] else False,
                 })
                 if budget_shown:
                     entries[-1]["budget"] = account_budgets.get(detail_key)
@@ -911,6 +860,7 @@ class AccountPlDashboard(models.AbstractModel):
         for entry in entries:
             if budget_shown:
                 entry["deviation"] = self._deviation(entry["amount"], entry["budget"])
+        is_leaf = bool(line) and not line.is_root and not line.child_ids
         return {
             "kind": kind,
             "row_key": row_key,
@@ -921,6 +871,11 @@ class AccountPlDashboard(models.AbstractModel):
             "section": line.section if line else False,
             "entries": entries,
             "total": total,
+            # A line with accounts: every journal item of those accounts for
+            # the column's period can be opened at once.
+            "can_open_all": is_leaf and bool(line.account_ids) and can_read[
+                "account.analytic.line" if request["analytic_ids"] is not None else "account.move.line"
+            ],
             "budget_shown": budget_shown,
             "total_budget": total_budget,
             "total_deviation": self._deviation(total, total_budget) if budget_shown else None,
@@ -928,53 +883,61 @@ class AccountPlDashboard(models.AbstractModel):
 
     def _get_detail_target(self, request, line, detail_key):
         """(model, domain) listing the journal items (or, with the analytic
-        filter, the analytic lines) behind one drill-down detail entry, or
-        None when there is no meaningful list to open."""
-        structure = request["structure"]
-        if detail_key == "sales-no-analytic":
-            return None
-        kind, record_id = detail_key.removeprefix("sales-").rsplit("-", 1)
-        record_id = int(record_id)
-        sales_accounts = structure._get_sales_accounts()
-        analytic_ids = request["analytic_ids"]
+        filter, the analytic lines) behind one drill-down detail entry:
 
-        if analytic_ids is not None or kind == "analytic":
+        - "account-<id>": that account's items;
+        - "partner-<id>": the items of the Sales line's accounts for that
+          commercial customer (its contacts included; 0 = no customer);
+        - "all": every item of the line's accounts.
+        """
+        structure = request["structure"]
+        analytic_ids = request["analytic_ids"]
+        if analytic_ids is not None:
             plan_field = structure._get_analytic_plan()._column_name()
             domain = [
                 ("company_id", "=", structure.company_id.id),
                 ("move_line_id.parent_state", "=", "posted"),
                 ("move_line_id.date", ">=", request["detail_from"]),
                 ("move_line_id.date", "<=", request["detail_to"]),
+                (plan_field, "in", analytic_ids),
             ]
             if structure.excluded_journal_ids:
                 domain.append(("move_line_id.journal_id", "not in", structure.excluded_journal_ids.ids))
-            if analytic_ids is not None:
-                domain.append((plan_field, "in", analytic_ids))
-            else:
-                domain.append((plan_field, "!=", False))
             prefix, model = "move_line_id.", "account.analytic.line"
         else:
             domain = self._base_move_line_domain(structure, request["detail_from"], request["detail_to"])
             prefix, model = "", "account.move.line"
 
+        if detail_key == "all":
+            if not line:
+                raise UserError(self.env._("This row has no detail."))
+            domain.append((prefix + "account_id", "in", line.account_ids.ids))
+            return model, domain
+        kind, record_id = detail_key.rsplit("-", 1)
+        record_id = int(record_id)
         if kind == "account":
             domain.append((prefix + "account_id", "=", record_id))
-        elif kind == "partner":
-            domain.append((prefix + "account_id", "in", sales_accounts.ids))
+        elif kind == "partner" and line:
+            domain.append((prefix + "account_id", "in", line.account_ids.ids))
             domain.append(
                 (prefix + "partner_id.commercial_partner_id", "=", record_id) if record_id
                 else (prefix + "partner_id", "=", False)
             )
-        elif kind == "analytic":
-            domain.append((prefix + "account_id", "in", sales_accounts.ids))
-            domain.append((plan_field, "=", record_id or False))
+        else:
+            raise UserError(self.env._("This row has no detail."))
         return model, domain
 
     @api.model
     def get_detail_action(self, row_key, column_key, detail_key, period="fiscal_year", display_currency=None,
-                          analytic_ids=None):
-        """Window action listing the journal items behind a popup entry (in
-        company currency: the list views can't total in another currency)."""
+                          analytic_ids=None, show_budget=True):
+        """Window action listing the journal items behind a popup entry, or
+        every journal item of a line's accounts ("all"), for the period of the
+        clicked column (in company currency: the list views can't total in
+        another currency).
+
+        Takes the same parameters as the other dashboard RPCs (the popup sends
+        them all); ``show_budget`` doesn't change which journal items match.
+        """
         request = self._prepare_request(period, display_currency, analytic_ids)
         if not request:
             raise UserError(self.env._("There is no active management P&L structure."))
@@ -982,10 +945,7 @@ class AccountPlDashboard(models.AbstractModel):
         request["detail_from"] = column["date_from"]
         request["detail_to"] = min(column["date_to"], request["read_to"])
         line = self._get_request_line(request, row_key)
-        target = self._get_detail_target(request, line, detail_key)
-        if not target:
-            raise UserError(self.env._("There is no list of journal items for this entry."))
-        model, domain = target
-        description = self._describe_detail_keys(request, [detail_key])[detail_key]
+        model, domain = self._get_detail_target(request, line, detail_key)
+        description = self._describe_detail_keys(request, line, [detail_key])[detail_key]
         name = " ".join(filter(None, [description["code"], description["label"]]))
         return self._get_drilldown_action(model, domain=domain, name=name)

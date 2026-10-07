@@ -70,31 +70,33 @@ class TestPlEngineLocal(PlDashboardCommon):
         self.assertAlmostEqual(values["net_profit_pct"]["total"], 60.0)
         self.assertIsNone(values["net_profit"]["2026-05"])
 
-    def test_sales_by_commercial_partner(self):
+    def test_sales_line_adds_up_its_accounts(self):
+        # Every movement of the line's accounts counts, whatever the customer
+        # (or none); credit notes subtract on their own.
         self._entry("2026-02-10", [
             (self.account_sales, -300.0, self.customer_a_contact),
-            (self.account_sales, -200.0, self.customer_a),
+            (self.account_sales, -200.0, self.customer_b),
+            (self.account_sales, -10.0, None),
         ])
-        # A customer credit note reduces sales on its own.
         self._entry("2026-02-20", [(self.account_sales, 50.0, self.customer_a)])
         data = self._data()
-        self.assertAlmostEqual(self._line_row(data, self.leaf_customers)["values"]["2026-02"], 450.0)
+        self.assertAlmostEqual(self._line_row(data, self.leaf_sales)["values"]["2026-02"], 460.0)
+        self.assertAlmostEqual(self._line_row(data, self.root_income)["values"]["2026-02"], 460.0)
         self.assertIsNone(self._row(data, "unassigned"))
 
     def test_unassigned_row(self):
         self._entry("2026-02-10", [(self.account_salaries, 100.0, None)])
         self.assertIsNone(self._row(self._data(), "unassigned"))
 
-        # An expense account with no leaf, and sales of a customer with no leaf.
+        # An expense account and an income account that no line includes.
         self._entry("2026-02-11", [
             (self.account_social, 40.0, None),
-            (self.account_sales, -100.0, self.customer_b),
-            (self.account_sales, -10.0, None),
+            (self.account_other_income, -110.0, self.customer_b),
         ])
         data = self._data()
         unassigned = self._row(data, "unassigned")
         self.assertTrue(unassigned)
-        # Sign = effect on the result: +110 of sales, -40 of expenses.
+        # Sign = effect on the result: +110 of income, -40 of expenses.
         self.assertAlmostEqual(unassigned["values"]["2026-02"], 70.0)
         self.assertAlmostEqual(unassigned["values"]["total"], 70.0)
         # Not included in sections nor profits.

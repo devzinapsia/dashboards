@@ -18,7 +18,7 @@
         id="menu_account_pl_structure"
         name="Management P&amp;L"
         parent="dashboards_base.menu_dashboards_config"
-        action="action_account_pl_structure"
+        action="action_account_pl_structure_config"
         groups="group_management_pl_manager"
         sequence="20"/>
 

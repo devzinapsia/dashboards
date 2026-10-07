@@ -14,9 +14,9 @@ sense for the business (Salaries, IT infrastructure, Sales commissions,
 ...) rather than in the chart of accounts' order.
 
 - Three fixed sections: **Sales**, **Direct costs** and **Indirect costs**.
-  Below each one, groups and leaves are freely defined. A cost leaf
-  groups one or more accounts; a Sales leaf groups commercial customers
-  or analytic accounts.
+  Below each one, groups and leaves are freely defined. Every leaf groups
+  one or more accounts and shows their balance: income accounts for
+  Sales, expense accounts for costs.
 - Rows computed from the sections, defined in a single place of the code
   (``COMPUTED_ROWS``) so that more can be added later:
 
@@ -99,54 +99,47 @@ accounting read access.
 Building the structure
 ----------------------
 
-Go to *Dashboards > Configuration > Management P&L* and create the
-structure of the company (only one can be active per company). Saving it
-creates its three sections: Sales, Direct costs and Indirect costs. They
-can be renamed but not deleted or moved.
+Go to *Dashboards > Configuration > Management P&L*: it opens the
+structure of the current company directly, like a company setting (one
+structure per company, created on first use). It has three sections:
+Sales, Direct costs and Indirect costs. They can be renamed but not
+deleted or moved.
 
 Add the lines in the *Lines* tab, which shows the tree indented:
 
-- Use **+ Sub-line** on a section or group to add a line below it, or *Add
-  a line* and choose its parent line. Drag the handle to reorder lines
-  among their siblings.
+- Use **+ Sub-line** on a section or group to add a line below it. Drag
+  the handle to reorder lines among their siblings. The *Parent line*
+  column is hidden by default; show it from the list's optional columns
+  to move a line elsewhere.
+- **View**, at the end of each row (like in the chart of accounts),
+  opens the line's form, with its accounts in a full list.
 - A line with sub-lines is a **group**: its amount is the sum of its
-  sub-lines, and it can't have anything assigned.
-- A line without sub-lines is a **leaf**. Cost leaves get **accounts**;
-  Sales leaves get **customers** (companies: their contacts are added up
-  automatically) or **analytic accounts**, depending on the sales
-  dimension. A leaf with assignments can't receive sub-lines.
-- A leaf without assignments is flagged *Without accounts* / *Without
-  customers* / *Without analytic accounts* and shows 0 in the dashboard.
+  sub-lines, and it can't have accounts.
+- A line without sub-lines is a **leaf**: it gets **accounts** (income
+  accounts for Sales, expense accounts for costs) and shows their
+  balance. A leaf with accounts can't receive sub-lines.
+- A leaf without accounts is flagged *Without accounts* and shows 0 in
+  the dashboard.
 
-**An account, a customer or an analytic account can only be used once**
-in a structure (both cost sections together), and a Sales account can't
-be used by a cost leaf: otherwise the same amount would be counted twice
-(e.g. a commissions account under direct costs and again under indirect
-costs). Saving such a structure fails with a message naming the line
-that already uses it. Accounts must be income or expense accounts
-available to the structure's company.
+**An account can only be used once** in a structure, whatever the
+section: otherwise the same amount would be counted twice (e.g. a
+commissions account under direct costs and again under indirect costs).
+Saving such a structure fails with a message naming the line that
+already uses it. Accounts must be income or expense accounts available
+to the structure's company.
 
 Parameters
 ----------
 
-- **Sales dimension**: what Sales leaves group by, *Customer* (the
-  commercial customer of each journal item) or *Analytic* (analytic
-  accounts of the structure's analytic plan). Both assignments are kept
-  on every leaf, so switching back and forth loses nothing; the lines
-  list shows the one in use. Switching to *Analytic* requires the
-  analytic usage to be set.
-- **Sales accounts**: income accounts considered as Sales. Empty: every
-  account of type *Income* of the company (*Other income*, e.g. exchange
-  gains, is not Sales: map it to a cost leaf or leave it Unassigned).
 - **Excluded journals**: their entries are ignored, typically the
   year-end closing entries, which would otherwise empty the previous
   fiscal year's columns.
 - **Analytic usage**: *Not used*, *Analytic accounts* (of the selected
   root **Analytic plan**) or *Projects* (Odoo's project plan). When used,
   the dashboard toolbar offers a filter by those analytic accounts or
-  projects, and Sales can be grouped by them. Analytic accounts of the
-  lines must belong to that plan: with several plans, a journal item is
-  split at 100% on each plan, and mixing plans would count it twice.
+  projects. The filter uses a single plan: with several plans, a journal
+  item is split at 100% on each plan, and mixing plans would count it
+  twice.
 - **Secondary currency**: optional display currency (USD by default when
   active). It must be active and different from the company currency.
 - **Open dashboard in**: currency the dashboard opens in.
@@ -164,19 +157,6 @@ filter (amounts are typed straight into the report's budget column).
 Analytic budgets (*Accounting > Budgets*, ``account_budget``) are by
 analytic account only, without accounts, so they can't be compared with
 a structure built on accounts.
-
-Moving from customers to analytic accounts
-------------------------------------------
-
-1. Set the *Analytic usage* (and the plan, if it is *Analytic
-   accounts*).
-2. Assign analytic accounts to the Sales leaves (the customers stay
-   assigned).
-3. Switch the *Sales dimension* to *Analytic*.
-
-Sales are then read from the analytic lines of that plan, which already
-have the analytic distribution applied, for the same posted entries,
-dates and excluded journals.
 
 Usage
 =====
@@ -201,8 +181,7 @@ The Unassigned row
 ------------------
 
 A control row, shown below the profits only when it isn't zero: the
-movements of income and expense accounts that no line includes, and the
-Sales of customers (or analytic accounts) that no Sales leaf includes.
+movements of income and expense accounts that no line includes.
 It is **not included** in the totals nor in the profits. Its sign is the
 effect on the result (income positive), so that **Net profit +
 Unassigned = accounting result of the period**, which is how the
@@ -219,8 +198,12 @@ the currency being displayed, and always adding up to the figure clicked:
 - a cost leaf lists its accounts (code, name, amount), and an account
   opens its journal items for the period (posted entries, excluded
   journals left out);
-- a Sales leaf lists its customers (or analytic accounts), which open
-  their journal items (or analytic lines);
+- a Sales leaf breaks its accounts' movements down by commercial
+  customer (contacts added up to their company); a customer opens its
+  journal items;
+- on any leaf, **View all journal items** opens every journal item of
+  the leaf's accounts for the month (or the whole period, in the Total
+  column) of the clicked cell;
 - the Total column covers the whole period. Profit rows have no
   drill-down.
 
@@ -240,14 +223,10 @@ Deviation % columns. A zero budget shows *n/a*. Colors tell good from bad
 news: spending more than budgeted on costs, or selling less than
 budgeted, is shown as unfavorable.
 
-Budgets are by account, which limits what can be compared:
-
-- cost leaves add up the budget of their accounts, groups and sections
-  add up their lines;
-- **Sales leaves can't be compared** (a budget has no customer nor
-  analytic account): they show "—", and only the Sales section gets the
-  budget of the Sales accounts;
-- with the analytic filter, the budget is hidden.
+Budgets are by account: every leaf adds up the budget of its accounts,
+and groups and sections add up their lines. In a Sales leaf's popup, the
+customers have no budget of their own ("—"), only the leaf. With the
+analytic filter, the budget is hidden.
 
 In the **secondary currency**, the budget (in company currency) is first
 allotted to each month, then **each month is converted at the rate of

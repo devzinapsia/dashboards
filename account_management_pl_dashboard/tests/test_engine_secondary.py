@@ -27,9 +27,9 @@ class TestPlEngineSecondary(PlDashboardArsCommon):
         # The rate of that day changes afterwards: the secondary view still
         # shows the invoice's original USD amount.
         rate.rate = 1.0 / 1500.0
-        secondary = self._line_row(self._secondary(), self.leaf_customers)["values"]
+        secondary = self._line_row(self._secondary(), self.leaf_sales)["values"]
         self.assertEqual(secondary["2026-02"], 1234.56)
-        local = self._line_row(self._local(), self.leaf_customers)["values"]
+        local = self._line_row(self._local(), self.leaf_sales)["values"]
         self.assertAlmostEqual(local["2026-02"], 1234560.0)
 
     def test_usd_credit_note_reduces_sales(self):
@@ -37,7 +37,7 @@ class TestPlEngineSecondary(PlDashboardArsCommon):
         self._invoice("2026-02-10", 1000.0, self.usd, self.customer_a)
         self._invoice("2026-02-20", 200.0, self.usd, self.customer_a, move_type="out_refund")
         data = self._secondary()
-        self.assertAlmostEqual(self._line_row(data, self.leaf_customers)["values"]["2026-02"], 800.0)
+        self.assertAlmostEqual(self._line_row(data, self.leaf_sales)["values"]["2026-02"], 800.0)
         self.assertAlmostEqual(self._line_row(data, self.root_income)["values"]["2026-02"], 800.0)
 
     def test_peso_items_converted_at_their_accounting_date(self):

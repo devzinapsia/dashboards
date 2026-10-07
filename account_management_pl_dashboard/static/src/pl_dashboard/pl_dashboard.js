@@ -210,7 +210,7 @@ export class PlDashboard extends Component {
     }
 
     async openConfiguration() {
-        await this.action.doAction("account_management_pl_dashboard.action_account_pl_structure");
+        await this.action.doAction("account_management_pl_dashboard.action_account_pl_structure_config");
     }
 
     // ---------------------------------------------------------------------

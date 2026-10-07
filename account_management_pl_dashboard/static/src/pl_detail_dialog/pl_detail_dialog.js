@@ -42,6 +42,7 @@ export class PlDetailDialog extends Component {
             line: _t("Line"),
             detail: _t("Detail"),
             budget: _t("Budget"),
+            openAll: _t("View all journal items"),
             deviation: _t("Deviation %"),
             notAvailable: _t("n/a"),
             noBudget: _t("—"),
@@ -113,18 +114,27 @@ export class PlDetailDialog extends Component {
         return formatMonetary(value, { currencyId: this.current.detail.currency_id });
     }
 
+    /** Every journal item of the line's accounts, for the clicked column's period. */
+    async openAll() {
+        await this.openItems("all");
+    }
+
+    async openItems(detailKey) {
+        const action = await this.orm.call(
+            "account.pl.dashboard",
+            "get_detail_action",
+            [this.current.rowKey, this.props.columnKey, detailKey],
+            this.props.requestParams
+        );
+        this.props.close();
+        await this.action.doAction(action);
+    }
+
     async onEntryClick(entry) {
         if (entry.open === "line") {
             await this.push(entry.key, entry.label);
         } else if (entry.open === "items") {
-            const action = await this.orm.call(
-                "account.pl.dashboard",
-                "get_detail_action",
-                [this.current.rowKey, this.props.columnKey, entry.key],
-                this.props.requestParams
-            );
-            this.props.close();
-            await this.action.doAction(action);
+            await this.openItems(entry.key);
         }
     }
 }

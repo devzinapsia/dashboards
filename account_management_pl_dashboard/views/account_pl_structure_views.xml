@@ -7,19 +7,14 @@
         <field name="arch" type="xml">
             <form string="Management P&amp;L structure">
                 <sheet>
-                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
-                    <field name="active" invisible="1"/>
+                    <!-- "active" is left out on purpose: without it the form has no
+                         Archive action, so (with create/delete disabled by
+                         action_open_config) no gear menu at all. -->
                     <field name="company_currency_id" invisible="1"/>
-                    <div class="oe_title">
-                        <label for="name"/>
-                        <h1><field name="name" placeholder="e.g. Management P&amp;L"/></h1>
-                    </div>
                     <group>
-                        <group string="Sales">
-                            <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="sales_dimension" widget="radio"/>
-                            <field name="sales_account_ids" widget="many2many_tags"
-                                   placeholder="Every account of type Income"/>
+                        <group string="General">
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
                             <field name="excluded_journal_ids" widget="many2many_tags"/>
                         </group>
                         <group string="Analytics">
@@ -50,7 +45,7 @@
                             <field name="line_ids" invisible="not id"
                                    context="{'default_structure_id': id}">
                                 <list editable="bottom" decoration-bf="is_root or is_group"
-                                      default_order="sort_key, id">
+                                      default_order="sort_key, id" open_form_view="True">
                                     <field name="sequence" widget="handle"/>
                                     <field name="structure_id" column_invisible="1"/>
                                     <field name="company_id" column_invisible="1"/>
@@ -59,25 +54,17 @@
                                     <field name="level" column_invisible="1"/>
                                     <field name="sort_key" column_invisible="1"/>
                                     <field name="section" column_invisible="1"/>
-                                    <field name="sales_dimension" column_invisible="1"/>
-                                    <field name="analytic_plan_id" column_invisible="1"/>
                                     <field name="name" widget="pl_indented_char"/>
                                     <field name="parent_id" readonly="is_root" required="not is_root"
-                                           options="{'no_create': True, 'no_open': True}"/>
+                                           optional="hide" options="{'no_create': True, 'no_open': True}"/>
                                     <field name="account_ids" widget="many2many_tags"
-                                           invisible="is_root or is_group or section == 'income'"
-                                           options="{'no_create': True}"/>
-                                    <field name="partner_ids" widget="many2many_tags"
-                                           invisible="is_root or is_group or section != 'income' or sales_dimension == 'analytic'"
-                                           options="{'no_create': True}"/>
-                                    <field name="analytic_account_ids" widget="many2many_tags"
-                                           invisible="is_root or is_group or section != 'income' or sales_dimension != 'analytic'"
+                                           invisible="is_root or is_group"
                                            options="{'no_create': True}"/>
                                     <field name="assignment_status" string="Status" widget="badge"
                                            decoration-warning="assignment_status"/>
                                     <button name="action_add_child" type="object" icon="fa-plus"
                                             title="Add sub-line" string="Sub-line"
-                                            invisible="account_ids or partner_ids or analytic_account_ids"/>
+                                            invisible="account_ids"/>
                                 </list>
                             </field>
                         </page>
@@ -87,44 +74,59 @@
         </field>
     </record>
 
-    <record id="view_account_pl_structure_list" model="ir.ui.view">
-        <field name="name">account.pl.structure.list</field>
-        <field name="model">account.pl.structure</field>
+    <!-- Opened by the "View" link of the structure's lines list. -->
+    <record id="view_account_pl_structure_line_form" model="ir.ui.view">
+        <field name="name">account.pl.structure.line.form</field>
+        <field name="model">account.pl.structure.line</field>
         <field name="arch" type="xml">
-            <list string="Management P&amp;L structures">
-                <field name="name"/>
-                <field name="company_id" groups="base.group_multi_company"/>
-                <field name="sales_dimension"/>
-                <field name="secondary_currency_id"/>
-                <field name="budget_enabled" optional="hide"/>
-            </list>
+            <form string="Management P&amp;L structure line">
+                <sheet>
+                    <field name="structure_id" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="is_root" invisible="1"/>
+                    <field name="is_group" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_id" readonly="is_root" required="not is_root"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="section"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="assignment_status" widget="badge" decoration-warning="assignment_status"
+                                   invisible="not assignment_status"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="status" invisible="not is_root and not is_group">
+                        This line is a section or group: its amount is the sum of its sub-lines, so it has no accounts of its own.
+                    </div>
+                    <notebook invisible="is_root or is_group">
+                        <page string="Accounts" name="accounts">
+                            <field name="account_ids" options="{'no_create': True}">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="account_type"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
         </field>
     </record>
 
-    <record id="view_account_pl_structure_search" model="ir.ui.view">
-        <field name="name">account.pl.structure.search</field>
-        <field name="model">account.pl.structure</field>
-        <field name="arch" type="xml">
-            <search string="Management P&amp;L structures">
-                <field name="name"/>
-                <field name="company_id" groups="base.group_multi_company"/>
-                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
-                <group>
-                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}"
-                            groups="base.group_multi_company"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <record id="action_account_pl_structure" model="ir.actions.act_window">
-        <field name="name">Management P&amp;L structures</field>
-        <field name="res_model">account.pl.structure</field>
-        <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Create the management P&amp;L structure of the company</p>
-            <p>Group income and expense accounts, customers or analytic accounts in your own rows.</p>
-        </field>
+    <!-- Configuration menu: opens the current company's structure directly. -->
+    <record id="action_account_pl_structure_config" model="ir.actions.server">
+        <field name="name">Configure management P&amp;L structure</field>
+        <field name="model_id" ref="model_account_pl_structure"/>
+        <field name="group_ids" eval="[(4, ref('group_management_pl_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_config()</field>
     </record>
 
 </odoo>

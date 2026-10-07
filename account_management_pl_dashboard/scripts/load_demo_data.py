@@ -231,7 +231,6 @@ def load(env):
     structure = env["account.pl.structure"].create({
         "name": "Estado de resultados de gestión",
         "company_id": company.id,
-        "sales_account_ids": [Command.set((accounts["sales_services"] | accounts["sales_licenses"]).ids)],
         "excluded_journal_ids": [Command.set(closing_journal.ids)],
         "analytic_mode": "analytic",
         "analytic_plan_id": plan.id,
@@ -246,10 +245,9 @@ def load(env):
             **{field: [Command.set(records.ids)] for field, records in assignments.items()},
         })
 
-    line(roots["income"], "Clientes corporativos", 10,
-         partner_ids=acme | globex | umbrella, analytic_account_ids=unit_consulting)
-    line(roots["income"], "Licencias", 20, partner_ids=initech, analytic_account_ids=unit_software)
-    line(roots["income"], "Otros clientes", 30)
+    line(roots["income"], "Servicios", 10, account_ids=accounts["sales_services"])
+    line(roots["income"], "Licencias", 20, account_ids=accounts["sales_licenses"])
+    line(roots["income"], "Otros ingresos", 30)
 
     staff = line(roots["direct_cost"], "Personal", 10)
     line(staff, "Sueldos", 10, account_ids=accounts["salaries"] | accounts["salaries_extra"])
@@ -275,8 +273,7 @@ def load_budget(env, structure):
     """Accounting budget (by account and month, like the ones created from
     the Profit and Loss report) for the current and previous fiscal years:
     the actual figures of each month, +/- 15%, so that the dashboard shows
-    favorable and unfavorable deviations. Sales are budgeted at the
-    section level only, as Odoo budgets are by account."""
+    favorable and unfavorable deviations."""
     random.seed(7)
     company = structure.company_id
     today = fields.Date.context_today(env["res.users"])
@@ -284,7 +281,7 @@ def load_budget(env, structure):
         company.compute_fiscalyear_dates(today)["date_from"] - timedelta(days=1)
     )["date_from"]
     fiscal_year_end = company.compute_fiscalyear_dates(today)["date_to"]
-    accounts = structure.line_ids.account_ids | structure.sales_account_ids
+    accounts = structure.line_ids.account_ids
     actuals = dict(
         ((account.id, month), balance)
         for account, month, balance in env["account.move.line"]._read_group(

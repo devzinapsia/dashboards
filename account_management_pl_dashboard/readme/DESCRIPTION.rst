@@ -10,9 +10,9 @@ sense for the business (Salaries, IT infrastructure, Sales commissions,
 ...) rather than in the chart of accounts' order.
 
 - Three fixed sections: **Sales**, **Direct costs** and **Indirect costs**.
-  Below each one, groups and leaves are freely defined. A cost leaf
-  groups one or more accounts; a Sales leaf groups commercial customers
-  or analytic accounts.
+  Below each one, groups and leaves are freely defined. Every leaf groups
+  one or more accounts and shows their balance: income accounts for
+  Sales, expense accounts for costs.
 - Rows computed from the sections, defined in a single place of the code
   (``COMPUTED_ROWS``) so that more can be added later:
 

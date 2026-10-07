@@ -4,9 +4,12 @@
     <t t-name="account_management_pl_dashboard.PlDetailDialog">
         <Dialog title="title" size="'lg'">
             <div class="o_pl_detail" t-att-class="{ 'o_pl_detail_dark': isDarkMode }">
-                <div t-if="state.stack.length > 1" class="mb-2">
-                    <button class="btn btn-link px-0" t-on-click="back">
+                <div t-if="state.stack.length > 1 or current?.detail.can_open_all" class="d-flex mb-2">
+                    <button t-if="state.stack.length > 1" class="btn btn-link px-0" t-on-click="back">
                         <i class="fa fa-arrow-left me-1"/><t t-esc="labels.back"/>
+                    </button>
+                    <button t-if="current?.detail.can_open_all" class="btn btn-link px-0 ms-auto" t-on-click="openAll">
+                        <i class="fa fa-external-link me-1"/><t t-esc="labels.openAll"/>
                     </button>
                 </div>
                 <div t-if="secondaryNote" class="o_pl_detail_note mb-3" role="status">
