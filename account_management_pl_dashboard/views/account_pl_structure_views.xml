@@ -17,24 +17,10 @@
                             <field name="company_id" groups="base.group_multi_company" readonly="1"/>
                             <field name="excluded_journal_ids" widget="many2many_tags"/>
                         </group>
-                        <group string="Analytics">
-                            <field name="analytic_mode" widget="radio"/>
-                            <field name="analytic_plan_id"
-                                   invisible="analytic_mode != 'analytic'"
-                                   required="analytic_mode == 'analytic'"
-                                   options="{'no_create': True}"/>
-                        </group>
                         <group string="Currency">
                             <field name="secondary_currency_id" options="{'no_create': True}"/>
                             <field name="default_display_currency" widget="radio"/>
                             <field name="rate_max_age_days" invisible="not secondary_currency_id"/>
-                        </group>
-                        <group string="Budget">
-                            <field name="budget_enabled"/>
-                            <field name="budget_id"
-                                   invisible="not budget_enabled"
-                                   required="budget_enabled"
-                                   options="{'no_create': True}"/>
                         </group>
                     </group>
                     <notebook>

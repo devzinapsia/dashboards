@@ -148,12 +148,6 @@ class TestPlStructure(PlDashboardCommon):
         with self.assertRaises(ValidationError):
             self.structure.write({"secondary_currency_id": False, "default_display_currency": "secondary"})
 
-    def test_budget_required_when_enabled(self):
-        with self.assertRaises(ValidationError):
-            self.structure.budget_enabled = True
-        budget = self.env["account.report.budget"].create({"name": "Budget 2026", "company_id": self.company.id})
-        self.structure.write({"budget_enabled": True, "budget_id": budget.id})
-
     def test_views_load(self):
         """Structure form (with its lines list, "View" link included) and the
         line form opened from it."""

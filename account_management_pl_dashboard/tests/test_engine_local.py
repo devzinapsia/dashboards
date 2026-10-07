@@ -169,7 +169,8 @@ class TestPlEngineLocal(PlDashboardCommon):
         self.assertEqual(config["company_currency_id"], self.company.currency_id.id)
         self.assertEqual(config["secondary_currency_id"], self.structure.secondary_currency_id.id)
         self.assertEqual(config["default_display_currency"], "company")
-        self.assertEqual(config["analytic_mode"], "none")
+        self.assertIn("analytic_plans", config)
+        self.assertEqual(config["budgets"], [])
         self.assertTrue(config["can_configure"])
         self.structure.active = False
         self.assertFalse(self.Dashboard.get_dashboard_config()["has_structure"])

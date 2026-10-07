@@ -1,7 +1,7 @@
 from freezegun import freeze_time
 
 from odoo import Command
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
 
 from .common import PlDashboardAnalyticMixin, PlDashboardArsCommon, PlDashboardCommon
@@ -86,16 +86,12 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
         self.assertEqual(self._accounts_of(detail), {"4.1.1.01.001": 1600.0})
         self.assertTrue(detail["can_open_all"])
 
-    def test_profit_row_detail(self):
-        # Gross profit = Sales accounts (+) and direct cost accounts (-).
+    def test_profit_rows_have_no_detail(self):
         data = self._data()
-        detail = self.Dashboard.get_cell_detail("gross_profit", "total")
-        self.assertEqual(self._accounts_of(detail), {
-            "4.1.1.01.001": 1600.0, "5.1.2.01.010": -300.0, "5.1.2.01.020": -33.33, "5.2.1.01.070": -50.0,
-        })
-        self.assertAlmostEqual(detail["total"], self._row(data, "gross_profit")["values"]["total"])
-        self.assertTrue(self._row(data, "net_profit")["drilldown"])
-        self.assertFalse(self._row(data, "net_profit_pct")["drilldown"])
+        for key in ("gross_profit", "gross_profit_pct", "net_profit", "net_profit_pct"):
+            self.assertFalse(self._row(data, key)["drilldown"])
+        with self.assertRaises(UserError):
+            self.Dashboard.get_cell_detail("gross_profit", "total")
 
     def test_unassigned_detail(self):
         detail = self.Dashboard.get_cell_detail("unassigned", "2026-02")
@@ -146,10 +142,19 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
         analytic_lines = self.env["account.analytic.line"].search(action["domain"])
         self.assertEqual(analytic_lines.mapped("amount"), [200.0])
 
+    def test_ledger_keeps_the_analytic_filter(self):
+        self.env.user.group_ids += self.env.ref("analytic.group_analytic_accounting")
+        action = self.Dashboard.get_detail_action(
+            "line-%d" % self.leaf_sales.id, "total", "account-%d" % self.account_sales.id,
+            analytic_ids=self.unit_1.ids,
+        )
+        self.assertEqual(action["tag"], "account_report")
+        self.assertEqual(action["params"]["options"]["analytic_accounts"], self.unit_1.ids)
+
     def test_rpcs_accept_the_dashboard_request_params(self):
         """The popup sends the dashboard's whole set of request parameters
         to every RPC."""
-        params = {"period": "fiscal_year", "display_currency": "company", "analytic_ids": [], "show_budget": True}
+        params = {"period": "fiscal_year", "display_currency": "company", "analytic_ids": [], "budget_id": False}
         self.Dashboard.get_dashboard_data(**params)
         self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "total", **params)
         action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "total", "all", **params)

@@ -47,17 +47,16 @@ export class PlDashboard extends Component {
             noStructure: _t("There is no active management P&L structure for %s yet."),
             configure: _t("Configure the structure"),
             viewInCompanyCurrency: _t("View in company currency"),
-            analyticPlaceholder: {
-                analytic: _t("All analytic accounts"),
-                project: _t("All projects"),
-            },
+            noAnalyticFilter: _t("No analytic filter"),
+            allAnalyticAccounts: _t("Select analytic accounts or projects"),
+            noBudgetSelected: _t("No budget"),
             withoutAssignments: _t("Shown as 0 until something is assigned to it."),
             budget: _t("Budget"),
             actual: _t("Actual"),
             deviation: _t("Deviation %"),
             notAvailable: _t("n/a"),
             noBudget: _t("—"),
-            noBudgetHelp: _t("The budget is by account: it can't be split by customer or analytic account."),
+            noBudgetHelp: _t("The budget is by account."),
             budgetCurrencyNote: _t(
                 "Budget in the secondary currency: each month's budget is converted at the rate of the month's last day (the latest rate for the current month), so the deviation includes the exchange rate effect."
             ),
@@ -74,8 +73,10 @@ export class PlDashboard extends Component {
             config: null,
             period: savedState.period || "fiscal_year",
             displayCurrency: savedState.displayCurrency || null,
+            analyticPlanId: savedState.analyticPlanId || false,
+            analyticAccounts: [],
             analyticIds: savedState.analyticIds || [],
-            showBudget: savedState.showBudget ?? true,
+            budgetId: savedState.budgetId || false,
             data: null,
             error: null,
             collapsed: savedState.collapsed || {},
@@ -85,8 +86,9 @@ export class PlDashboard extends Component {
                 plDashboard: {
                     period: this.state.period,
                     displayCurrency: this.state.displayCurrency,
+                    analyticPlanId: this.state.analyticPlanId,
                     analyticIds: this.state.analyticIds,
-                    showBudget: this.state.showBudget,
+                    budgetId: this.state.budgetId,
                     collapsed: this.state.collapsed,
                 },
             }),
@@ -107,6 +109,7 @@ export class PlDashboard extends Component {
             return;
         }
         this.state.displayCurrency = this.state.displayCurrency || config.default_display_currency;
+        await this.loadAnalyticAccounts();
         await this.fetchData();
     }
 
@@ -137,13 +140,8 @@ export class PlDashboard extends Component {
             period: this.state.period,
             display_currency: this.state.displayCurrency,
             analytic_ids: this.state.analyticIds,
-            show_budget: this.state.showBudget,
+            budget_id: this.state.budgetId,
         };
-    }
-
-    toggleBudget() {
-        this.state.showBudget = !this.state.showBudget;
-        this.fetchData();
     }
 
     async refresh() {
@@ -164,14 +162,30 @@ export class PlDashboard extends Component {
     }
 
     get analyticChoices() {
-        return this.state.config.analytic_filter_options.map((option) => ({
-            value: option.id,
-            label: option.name,
-        }));
+        return this.state.analyticAccounts.map((option) => ({ value: option.id, label: option.name }));
     }
 
-    get analyticPlaceholder() {
-        return this.labels.analyticPlaceholder[this.state.config.analytic_mode];
+    /** Analytic accounts (or projects) of the selected plan, for the second filter. */
+    async loadAnalyticAccounts() {
+        this.state.analyticAccounts = this.state.analyticPlanId
+            ? await this.orm.call("account.pl.dashboard", "get_analytic_accounts", [this.state.analyticPlanId])
+            : [];
+    }
+
+    async onAnalyticPlanChange(ev) {
+        this.state.analyticPlanId = ev.target.value ? Number(ev.target.value) : false;
+        this.state.analyticIds = [];
+        await this.loadAnalyticAccounts();
+        // Choosing a plan alone doesn't filter anything yet: the analytic
+        // accounts (or projects) to keep are picked next.
+        if (!this.state.analyticPlanId) {
+            this.fetchData();
+        }
+    }
+
+    onBudgetChange(ev) {
+        this.state.budgetId = ev.target.value ? Number(ev.target.value) : false;
+        this.fetchData();
     }
 
     onPeriodChange(ev) {

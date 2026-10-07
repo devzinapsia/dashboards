@@ -50,23 +50,16 @@ Parameters
 - **Excluded journals**: their entries are ignored, typically the
   year-end closing entries, which would otherwise empty the previous
   fiscal year's columns.
-- **Analytic usage**: *Not used*, *Analytic accounts* (of the selected
-  root **Analytic plan**) or *Projects* (Odoo's project plan). When used,
-  the dashboard toolbar offers a filter by those analytic accounts or
-  projects. The filter uses a single plan: with several plans, a journal
-  item is split at 100% on each plan, and mixing plans would count it
-  twice.
 - **Secondary currency**: optional display currency (USD by default when
   active). It must be active and different from the company currency.
 - **Open dashboard in**: currency the dashboard opens in.
 - **Maximum rate age (days)**: see *Secondary currency* above.
-- **Compare with budget** and **Budget**: accounting budget compared
-  with the actual figures (see *Usage*).
 
 Budgets
 =======
 
-The comparison uses Odoo's **accounting budgets** (``account_reports``,
+The budget to compare with is picked in the dashboard's toolbar (see
+*Usage*), among the company's **accounting budgets** (``account_reports``,
 Enterprise): one amount per account and per month. They are created and
 edited from *Accounting > Reporting > Profit and Loss*, with its *Budget*
 filter (amounts are typed straight into the report's budget column).

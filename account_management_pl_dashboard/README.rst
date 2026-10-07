@@ -134,23 +134,16 @@ Parameters
 - **Excluded journals**: their entries are ignored, typically the
   year-end closing entries, which would otherwise empty the previous
   fiscal year's columns.
-- **Analytic usage**: *Not used*, *Analytic accounts* (of the selected
-  root **Analytic plan**) or *Projects* (Odoo's project plan). When used,
-  the dashboard toolbar offers a filter by those analytic accounts or
-  projects. The filter uses a single plan: with several plans, a journal
-  item is split at 100% on each plan, and mixing plans would count it
-  twice.
 - **Secondary currency**: optional display currency (USD by default when
   active). It must be active and different from the company currency.
 - **Open dashboard in**: currency the dashboard opens in.
 - **Maximum rate age (days)**: see *Secondary currency* above.
-- **Compare with budget** and **Budget**: accounting budget compared
-  with the actual figures (see *Usage*).
 
 Budgets
 -------
 
-The comparison uses Odoo's **accounting budgets** (``account_reports``,
+The budget to compare with is picked in the dashboard's toolbar (see
+*Usage*), among the company's **accounting budgets** (``account_reports``,
 Enterprise): one amount per account and per month. They are created and
 edited from *Accounting > Reporting > Profit and Loss*, with its *Budget*
 filter (amounts are typed straight into the report's budget column).
@@ -170,10 +163,16 @@ Toolbar
 - **Period**: current month, current fiscal year, previous fiscal year
   or last 12 months. Months after the current one are left empty, not 0.
 - **Currency**: company currency or secondary currency.
-- **Analytic accounts / Projects** (only when the structure uses them):
-  restricts every section to the share of each journal item distributed
-  to the selected analytic accounts or projects.
-- **Budget** (only when the structure compares with a budget).
+- **Analytic filter**: pick an **analytic plan** (Odoo's *Projects* plan
+  is one of them), then one or more of its **analytic accounts or
+  projects**. Every section is then restricted to the share of each
+  journal item distributed to them (a 1,000 item split 60% / 40% between
+  two projects counts 600 for the first one), so that the projects add up
+  to the company's total. Choosing a plan alone filters nothing yet. The
+  analytic accounts must be of a single plan: with several plans, a
+  journal item is split at 100% on each plan.
+- **Budget**: the accounting budget to compare with, among the company's
+  (*No budget*: no comparison).
 - **Expand all**, **Collapse all** and **Refresh**. Sections and groups
   also collapse one by one with their arrow.
 
@@ -191,12 +190,11 @@ other line.
 Drill-down
 ----------
 
-Clicking a figure (a section, a group, a line, a profit amount or the
-Unassigned row) opens a popup, loaded on demand, with **the balance of
-each account behind it** for the clicked column, in the currency being
-displayed. The accounts always add up to the figure clicked. In a profit
-row, cost accounts count negative (e.g. gross profit = Sales accounts -
-direct cost accounts). Profit percentages have no drill-down.
+Clicking a figure (a section, a group, a line or the Unassigned row)
+opens a popup, loaded on demand, with **the balance of each account
+behind it** for the clicked column, in the currency being displayed. The
+accounts always add up to the figure clicked. Profit rows (amounts and
+percentages) have no drill-down.
 
 - Clicking an account opens Odoo's **General Ledger** for that account and
   the period of the clicked column (the whole period in the Total column),
@@ -210,8 +208,16 @@ direct cost accounts). Profit percentages have no drill-down.
 
 The General Ledger and the journal item lists are in **company currency**:
 they can't total in the secondary currency. In the secondary currency
-view the popup says so. With the analytic filter, an account opens its
-analytic lines (the share distributed to the selected analytic accounts)
+view the popup says so.
+
+With the analytic filter, the popup's balances are the period's
+movements distributed to the selected analytic accounts (no opening
+balance), and an account opens the General Ledger with the same analytic
+filter. Odoo's ledger lists the journal items carrying those analytic
+accounts at their **full** amount: it matches the popup for items fully
+distributed to them, not for items split with other analytic accounts.
+**View all journal items** then lists the analytic lines, with the exact
+shares. Users without analytic accounting rights get the analytic lines
 instead of the ledger. Opening ledgers and journal items requires the
 usual accounting read access.
 

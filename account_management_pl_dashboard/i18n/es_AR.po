@@ -83,15 +83,6 @@ msgstr ""
 "La cuenta %(account)s no está disponible para la compañía %(company)s."
 
 #. module: account_management_pl_dashboard
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__budget_id
-msgid ""
-"Accounting budget (by account and month) the actual figures are compared "
-"with."
-msgstr ""
-"Presupuesto contable (por cuenta y mes) con el que se comparan los importes "
-"reales."
-
-#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__account_ids
 #: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
 msgid "Accounts"
@@ -120,18 +111,6 @@ msgstr "Administrador"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
-msgid "All analytic accounts"
-msgstr "Todas las cuentas analíticas"
-
-#. module: account_management_pl_dashboard
-#. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
-msgid "All projects"
-msgstr "Todos los proyectos"
-
-#. module: account_management_pl_dashboard
-#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "Amount"
 msgstr "Importe"
@@ -147,24 +126,10 @@ msgstr ""
 "en %s (moneda de la compañía) y no pueden totalizar en la moneda secundaria."
 
 #. module: account_management_pl_dashboard
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__analytic_mode__analytic
-msgid "Analytic accounts"
-msgstr "Cuentas analíticas"
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__analytic_plan_id
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.xml:0
 msgid "Analytic plan"
 msgstr "Plan analítico"
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__analytic_mode
-msgid "Analytic usage"
-msgstr "Uso de analíticas"
-
-#. module: account_management_pl_dashboard
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
-msgid "Analytics"
-msgstr "Analíticas"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__assignment_status
@@ -180,9 +145,8 @@ msgstr "Volver"
 #. module: account_management_pl_dashboard
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.xml:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__budget_id
-#: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
 msgid "Budget"
 msgstr "Presupuesto"
 
@@ -237,11 +201,6 @@ msgstr ""
 #: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__default_display_currency__company
 msgid "Company currency"
 msgstr "Moneda de la compañía"
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__budget_enabled
-msgid "Compare with budget"
-msgstr "Comparar con presupuesto"
 
 #. module: account_management_pl_dashboard
 #. odoo-python
@@ -541,14 +500,21 @@ msgstr "Nueva línea"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "No analytic filter"
+msgstr "Sin filtro analítico"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "No budget"
+msgstr "Sin presupuesto"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "No movements in this period."
 msgstr "No hay movimientos en este período."
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__analytic_mode__none
-msgid "Not used"
-msgstr "No se usa"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__default_display_currency
@@ -587,23 +553,10 @@ msgid "Previous fiscal year"
 msgstr "Ejercicio anterior"
 
 #. module: account_management_pl_dashboard
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__analytic_mode__project
-msgid "Projects"
-msgstr "Proyectos"
-
-#. module: account_management_pl_dashboard
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid "Refresh"
 msgstr "Actualizar"
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__analytic_plan_id
-msgid ""
-"Root analytic plan used when the analytic usage is 'Analytic accounts'."
-msgstr ""
-"Plan analítico raíz que se usa cuando el uso de analíticas es 'Cuentas "
-"analíticas'."
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__root_section
@@ -652,15 +605,15 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
-msgid "Select the analytic plan to use."
-msgstr "Seleccione el plan analítico a usar."
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Select analytic accounts of a single analytic plan."
+msgstr "Seleccione cuentas analíticas de un único plan analítico."
 
 #. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
-msgid "Select the budget to compare with."
-msgstr "Seleccione el presupuesto con el que comparar."
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Select analytic accounts or projects"
+msgstr "Seleccione cuentas analíticas o proyectos"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__sequence
@@ -708,21 +661,18 @@ msgid "Sub-lines"
 msgstr "Sublíneas"
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "The budget is by account."
+msgstr "El presupuesto es por cuenta."
+
+#. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid ""
 "The budget is by account: it can't be compared with an analytic filter."
 msgstr ""
 "El presupuesto es por cuenta: no se puede comparar con un filtro analítico."
-
-#. module: account_management_pl_dashboard
-#. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
-msgid ""
-"The budget is by account: it can't be split by customer or analytic account."
-msgstr ""
-"El presupuesto es por cuenta: no se puede dividir por cliente ni por cuenta "
-"analítica."
 
 #. module: account_management_pl_dashboard
 #. odoo-python
@@ -829,17 +779,6 @@ msgstr "Ver todos los apuntes"
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid "View in company currency"
 msgstr "Ver en moneda de la compañía"
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__analytic_mode
-msgid ""
-"Whether the dashboard works with analytic accounts (of a given plan) or with"
-" projects. When used, the dashboard toolbar offers a filter by those "
-"analytic accounts or projects."
-msgstr ""
-"Si el tablero trabaja con cuentas analíticas (de un plan determinado) o con "
-"proyectos. Cuando se usa, la barra del tablero ofrece un filtro por esas "
-"cuentas analíticas o proyectos."
 
 #. module: account_management_pl_dashboard
 #. odoo-python

@@ -148,8 +148,8 @@ class PlDashboardCommon(AccountTestInvoicingCommon):
 
 
 class PlDashboardAnalyticMixin:
-    """Analytic fixtures: a plan with two business units, used by the
-    structure's analytic usage (toolbar filter)."""
+    """Analytic fixtures: a plan with two business units, for the toolbar's
+    analytic filter."""
 
     @classmethod
     def _setup_analytics(cls):
@@ -158,7 +158,7 @@ class PlDashboardAnalyticMixin:
             {"name": "Unit 1", "plan_id": cls.plan.id, "company_id": cls.company.id},
             {"name": "Unit 2", "plan_id": cls.plan.id, "company_id": cls.company.id},
         ])
-        cls.structure.write({"analytic_mode": "analytic", "analytic_plan_id": cls.plan.id})
+
 
 
 class PlDashboardArsCommon(PlDashboardCommon):

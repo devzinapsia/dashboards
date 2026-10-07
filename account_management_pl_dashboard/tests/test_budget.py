@@ -20,7 +20,15 @@ class BudgetMixin:
                 for account, date, amount in items
             ],
         })
-        cls.structure.write({"budget_enabled": True, "budget_id": cls.budget.id})
+
+    def _data(self, period="fiscal_year", **kwargs):
+        """The budget is picked in the dashboard's toolbar."""
+        kwargs.setdefault("budget_id", self.budget.id)
+        return super()._data(period, **kwargs)
+
+    def _detail(self, row_key, column_key, **kwargs):
+        kwargs.setdefault("budget_id", self.budget.id)
+        return self.Dashboard.get_cell_detail(row_key, column_key, **kwargs)
 
 
 @tagged("post_install", "-at_install")
@@ -89,18 +97,23 @@ class TestPlBudget(BudgetMixin, PlDashboardAnalyticMixin, PlDashboardCommon):
 
     def test_budget_hidden(self):
         self.assertTrue(self._data()["budget_shown"])
-        data = self._data(show_budget=False)
+        data = self._data(budget_id=None)
         self.assertFalse(data["budget_shown"])
         self.assertNotIn("budget", self._line_row(data, self.leaf_salaries))
         # By account only: not comparable with an analytic filter.
         data = self._data(analytic_ids=self.unit_1.ids)
         self.assertFalse(data["budget_shown"])
         self.assertTrue(data["budget_unavailable_reason"])
-        self.structure.budget_enabled = False
-        self.assertFalse(self._data()["budget_shown"])
+        # A budget of another company is ignored.
+        other_budget = self.env["account.report.budget"].create({
+            "name": "Other company", "company_id": self.company_data_2["company"].id,
+        })
+        self.assertFalse(self._data(budget_id=other_budget.id)["budget_shown"])
+        config = self.Dashboard.get_dashboard_config()
+        self.assertEqual([budget["id"] for budget in config["budgets"]], self.budget.ids)
 
     def test_detail_budgets_add_up(self):
-        detail = self.Dashboard.get_cell_detail("line-%d" % self.root_direct.id, "total")
+        detail = self._detail("line-%d" % self.root_direct.id, "total")
         self.assertTrue(detail["budget_shown"])
         self.assertAlmostEqual(sum(entry["budget"] for entry in detail["entries"]), detail["total_budget"])
         self.assertEqual(detail["total_budget"], 380.0)
@@ -109,7 +122,7 @@ class TestPlBudget(BudgetMixin, PlDashboardAnalyticMixin, PlDashboardCommon):
         self.budget.item_ids = [Command.create({
             "account_id": self.account_social.id, "date": "2026-01-01", "amount": 15.0,
         })]
-        detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_salaries.id, "2026-01")
+        detail = self._detail("line-%d" % self.leaf_salaries.id, "2026-01")
         entries = {entry["code"]: entry for entry in detail["entries"]}
         self.assertEqual(entries["5.1.2.01.020"]["amount"], 0.0)
         self.assertEqual(entries["5.1.2.01.020"]["budget"], 15.0)
@@ -118,11 +131,11 @@ class TestPlBudget(BudgetMixin, PlDashboardAnalyticMixin, PlDashboardCommon):
 
     def test_detail_sales_line_budget(self):
         # Budgets are by account, like the popup's rows.
-        detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "2026-02")
+        detail = self._detail("line-%d" % self.leaf_sales.id, "2026-02")
         self.assertEqual(detail["total_budget"], 800.0)
         self.assertAlmostEqual(detail["total_deviation"], 25.0)
         self.assertEqual([entry["budget"] for entry in detail["entries"]], [800.0])
-        detail = self.Dashboard.get_cell_detail("line-%d" % self.root_income.id, "2026-02")
+        detail = self._detail("line-%d" % self.root_income.id, "2026-02")
         self.assertEqual(detail["total_budget"], 800.0)
         self.assertEqual([entry["budget"] for entry in detail["entries"]], [800.0])
 

@@ -31,21 +31,29 @@
                                         t-esc="option.label"/>
                             </t>
                         </div>
-                        <div t-if="config.analytic_mode !== 'none'" class="o_pl_analytic_filter">
+                        <select t-if="config.analytic_plans.length" class="form-select w-auto"
+                                t-on-change="onAnalyticPlanChange" aria-label="Analytic plan">
+                            <option value="" t-esc="labels.noAnalyticFilter"/>
+                            <t t-foreach="config.analytic_plans" t-as="plan" t-key="plan.id">
+                                <option t-att-value="plan.id" t-att-selected="state.analyticPlanId === plan.id" t-esc="plan.name"/>
+                            </t>
+                        </select>
+                        <div t-if="state.analyticPlanId" class="o_pl_analytic_filter">
                             <SelectMenu
                                 choices="analyticChoices"
                                 value="state.analyticIds"
                                 multiSelect="true"
                                 searchable="true"
-                                placeholder="analyticPlaceholder"
+                                placeholder="labels.allAnalyticAccounts"
                                 onSelect.bind="onAnalyticChange"/>
                         </div>
-                        <button t-if="config.budget_enabled" type="button" class="btn"
-                                t-att-class="state.showBudget ? 'btn-primary' : 'btn-secondary'"
-                                t-att-aria-pressed="state.showBudget ? 'true' : 'false'"
-                                t-on-click="toggleBudget">
-                            <i class="fa fa-balance-scale me-1"/><t t-esc="labels.budget"/>
-                        </button>
+                        <select t-if="config.budgets.length" class="form-select w-auto"
+                                t-on-change="onBudgetChange" aria-label="Budget">
+                            <option value="" t-esc="labels.noBudgetSelected"/>
+                            <t t-foreach="config.budgets" t-as="budget" t-key="budget.id">
+                                <option t-att-value="budget.id" t-att-selected="state.budgetId === budget.id" t-esc="budget.name"/>
+                            </t>
+                        </select>
                         <div class="ms-auto d-flex gap-2">
                             <button class="btn btn-secondary" t-on-click="expandAll" t-att-title="labels.expandAll">
                                 <i class="fa fa-plus-square-o me-1"/><span t-esc="labels.expandAll"/>

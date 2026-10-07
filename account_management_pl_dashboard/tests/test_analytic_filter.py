@@ -1,6 +1,7 @@
 from freezegun import freeze_time
 
 from odoo import Command
+from odoo.exceptions import UserError
 from odoo.tests import tagged
 
 from .common import PlDashboardAnalyticMixin, PlDashboardArsCommon, PlDashboardCommon
@@ -57,20 +58,38 @@ class TestPlAnalyticFilter(PlDashboardAnalyticMixin, PlDashboardCommon):
         project = self.env["account.analytic.account"].create({
             "name": "Project X", "plan_id": project_plan.id, "company_id": self.company.id,
         })
-        self.structure.analytic_mode = "project"
         self._entry("2026-02-10", [(self.account_sales, -250.0, None, {project: 100.0})])
         self.assertAlmostEqual(
             self._line_row(self._data(analytic_ids=project.ids), self.leaf_sales)["values"]["2026-02"], 250.0,
         )
-        options = self.Dashboard.get_dashboard_config()["analytic_filter_options"]
-        self.assertIn(project.id, [option["id"] for option in options])
+        plans = self.Dashboard.get_dashboard_config()["analytic_plans"]
+        self.assertIn(project_plan.id, [plan["id"] for plan in plans])
+        accounts = self.Dashboard.get_analytic_accounts(project_plan.id)
+        self.assertIn(project.id, [account["id"] for account in accounts])
 
-    def test_toolbar_filter_ignored_when_analytics_not_used(self):
-        self._entry("2026-02-10", [(self.account_salaries, 100.0, None, {self.unit_2: 100.0})])
-        self.structure.analytic_mode = "none"
+    def test_plans_and_accounts_offered_by_the_toolbar(self):
+        plans = {plan["id"] for plan in self.Dashboard.get_dashboard_config()["analytic_plans"]}
+        self.assertIn(self.plan.id, plans)
+        accounts = [account["id"] for account in self.Dashboard.get_analytic_accounts(self.plan.id)]
+        self.assertEqual(sorted(accounts), sorted((self.unit_1 | self.unit_2).ids))
+
+    def test_filter_needs_a_single_plan(self):
+        other_plan = self.env["account.analytic.plan"].create({"name": "Regions"})
+        region = self.env["account.analytic.account"].create({
+            "name": "North", "plan_id": other_plan.id, "company_id": self.company.id,
+        })
+        with self.assertRaises(UserError):
+            self._data(analytic_ids=(self.unit_1 | region).ids)
         data = self._data(analytic_ids=self.unit_1.ids)
+        self.assertEqual(data["analytic_plan_id"], self.plan.id)
+
+    def test_other_company_analytic_accounts_are_ignored(self):
+        other = self.env["account.analytic.account"].sudo().create({
+            "name": "Elsewhere", "plan_id": self.plan.id, "company_id": self.company_data_2["company"].id,
+        })
+        self._entry("2026-02-10", [(self.account_salaries, 100.0, None)])
+        data = self._data(analytic_ids=other.ids)
         self.assertEqual(data["analytic_ids"], [])
-        self.assertEqual(self.Dashboard.get_dashboard_config()["analytic_filter_options"], [])
         self.assertAlmostEqual(self._line_row(data, self.leaf_salaries)["values"]["2026-02"], 100.0)
 
 

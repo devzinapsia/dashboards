@@ -32,7 +32,7 @@ def load(env):
         [("company_id", "=", company.id)], limit=1,
     )
     if structure:
-        if structure.budget_id:
+        if env["account.report.budget"].search_count([("company_id", "=", company.id)]):
             print("Demo data already loaded, nothing to do.")
         else:
             # Demo loaded by an earlier version of this script: add the budget.
@@ -232,8 +232,6 @@ def load(env):
         "name": "Estado de resultados de gestión",
         "company_id": company.id,
         "excluded_journal_ids": [Command.set(closing_journal.ids)],
-        "analytic_mode": "analytic",
-        "analytic_plan_id": plan.id,
         "secondary_currency_id": usd.id,
     })
     roots = {line.section: line for line in structure.line_ids}
@@ -311,10 +309,10 @@ def load_budget(env, structure):
                     "amount": round(reference * random.uniform(0.85, 1.15), 2),
                 }))
         month += relativedelta(months=1)
-    budget = env["account.report.budget"].create({
+    # Picked in the dashboard's toolbar.
+    env["account.report.budget"].create({
         "name": "Presupuesto de gestión", "company_id": company.id, "item_ids": items,
     })
-    structure.write({"budget_enabled": True, "budget_id": budget.id})
 
 
 load(env)  # noqa: F821 - `env` is provided by odoo-bin shell

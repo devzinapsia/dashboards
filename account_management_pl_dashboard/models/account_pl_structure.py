@@ -33,20 +33,6 @@ class AccountPlStructure(models.Model):
     active = fields.Boolean(string="Active", default=True)
     line_ids = fields.One2many("account.pl.structure.line", "structure_id", string="Lines", copy=False)
 
-    analytic_mode = fields.Selection(
-        [("none", "Not used"), ("analytic", "Analytic accounts"), ("project", "Projects")],
-        string="Analytic usage",
-        required=True,
-        default="none",
-        help="Whether the dashboard works with analytic accounts (of a given plan) or with projects. "
-        "When used, the dashboard toolbar offers a filter by those analytic accounts or projects.",
-    )
-    analytic_plan_id = fields.Many2one(
-        "account.analytic.plan",
-        string="Analytic plan",
-        domain="[('parent_id', '=', False)]",
-        help="Root analytic plan used when the analytic usage is 'Analytic accounts'.",
-    )
     excluded_journal_ids = fields.Many2many(
         "account.journal",
         "account_pl_structure_excluded_journal_rel",
@@ -56,13 +42,6 @@ class AccountPlStructure(models.Model):
         check_company=True,
         help="Journal entries of these journals are ignored (e.g. year-end closing entries, which "
         "would otherwise empty the previous fiscal year's columns).",
-    )
-    budget_enabled = fields.Boolean(string="Compare with budget")
-    budget_id = fields.Many2one(
-        "account.report.budget",
-        string="Budget",
-        check_company=True,
-        help="Accounting budget (by account and month) the actual figures are compared with.",
     )
     secondary_currency_id = fields.Many2one(
         "res.currency",
@@ -134,17 +113,6 @@ class AccountPlStructure(models.Model):
         if any(structure.rate_max_age_days < 0 for structure in self):
             raise ValidationError(self.env._("The maximum rate age can't be negative."))
 
-    @api.constrains("analytic_mode", "analytic_plan_id")
-    def _check_analytic_settings(self):
-        for structure in self:
-            if structure.analytic_mode == "analytic" and not structure.analytic_plan_id:
-                raise ValidationError(self.env._("Select the analytic plan to use."))
-
-    @api.constrains("budget_enabled", "budget_id")
-    def _check_budget(self):
-        if any(structure.budget_enabled and not structure.budget_id for structure in self):
-            raise ValidationError(self.env._("Select the budget to compare with."))
-
     def _check_accounts_company(self, accounts):
         """Accounts are shared between companies through ``company_ids``; an
         account is usable by a company when it belongs to it or to one of its
@@ -163,16 +131,6 @@ class AccountPlStructure(models.Model):
     # -------------------------------------------------------------------------
     # Helpers used by the lines and by the computation engine
     # -------------------------------------------------------------------------
-
-    def _get_analytic_plan(self):
-        """Root analytic plan the structure works with, or an empty recordset."""
-        self.ensure_one()
-        if self.analytic_mode == "project":
-            project_plan, _other_plans = self.env["account.analytic.plan"]._get_all_plans()
-            return project_plan
-        if self.analytic_mode == "analytic":
-            return self.analytic_plan_id
-        return self.env["account.analytic.plan"]
 
     def _get_sales_accounts(self):
         """Accounts whose movements make up Sales: those of the Sales lines."""

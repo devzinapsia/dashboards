@@ -197,10 +197,10 @@ class AccountPlDashboard(models.AbstractModel):
         ]
 
     def _read_analytic_amounts(self, structure, date_from, date_to, key_fields, accounts, analytic_ids,
-                               converter=None):
-        """Sum the analytic lines of the structure's analytic plan for the
-        selected analytic accounts (toolbar filter), i.e. only the share of
-        each journal item distributed to them.
+                               analytic_plan, converter=None):
+        """Sum the analytic lines of ``analytic_plan`` for the selected
+        analytic accounts (toolbar filter), i.e. only the share of each
+        journal item distributed to them.
 
         Analytic lines are read through their journal item, so the same rules
         apply as everywhere else: posted entries only, accounting date of the
@@ -215,7 +215,7 @@ class AccountPlDashboard(models.AbstractModel):
             the latter meaning every P&L account except those.
         :return: same shape as _read_move_line_amounts.
         """
-        plan = structure._get_analytic_plan()
+        plan = analytic_plan
         self.env["account.move.line"].flush_model()
         self.env["account.analytic.line"].flush_model()
         self.env["account.account"].flush_model(["account_type"])
@@ -281,7 +281,8 @@ class AccountPlDashboard(models.AbstractModel):
             for row in self.env.cr.fetchall()
         ]
 
-    def _collect_amounts(self, structure, date_from, date_to, converter=None, analytic_ids=None):
+    def _collect_amounts(self, structure, date_from, date_to, converter=None, analytic_ids=None,
+                         analytic_plan=None):
         """Gather the period's amounts by P&L account, classified by
         structure leaf.
 
@@ -309,7 +310,8 @@ class AccountPlDashboard(models.AbstractModel):
         }
         if analytic_ids is not None:
             rows = self._read_analytic_amounts(
-                structure, date_from, date_to, ["account_id"], ("pl_except", []), analytic_ids, converter,
+                structure, date_from, date_to, ["account_id"], ("pl_except", []), analytic_ids, analytic_plan,
+                converter,
             )
         else:
             domain = self._base_move_line_domain(structure, date_from, date_to)
@@ -331,28 +333,46 @@ class AccountPlDashboard(models.AbstractModel):
     # Analytic filter
     # -------------------------------------------------------------------------
 
-    def _get_analytic_filter_options(self, structure):
-        """Analytic accounts (or projects) offered by the toolbar filter."""
-        plan = structure._get_analytic_plan()
-        if not plan:
-            return []
+    def _analytic_accounts_domain(self, company):
+        return [("company_id", "in", (False, *company.parent_ids.ids))]
+
+    @api.model
+    def get_analytic_accounts(self, plan_id):
+        """Analytic accounts (or projects) of a root analytic plan, offered by
+        the toolbar filter once that plan is selected."""
+        company = self._check_dashboard_access()
         analytics = self.env["account.analytic.account"].sudo().search([
-            ("root_plan_id", "=", plan.id),
-            ("company_id", "in", (False, *structure.company_id.parent_ids.ids)),
+            ("root_plan_id", "=", plan_id),
+            *self._analytic_accounts_domain(company),
         ])
         return [{"id": analytic.id, "name": analytic.display_name} for analytic in analytics]
 
-    def _sanitize_analytic_filter(self, structure, analytic_ids):
-        """Keep only analytic accounts the filter actually offers; None when
-        there is no filter."""
-        if not analytic_ids or structure.analytic_mode == "none":
-            return None
-        allowed = {option["id"] for option in self._get_analytic_filter_options(structure)}
-        return [analytic_id for analytic_id in analytic_ids if analytic_id in allowed] or None
+    def _get_analytic_plans(self, company):
+        """Root analytic plans with analytic accounts usable by the company
+        (Odoo's Projects plan included)."""
+        plans = self.env["account.analytic.account"].sudo()._read_group(
+            self._analytic_accounts_domain(company), groupby=["root_plan_id"],
+        )
+        return [{"id": plan.id, "name": plan.name} for (plan,) in plans if plan]
 
-    # -------------------------------------------------------------------------
-    # Aggregation
-    # -------------------------------------------------------------------------
+    def _sanitize_analytic_filter(self, company, analytic_ids):
+        """(root plan, analytic account ids) of the toolbar filter, keeping
+        only analytic accounts the company can use, or (empty plan, None)
+        when there is no filter. All of them must share one root plan: with
+        several plans, a journal item is split at 100% on each plan, so
+        mixing plans would count it more than once."""
+        Plan = self.env["account.analytic.plan"].sudo()
+        if not analytic_ids:
+            return Plan, None
+        analytics = self.env["account.analytic.account"].sudo().search([
+            ("id", "in", list(analytic_ids)),
+            *self._analytic_accounts_domain(company),
+        ])
+        if not analytics:
+            return Plan, None
+        if len(analytics.root_plan_id) > 1:
+            raise UserError(self.env._("Select analytic accounts of a single analytic plan."))
+        return analytics.root_plan_id, analytics.ids
 
     def _build_values(self, structure, columns, amounts):
         """Compute every row x column value from the collected amounts.
@@ -452,7 +472,7 @@ class AccountPlDashboard(models.AbstractModel):
         structure = request["structure"]
         rows = self.env["account.report.budget.item"].sudo()._read_group(
             [
-                ("budget_id", "=", structure.budget_id.id),
+                ("budget_id", "=", request["budget"].id),
                 ("date", ">=", request["date_from"].replace(day=1)),
                 ("date", "<=", request["read_to"]),
             ],
@@ -470,12 +490,15 @@ class AccountPlDashboard(models.AbstractModel):
             budget[account.id, self._column_key_of(month)] += amount
         return budget
 
-    def _is_budget_shown(self, request, show_budget):
-        structure = request["structure"]
-        return bool(
-            show_budget and structure.budget_enabled and structure.budget_id
-            and request["analytic_ids"] is None
-        )
+    def _is_budget_shown(self, request):
+        """A budget is selected in the toolbar, and comparable: budgets are
+        by account, so they can't be compared with an analytic filter."""
+        return bool(request["budget"]) and request["analytic_ids"] is None
+
+    def _get_budgets(self, company):
+        """Accounting budgets offered by the toolbar's budget selector."""
+        budgets = self.env["account.report.budget"].sudo().search([("company_id", "=", company.id)])
+        return [{"id": budget.id, "name": budget.name} for budget in budgets]
 
     @api.model
     def _deviation(self, actual, budget):
@@ -538,13 +561,12 @@ class AccountPlDashboard(models.AbstractModel):
             "default_display_currency": (
                 structure.default_display_currency if structure.secondary_currency_id else "company"
             ),
-            "budget_enabled": structure.budget_enabled,
-            "analytic_mode": structure.analytic_mode,
-            "analytic_filter_options": self._get_analytic_filter_options(structure),
+            "budgets": self._get_budgets(company),
+            "analytic_plans": self._get_analytic_plans(company),
             "can_configure": self.env.user.has_group("account_management_pl_dashboard.group_management_pl_manager"),
         }
 
-    def _prepare_request(self, period, display_currency, analytic_ids):
+    def _prepare_request(self, period, display_currency, analytic_ids, budget_id=None):
         """Resolve and validate the parameters shared by every dashboard RPC.
 
         The grid and the drill-down popups go through this same preparation
@@ -569,7 +591,12 @@ class AccountPlDashboard(models.AbstractModel):
         # Future months are shown empty: their (future-dated) journal items
         # are neither read nor converted.
         read_to = min(date_to, max(column["date_to"] for column in columns if not column["is_future"]))
+        analytic_plan, analytic_ids = self._sanitize_analytic_filter(company, analytic_ids)
+        budget = self.env["account.report.budget"].sudo().search(
+            [("id", "=", budget_id or 0), ("company_id", "=", company.id)], limit=1,
+        )
         return {
+            "budget": budget,
             "company": company,
             "structure": structure,
             "period": period,
@@ -579,7 +606,8 @@ class AccountPlDashboard(models.AbstractModel):
             "date_from": date_from,
             "date_to": date_to,
             "read_to": read_to,
-            "analytic_ids": self._sanitize_analytic_filter(structure, analytic_ids),
+            "analytic_plan": analytic_plan,
+            "analytic_ids": analytic_ids,
         }
 
     def _compute_request_amounts(self, request, with_budget=False):
@@ -592,6 +620,7 @@ class AccountPlDashboard(models.AbstractModel):
             )
         amounts = self._collect_amounts(
             request["structure"], request["date_from"], request["read_to"], converter, request["analytic_ids"],
+            request["analytic_plan"],
         )
         budget = self._collect_budget(request, converter) if with_budget else {}
         if converter:
@@ -602,21 +631,21 @@ class AccountPlDashboard(models.AbstractModel):
 
     @api.model
     def get_dashboard_data(self, period="fiscal_year", display_currency=None, analytic_ids=None,
-                           show_budget=True):
+                           budget_id=None):
         """Everything the dashboard grid needs, in one call.
 
         :param str period: one of PERIODS.
         :param str display_currency: "company" or "secondary"; defaults to
             the structure's default_display_currency.
         :param list analytic_ids: toolbar analytic account / project filter.
-        :param bool show_budget: toolbar budget toggle (only applies when the
-            structure enables the budget comparison).
+        :param int budget_id: accounting budget selected in the toolbar to
+            compare with (None: no comparison).
         """
-        request = self._prepare_request(period, display_currency, analytic_ids)
+        request = self._prepare_request(period, display_currency, analytic_ids, budget_id)
         if not request:
             return {"has_structure": False, "company_name": self.env.company.display_name}
         structure, columns, currency = request["structure"], request["columns"], request["currency"]
-        budget_shown = self._is_budget_shown(request, show_budget)
+        budget_shown = self._is_budget_shown(request)
         amounts, budget = self._compute_request_amounts(request, with_budget=budget_shown)
         values, section_totals, unassigned = self._build_values(structure, columns, amounts)
         budget_values = self._build_budget_values(request, budget) if budget_shown else {}
@@ -650,7 +679,7 @@ class AccountPlDashboard(models.AbstractModel):
                 "level": 0,
                 "kind": "computed_" + definition["type"],
                 "values": computed[definition["key"]],
-                "drilldown": definition["type"] == "amount",
+                "drilldown": False,
             })
         if any(value is not None and not currency.is_zero(value) for value in unassigned.values()):
             rows.append({
@@ -673,10 +702,11 @@ class AccountPlDashboard(models.AbstractModel):
             "currency_id": currency.id,
             "currency_name": currency.name,
             "analytic_ids": request["analytic_ids"] or [],
+            "analytic_plan_id": request["analytic_plan"].id or False,
             "budget_shown": budget_shown,
             "budget_unavailable_reason": (
                 self.env._("The budget is by account: it can't be compared with an analytic filter.")
-                if show_budget and structure.budget_enabled and request["analytic_ids"] is not None else False
+                if request["budget"] and request["analytic_ids"] is not None else False
             ),
             "columns": [
                 {
@@ -720,25 +750,16 @@ class AccountPlDashboard(models.AbstractModel):
 
     def _get_row_weights(self, request, row_key):
         """Leaves making up a drillable row, with the factor their amounts
-        (already in their section's sign) are counted with: 1 for a line's
-        own leaves, the section coefficient for a computed row (e.g. gross
-        profit = Sales leaves x 1 + direct cost leaves x -1). None for the
-        Unassigned row, which isn't made of leaves.
+        (already in their section's sign) are counted with. None for the
+        Unassigned row, which isn't made of leaves. Profit rows have no
+        drill-down.
 
         :return: {leaf record: factor} or None
         """
         structure = request["structure"]
         if row_key == UNASSIGNED_ROW:
             return None
-        definition = next((row for row in COMPUTED_ROWS if row["key"] == row_key), None)
         leaves = structure.line_ids.filtered(lambda line: not line.child_ids and not line.is_root)
-        if definition:
-            if definition["type"] != "amount":
-                raise UserError(self.env._("This row has no detail."))
-            return {
-                leaf: definition["coefficients"][leaf.section]
-                for leaf in leaves if leaf.section in definition["coefficients"]
-            }
         line = self._get_request_line(request, row_key)
         if line.is_root or line.child_ids:
             # Descendants share their ancestor's sort key as prefix.
@@ -764,9 +785,12 @@ class AccountPlDashboard(models.AbstractModel):
     def _can_open_ledger(self):
         return self.env["account.report"].has_access("read") and self.env["account.move.line"].has_access("read")
 
+    def _can_filter_ledger_by_analytic(self):
+        return self._can_open_ledger() and self.env.user.has_group("analytic.group_analytic_accounting")
+
     @api.model
     def get_cell_detail(self, row_key, column_key, period="fiscal_year", display_currency=None,
-                        analytic_ids=None, show_budget=True):
+                        analytic_ids=None, budget_id=None):
         """Detail of one grid cell, loaded on demand by the drill-down popup:
         whatever the row (section, group, line, profit row or Unassigned), the
         balance of each account behind it, for the clicked column.
@@ -776,7 +800,7 @@ class AccountPlDashboard(models.AbstractModel):
         (budgeted accounts without movements are listed too). Each account
         opens its general ledger for the column's period.
         """
-        request = self._prepare_request(period, display_currency, analytic_ids)
+        request = self._prepare_request(period, display_currency, analytic_ids, budget_id)
         if not request:
             raise UserError(self.env._("There is no active management P&L structure."))
         column, month_keys = self._get_request_column(request, column_key)
@@ -785,7 +809,7 @@ class AccountPlDashboard(models.AbstractModel):
             self._get_request_line(request, row_key)
             if row_key.startswith("line-") else self.env["account.pl.structure.line"]
         )
-        budget_shown = self._is_budget_shown(request, show_budget) and bool(line)
+        budget_shown = self._is_budget_shown(request) and bool(line)
         amounts, budget = self._compute_request_amounts(request, with_budget=budget_shown)
 
         totals = defaultdict(float)
@@ -812,9 +836,8 @@ class AccountPlDashboard(models.AbstractModel):
                             # too, so that the budgets add up to the cell's.
                             totals.setdefault(detail_key, 0.0)
 
-        can_open = (
-            self.env["account.analytic.line"].has_access("read") if request["analytic_ids"] is not None
-            else self._can_open_ledger()
+        can_open = self._can_open_ledger() or (
+            request["analytic_ids"] is not None and self.env["account.analytic.line"].has_access("read")
         )
         descriptions = self._describe_accounts(request, totals)
         entries = []
@@ -841,7 +864,7 @@ class AccountPlDashboard(models.AbstractModel):
             "currency_id": request["currency"].id,
             "display_currency": request["display_currency"],
             "company_currency_name": request["company"].currency_id.name,
-            "section": line.section if line else ("income" if weights is not None else False),
+            "section": line.section if line else False,
             "entries": entries,
             "total": total,
             "can_open_all": bool(entries) and (
@@ -859,7 +882,7 @@ class AccountPlDashboard(models.AbstractModel):
         structure = request["structure"]
         analytic_ids = request["analytic_ids"]
         if analytic_ids is not None:
-            plan_field = structure._get_analytic_plan()._column_name()
+            plan_field = request["analytic_plan"]._column_name()
             domain = [
                 ("company_id", "=", structure.company_id.id),
                 ("move_line_id.parent_state", "=", "posted"),
@@ -879,7 +902,14 @@ class AccountPlDashboard(models.AbstractModel):
         """Odoo's General Ledger, unfolded on ``account``, for the request's
         detail period and without the structure's excluded journals, so that
         its total matches the dashboard (from there, each entry opens its
-        journal entry)."""
+        journal entry).
+
+        With the toolbar's analytic filter, the ledger gets the same analytic
+        filter. Odoo's ledger then lists the journal items carrying those
+        analytic accounts at their full amount, whereas the dashboard counts
+        the share distributed to them: both match for items fully
+        distributed to the filter's analytic accounts.
+        """
         structure = request["structure"]
         general_ledger = self.env.ref("account_reports.general_ledger_report")
         journals = self.env["account.journal"].search([
@@ -894,6 +924,7 @@ class AccountPlDashboard(models.AbstractModel):
                 "filter": "custom",
             },
             "not_reset_journals_filter": True,
+            "analytic_accounts": request["analytic_ids"] or [],
             "journals": [
                 {"id": journal.id, "model": "account.journal", "selected": True} for journal in journals
             ] if structure.excluded_journal_ids else [],
@@ -915,7 +946,7 @@ class AccountPlDashboard(models.AbstractModel):
 
     @api.model
     def get_detail_action(self, row_key, column_key, detail_key, period="fiscal_year", display_currency=None,
-                          analytic_ids=None, show_budget=True):
+                          analytic_ids=None, budget_id=None):
         """What a popup entry opens, for the period of the clicked column:
 
         - "account-<id>": the account's general ledger (or, with the analytic
@@ -924,9 +955,9 @@ class AccountPlDashboard(models.AbstractModel):
 
         Ledgers and lists are in company currency (they can't total in another
         currency). Takes the same parameters as the other dashboard RPCs (the
-        popup sends them all); ``show_budget`` doesn't change what matches.
+        popup sends them all); ``budget_id`` doesn't change what matches.
         """
-        request = self._prepare_request(period, display_currency, analytic_ids)
+        request = self._prepare_request(period, display_currency, analytic_ids, budget_id)
         if not request:
             raise UserError(self.env._("There is no active management P&L structure."))
         column, month_keys = self._get_request_column(request, column_key)
@@ -943,7 +974,9 @@ class AccountPlDashboard(models.AbstractModel):
             account = self.env["account.account"].browse(int(detail_key.removeprefix("account-")))
         except ValueError:
             raise UserError(self.env._("This row has no detail.")) from None
-        if request["analytic_ids"] is not None:
+        if request["analytic_ids"] is not None and not self._can_filter_ledger_by_analytic():
+            # Odoo's ledger only offers its analytic filter to analytic
+            # accounting users: list the analytic lines instead.
             model, domain = self._get_items_target(request, account)
             name = " ".join(filter(None, [account.with_company(request["company"]).code, account.name]))
             return self._get_drilldown_action(model, domain=domain, name=name)
