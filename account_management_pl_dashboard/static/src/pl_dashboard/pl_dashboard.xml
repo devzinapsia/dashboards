@@ -55,6 +55,10 @@
                             </t>
                         </select>
                         <div class="ms-auto d-flex gap-2">
+                            <button class="btn btn-secondary" t-on-click="exportXlsx" t-att-title="labels.exportXlsxHelp"
+                                    t-att-disabled="!state.data">
+                                <i class="fa fa-file-excel-o me-1"/><span t-esc="labels.exportXlsx"/>
+                            </button>
                             <button class="btn btn-secondary" t-on-click="expandAll" t-att-title="labels.expandAll">
                                 <i class="fa fa-plus-square-o me-1"/><span t-esc="labels.expandAll"/>
                             </button>
@@ -76,10 +80,11 @@
                         </div>
                     </div>
 
-                    <div t-if="state.data and (state.data.budget_unavailable_reason or (budgetShown and state.data.display_currency === 'secondary'))"
-                         class="o_pl_note mx-3 mb-2" role="status">
-                        <i class="fa fa-info-circle me-1"/>
-                        <t t-esc="state.data.budget_unavailable_reason or labels.budgetCurrencyNote"/>
+                    <div t-if="state.data?.budget_unavailable_reason" class="o_pl_note mx-3 mb-2" role="status">
+                        <i class="fa fa-info-circle me-1"/><t t-esc="state.data.budget_unavailable_reason"/>
+                    </div>
+                    <div t-if="secondaryRateNote" class="o_pl_note mx-3 mb-2" role="status">
+                        <i class="fa fa-exchange me-1"/><t t-esc="secondaryRateNote"/>
                     </div>
                     <div t-if="state.data" class="o_pl_grid_wrapper flex-grow-1 mx-3 mb-3">
                         <table class="o_pl_grid">

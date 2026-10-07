@@ -5,6 +5,7 @@ import { SelectMenu } from "@web/core/select_menu/select_menu";
 import { useSetupAction } from "@web/search/action_hook";
 import { formatMonetary, formatFloat } from "@web/views/fields/formatters";
 import { _t } from "@web/core/l10n/translation";
+import { deserializeDate, formatDate } from "@web/core/l10n/dates";
 import { isDarkMode } from "@dashboards_base/js/dashboards_theme";
 import { PlDetailDialog } from "../pl_detail_dialog/pl_detail_dialog";
 import { deviationClass } from "../pl_utils";
@@ -40,6 +41,8 @@ export class PlDashboard extends Component {
         this.action = useService("action");
         this.dialog = useService("dialog");
         this.labels = {
+            exportXlsx: _t("Export"),
+            exportXlsxHelp: _t("Export the dashboard, as shown, to an Excel file"),
             expandAll: _t("Expand all"),
             collapseAll: _t("Collapse all"),
             refresh: _t("Refresh"),
@@ -57,8 +60,8 @@ export class PlDashboard extends Component {
             notAvailable: _t("n/a"),
             noBudget: _t("—"),
             noBudgetHelp: _t("The budget is by account."),
-            budgetCurrencyNote: _t(
-                "Budget in the secondary currency: each month's budget is converted at the rate of the month's last day (the latest rate for the current month), so the deviation includes the exchange rate effect."
+            secondaryRateNote: _t(
+                "Amounts in the company currency converted at the latest %(currency)s rate: %(rate)s (%(date)s), the same for every month; journal items made in %(currency)s keep their original amount."
             ),
             unassignedHelp: _t(
                 "Control row: movements of P&L accounts, customers or analytic accounts not included in any line. " +
@@ -142,6 +145,20 @@ export class PlDashboard extends Component {
             analytic_ids: this.state.analyticIds,
             budget_id: this.state.budgetId,
         };
+    }
+
+    /** The grid as shown (same toolbar choices) in an Excel file. */
+    async exportXlsx() {
+        const { filename, content } = await this.orm.call(
+            "account.pl.dashboard", "get_dashboard_xlsx", [], this.requestParams
+        );
+        const bytes = Uint8Array.from(atob(content), (char) => char.charCodeAt(0));
+        const url = URL.createObjectURL(
+            new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+        );
+        const link = Object.assign(document.createElement("a"), { href: url, download: filename });
+        link.click();
+        URL.revokeObjectURL(url);
     }
 
     async refresh() {
@@ -350,6 +367,18 @@ export class PlDashboard extends Component {
 
     deviationClass(row, column) {
         return deviationClass(row.section, row.deviation?.[column.key]);
+    }
+
+    get secondaryRateNote() {
+        const data = this.state.data;
+        const rate = data?.secondary_rate;
+        if (!rate) {
+            return false;
+        }
+        return this.labels.secondaryRateNote
+            .replaceAll("%(currency)s", data.currency_name)
+            .replace("%(rate)s", formatMonetary(rate.value, { currencyId: rate.company_currency_id }))
+            .replace("%(date)s", formatDate(deserializeDate(rate.date)));
     }
 
     isNegative(row, column) {

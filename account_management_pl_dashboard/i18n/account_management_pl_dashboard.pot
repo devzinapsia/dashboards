@@ -6,29 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 22:42+0000\n"
-"PO-Revision-Date: 2026-10-07 22:42+0000\n"
+"POT-Creation-Date: 2026-10-07 23:03+0000\n"
+"PO-Revision-Date: 2026-10-07 23:03+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/pl_currency_converter.py:0
-msgid ""
-"%(currency)s exchange rates are missing for these dates (no rate within the "
-"previous %(days)s days): %(dates)s. Load the missing rates, or view the "
-"dashboard in the company currency."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/pl_currency_converter.py:0
-msgid "%(dates)s and %(count)s more"
-msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-python
@@ -88,6 +73,8 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid "Actual"
 msgstr ""
@@ -110,10 +97,25 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid ""
+"Amounts in the company currency converted at the latest %(currency)s rate: "
+"%(rate)s (%(date)s), the same for every month; journal items made in "
+"%(currency)s keep their original amount."
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid ""
 "Amounts in the secondary currency. The journal item lists open in %s "
 "(company currency) and can't total in the secondary currency."
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Analytic filter: %s"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -135,6 +137,8 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.xml:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
@@ -142,12 +146,9 @@ msgid "Budget"
 msgstr ""
 
 #. module: account_management_pl_dashboard
-#. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
-msgid ""
-"Budget in the secondary currency: each month's budget is converted at the "
-"rate of the month's last day (the latest rate for the current month), so the"
-" deviation includes the exchange rate effect."
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Budget: %s"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -211,6 +212,12 @@ msgid ""
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Converted at the latest %(currency)s rate: %(rate)s (%(date)s)"
+msgstr ""
+
+#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__create_uid
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__create_uid
 msgid "Created by"
@@ -228,6 +235,12 @@ msgid "Currency"
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Currency: %s"
+msgstr ""
+
+#. module: account_management_pl_dashboard
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid "Current fiscal year"
@@ -241,6 +254,8 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "Deviation %"
@@ -277,6 +292,18 @@ msgid "Expand all"
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Export"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Export the dashboard, as shown, to an Excel file"
+msgstr ""
+
+#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__complete_name
 msgid "Full name"
 msgstr ""
@@ -303,14 +330,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__id
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__id
 msgid "ID"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__rate_max_age_days
-msgid ""
-"In the secondary currency view, a day whose most recent exchange rate is "
-"older than this many days is reported as missing a rate (covers weekends and"
-" bank holidays)."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -415,6 +434,7 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
 #: model:ir.actions.client,name:account_management_pl_dashboard.action_account_pl_dashboard
 #: model:ir.ui.menu,name:account_management_pl_dashboard.menu_account_pl_dashboard
@@ -438,11 +458,6 @@ msgstr ""
 #: model:ir.model,name:account_management_pl_dashboard.model_account_pl_structure_line
 #: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
 msgid "Management P&L structure line"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__rate_max_age_days
-msgid "Maximum rate age (days)"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -639,12 +654,6 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
-msgid "The maximum rate age can't be negative."
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
 msgid "The secondary currency %s is not active."
 msgstr ""
 
@@ -666,6 +675,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid "The section lines can't be moved or retyped."
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/pl_currency_converter.py:0
+msgid ""
+"There is no %(currency)s exchange rate loaded yet. Load one, or view the "
+"dashboard in the company currency."
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -695,6 +712,8 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "Total"

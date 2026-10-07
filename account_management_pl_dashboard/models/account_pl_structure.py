@@ -56,13 +56,6 @@ class AccountPlStructure(models.Model):
         required=True,
         default="company",
     )
-    rate_max_age_days = fields.Integer(
-        string="Maximum rate age (days)",
-        default=5,
-        help="In the secondary currency view, a day whose most recent exchange rate is older than "
-        "this many days is reported as missing a rate (covers weekends and bank holidays).",
-    )
-
     @api.model
     def _default_secondary_currency(self):
         usd = self.env.ref("base.USD", raise_if_not_found=False)
@@ -107,11 +100,6 @@ class AccountPlStructure(models.Model):
                 raise ValidationError(self.env._(
                     "The secondary currency must be different from the company currency (%s).", currency.name
                 ))
-
-    @api.constrains("rate_max_age_days")
-    def _check_rate_max_age_days(self):
-        if any(structure.rate_max_age_days < 0 for structure in self):
-            raise ValidationError(self.env._("The maximum rate age can't be negative."))
 
     def _check_accounts_company(self, accounts):
         """Accounts are shared between companies through ``company_ids``; an

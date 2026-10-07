@@ -20,7 +20,6 @@
                         <group string="Currency">
                             <field name="secondary_currency_id" options="{'no_create': True}"/>
                             <field name="default_display_currency" widget="radio"/>
-                            <field name="rate_max_age_days" invisible="not secondary_currency_id"/>
                         </group>
                     </group>
                     <notebook>

@@ -17,6 +17,8 @@ Toolbar
   journal item is split at 100% on each plan.
 - **Budget**: the accounting budget to compare with, among the company's
   (*No budget*: no comparison).
+- **Export**: downloads the grid as shown (same period, currency,
+  analytic filter and budget, every row expanded) as an Excel file.
 - **Expand all**, **Collapse all** and **Refresh**. Sections and groups
   also collapse one by one with their arrow.
 
@@ -79,10 +81,6 @@ Budgets are by account: every leaf adds up the budget of its accounts,
 and groups and sections add up their lines; the popup shows each
 account's budget too. With the analytic filter, the budget is hidden.
 
-In the **secondary currency**, the budget (in company currency) is first
-allotted to each month, then **each month is converted at the rate of
-its last day** (for the current month, the most recent rate). The
-deviation shown in the secondary currency therefore **includes the
-exchange rate effect**: spending exactly the budgeted pesos at a
-different rate shows a deviation in dollars. The dashboard reminds it
-with a note.
+In the **secondary currency**, the budget (in company currency) is
+converted at the same latest rate as the actual figures, so spending
+exactly the budgeted pesos shows no deviation in dollars either.

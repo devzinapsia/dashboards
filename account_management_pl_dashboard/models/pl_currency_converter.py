@@ -1,121 +1,69 @@
-from bisect import bisect_right
-from collections import defaultdict
-from datetime import timedelta
-
+from odoo import fields
 from odoo.exceptions import UserError
-from odoo.tools import format_date
-
-# Maximum number of missing dates listed in the error message.
-MAX_MISSING_DATES_IN_MESSAGE = 10
 
 
 class PlCurrencyConverter:
-    """Expresses company-currency journal items in a secondary currency,
-    following the "hybrid" criterion of the management P&L:
+    """Expresses company-currency journal items in a secondary currency:
 
     a. a journal item whose own currency is the secondary currency keeps its
        original amount (amount_currency), without any conversion;
     b. any other journal item (company currency, or a third currency) has its
-       company-currency balance converted at the rate of its accounting date.
+       company-currency balance converted at the **latest loaded rate** of
+       the secondary currency, the same one for every month (so the figures
+       of past months change when a new rate is loaded).
 
-    Rates come from res.currency.rate only, resolved the same way as Odoo's
-    own ``res.currency._get_rates``: among the rates on or before the date,
-    the company-specific ones (root company) win over the shared ones
-    (company_id empty), and the most recent of them is used. Unlike Odoo,
-    which silently falls back to the oldest known rate (or 1.0), a date with
-    no rate, or whose most recent rate is older than ``max_age_days``, is
-    recorded as missing and ``raise_if_missing`` reports it: a missing rate
-    must never turn into a silently wrong amount.
-
-    All rates needed for a dashboard request are loaded with a single query
-    and looked up in memory, whatever the number of journal items.
+    Rates come from res.currency.rate only. Like Odoo's own
+    ``res.currency._get_rates``, the company-specific rates (root company)
+    win over the shared ones (company_id empty). A currency with no rate at
+    all raises an error rather than silently converting at 1.0.
     """
 
-    def __init__(self, env, company, target_currency, max_age_days, date_to):
+    def __init__(self, env, company, target_currency):
         self.env = env
         self.company = company
         self.company_currency = company.currency_id
         self.target_currency = target_currency
-        self.max_age_days = max_age_days
-        self.missing_dates = set()
-        self._factor_cache = {}
-        self._rates = self._load_rates(date_to)
-
-    def _load_rates(self, date_to):
-        """{currency_id: {"company": ([dates], [rates]), "shared": ([dates], [rates])}}"""
-        root_company = self.company.root_id
-        records = self.env["res.currency.rate"].sudo().search_read(
-            [
-                ("currency_id", "in", (self.target_currency | self.company_currency).ids),
-                ("company_id", "in", (False, root_company.id)),
-                ("name", "<=", date_to),
-            ],
-            ["currency_id", "company_id", "name", "rate"],
-            order="name asc",
-        )
-        grouped = defaultdict(lambda: {"company": ([], []), "shared": ([], [])})
-        for record in records:
-            scope = "company" if record["company_id"] else "shared"
-            dates, rates = grouped[record["currency_id"][0]][scope]
-            dates.append(record["name"])
-            rates.append(record["rate"])
-        return grouped
-
-    def _rate_at(self, currency, date):
-        """Most recent (rate, rate_date) on or before ``date``, or (None, None)."""
-        for scope in ("company", "shared"):
-            dates, rates = self._rates[currency.id][scope]
-            index = bisect_right(dates, date)
-            if index:
-                return rates[index - 1], dates[index - 1]
-        return None, None
-
-    def factor(self, date):
-        """Multiplier converting a company-currency amount of ``date`` into
-        the target currency, or None when the rate is missing."""
-        if date in self._factor_cache:
-            return self._factor_cache[date]
-        target_rate, target_rate_date = self._rate_at(self.target_currency, date)
+        today = fields.Date.context_today(env["res.users"])
+        target_rate, self.rate_date = self._latest_rate(target_currency, today)
+        if not target_rate:
+            raise UserError(self.env._(
+                "There is no %(currency)s exchange rate loaded yet. Load one, or view the dashboard in the "
+                "company currency.",
+                currency=target_currency.name,
+            ))
         # The company currency is normally the reference (rate 1, often with
         # no rate records at all), exactly like in Odoo's own _get_rates.
-        company_rate, _company_rate_date = self._rate_at(self.company_currency, date)
-        if not target_rate or (date - target_rate_date) > timedelta(days=self.max_age_days):
-            self.missing_dates.add(date)
-            factor = None
-        else:
-            factor = target_rate / (company_rate or 1.0)
-        self._factor_cache[date] = factor
-        return factor
+        company_rate, _date = self._latest_rate(self.company_currency, today)
+        self.factor = target_rate / (company_rate or 1.0)
 
-    def convert_balance(self, amount, date):
-        """Company-currency amount of ``date`` in the target currency (0.0,
-        and the date recorded as missing, when there is no usable rate)."""
-        if not amount:
-            return 0.0
-        factor = self.factor(date)
-        return amount * factor if factor is not None else 0.0
+    def _latest_rate(self, currency, today):
+        """(rate, date) of the latest rate loaded up to today, or (None, None)."""
+        Rate = self.env["res.currency.rate"].sudo()
+        for company_domain in ([("company_id", "=", self.company.root_id.id)], [("company_id", "=", False)]):
+            rate = Rate.search([
+                ("currency_id", "=", currency.id),
+                ("name", "<=", today),
+                *company_domain,
+            ], order="name desc", limit=1)
+            if rate:
+                return rate.rate, rate.name
+        return None, None
 
-    def convert_move_lines(self, date, currency_id, balance, amount_currency):
+    @property
+    def company_units_per_unit(self):
+        """The rate as usually quoted: company-currency units per unit of the
+        secondary currency (e.g. 1,450 ARS per USD)."""
+        return 1.0 / self.factor
+
+    def convert_balance(self, amount):
+        """Company-currency amount in the target currency."""
+        return (amount or 0.0) * self.factor
+
+    def convert_move_lines(self, currency_id, balance, amount_currency):
         """Amount in the target currency of a group of journal items sharing
-        the same accounting date and currency, keeping the accounting sign
-        (debit positive)."""
+        the same currency, keeping the accounting sign (debit positive)."""
         if currency_id == self.target_currency.id:
             # Original amount, never re-converted. Exchange difference items
             # (amount_currency = 0, balance != 0) therefore contribute 0.
             return amount_currency or 0.0
-        return self.convert_balance(balance, date)
-
-    def raise_if_missing(self):
-        if not self.missing_dates:
-            return
-        dates = sorted(self.missing_dates)
-        listed = ", ".join(format_date(self.env, date) for date in dates[:MAX_MISSING_DATES_IN_MESSAGE])
-        if len(dates) > MAX_MISSING_DATES_IN_MESSAGE:
-            listed = self.env._("%(dates)s and %(count)s more", dates=listed, count=len(dates) - MAX_MISSING_DATES_IN_MESSAGE)
-        raise UserError(self.env._(
-            "%(currency)s exchange rates are missing for these dates (no rate within the previous %(days)s days): "
-            "%(dates)s. Load the missing rates, or view the dashboard in the company currency.",
-            currency=self.target_currency.name,
-            days=self.max_age_days,
-            dates=listed,
-        ))
+        return self.convert_balance(balance)

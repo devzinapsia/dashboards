@@ -2,7 +2,7 @@
     "name": "Estado de resultados de gestión",
     "summary": "Management P&L dashboard with a configurable structure, drill-down, budget comparison "
     "and secondary currency view",
-    "version": "19.0.1.0.4",
+    "version": "19.0.1.0.5",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",

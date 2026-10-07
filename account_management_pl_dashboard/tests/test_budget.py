@@ -152,28 +152,23 @@ class TestPlBudgetSecondary(BudgetMixin, PlDashboardArsCommon):
             (cls.account_salaries, "2026-02-01", 200000.0),
             (cls.account_salaries, "2026-03-01", 300000.0),
         ])
-        # Rates on the item dates (1st of the month) must not be used.
         cls._rate(cls.usd, "2026-01-01", 500.0)
-        cls._rate(cls.usd, "2026-01-30", 1000.0)  # Friday; Jan 31 is a Saturday
-        cls._rate(cls.usd, "2026-02-27", 1250.0)  # Friday; Feb 28 is a Saturday
-        cls._rate(cls.usd, "2026-03-13", 1500.0)  # latest rate of the current month
+        cls._rate(cls.usd, "2026-03-13", 1500.0)  # latest loaded rate
 
-    def test_each_month_at_its_last_day_rate(self):
+    def test_budget_at_the_latest_rate(self):
         data = self._data(display_currency="secondary")
         budget = self._line_row(data, self.leaf_salaries)["budget"]
-        self.assertAlmostEqual(budget["2026-01"], 100.0)
-        self.assertAlmostEqual(budget["2026-02"], 160.0)
-        self.assertAlmostEqual(budget["2026-03"], 200.0)
-        self.assertAlmostEqual(budget["total"], 460.0)
+        self.assertAlmostEqual(budget["2026-01"], 100000.0 / 1500.0)
+        self.assertAlmostEqual(budget["2026-02"], 200000.0 / 1500.0)
+        self.assertAlmostEqual(budget["total"], 400.0)
         local = self._line_row(self._data(display_currency="company"), self.leaf_salaries)["budget"]
         self.assertEqual(local["total"], 600000.0)
 
-    def test_deviation_includes_exchange_effect(self):
-        # Spent exactly the budget in pesos, on a day with a different rate.
-        self._rate(self.usd, "2026-02-10", 1000.0)
+    def test_same_rate_for_actual_and_budget(self):
+        # Spent exactly the budget in pesos: no deviation in either currency,
+        # both being converted at the same rate.
         self._entry("2026-02-10", [(self.account_salaries, 200000.0, None)])
         row = self._line_row(self._data(display_currency="secondary"), self.leaf_salaries)
-        self.assertAlmostEqual(row["values"]["2026-02"], 200.0)
-        self.assertAlmostEqual(row["deviation"]["2026-02"], 25.0)
+        self.assertAlmostEqual(row["deviation"]["2026-02"], 0.0)
         row = self._line_row(self._data(display_currency="company"), self.leaf_salaries)
         self.assertAlmostEqual(row["deviation"]["2026-02"], 0.0)

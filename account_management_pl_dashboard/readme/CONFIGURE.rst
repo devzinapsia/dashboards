@@ -53,7 +53,6 @@ Parameters
 - **Secondary currency**: optional display currency (USD by default when
   active). It must be active and different from the company currency.
 - **Open dashboard in**: currency the dashboard opens in.
-- **Maximum rate age (days)**: see *Secondary currency* above.
 
 Budgets
 =======

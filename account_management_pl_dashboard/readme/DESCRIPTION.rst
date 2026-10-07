@@ -36,20 +36,20 @@ Secondary currency
 
 The dashboard can also be shown in a **secondary currency** (USD by
 default), to reflect operations made in a foreign currency properly. The
-conversion follows a **hybrid criterion**, journal item by journal item:
+conversion works journal item by journal item:
 
 a. A journal item **in the secondary currency itself** keeps its
    **original amount** (``amount_currency``), never re-converted. A USD
    1,000.00 invoice shows USD 1,000.00, whatever the rate of the day is
    now.
 b. **Any other journal item** (in pesos, or in a third currency such as
-   EUR) has its company-currency balance converted at the rate of its
-   **accounting date**: the most recent rate on or before that date,
-   resolved like Odoo's own conversion (the company's rates first, then
-   the shared ones). ARS 1,000,000 booked on a day at 1,000 ARS/USD shows
-   USD 1,000.00; ARS 2,000,000 on a later day at 2,000 ARS/USD of the same
-   month also shows USD 1,000.00, so the month shows USD 2,000.00. A EUR
-   journal item is converted from its pesos, not from its euros.
+   EUR) has its company-currency balance converted at the **latest loaded
+   rate** of the secondary currency (up to today, the company's rates
+   first, then the shared ones, like Odoo's own conversion), **the same
+   for every month**. With a latest rate of 1,450 ARS/USD, ARS 1,000,000
+   shows USD 689.66 whatever its date, so past months change in USD when
+   a new rate is loaded. A EUR journal item is converted from its pesos,
+   not from its euros. The dashboard shows the rate used and its date.
 c. **Exchange difference journal items** (in the secondary currency, with
    an amount in that currency of 0 and a pesos balance) contribute **0**
    in the secondary currency view: no dollar was gained or lost, only
@@ -69,8 +69,7 @@ Exchange rates come exclusively from Odoo's currency rates
 Banco Nación's **"Divisas" selling rate** for USD, loaded once a day
 through Odoo's automatic currency rate update.
 
-A missing rate never turns into a silently wrong amount: if a needed day
-has no rate, or its most recent rate is older than the *Maximum rate age*
-of the structure (5 days by default, which covers weekends and bank
-holidays), the secondary currency view shows a clear warning listing the
-dates without a rate. The company currency view is not affected.
+A missing rate never turns into a silently wrong amount: if the secondary
+currency has no rate loaded at all, the secondary currency view shows a
+clear warning instead of converting at 1. The company currency view is
+not affected.

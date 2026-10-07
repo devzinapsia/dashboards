@@ -1,4 +1,6 @@
 import ast
+import base64
+import io
 from collections import defaultdict
 from datetime import timedelta
 
@@ -6,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import AccessError, UserError
-from odoo.tools import SQL
+from odoo.tools import SQL, format_date, formatLang
 from odoo.tools.translate import LazyTranslate
 
 from .account_pl_structure import PL_ACCOUNT_TYPES
@@ -161,11 +163,9 @@ class AccountPlDashboard(models.AbstractModel):
         """Sum journal items by ``key_fields`` and month, in the display
         currency.
 
-        One query whatever the number of journal items. In company currency
-        the items are grouped by month directly; in the secondary currency
-        they are grouped by accounting date and journal item currency, which
-        is the granularity the conversion needs (one rate per day, original
-        amount for items already in the secondary currency).
+        One query whatever the number of journal items, grouped by month (and,
+        in the secondary currency, by journal item currency too: items
+        already in the secondary currency keep their original amount).
 
         :param list key_fields: many2one fields to group by (e.g.
             ["account_id"] or ["account_id", "partner_id"]).
@@ -184,14 +184,14 @@ class AccountPlDashboard(models.AbstractModel):
             ]
         rows = MoveLine._read_group(
             domain,
-            groupby=[*key_fields, "date:day", "currency_id"],
+            groupby=[*key_fields, "date:month", "currency_id"],
             aggregates=["balance:sum", "amount_currency:sum"],
         )
         return [
             (
                 tuple(record.id or 0 for record in row[:size]),
                 self._column_key_of(row[size]),
-                converter.convert_move_lines(row[size], row[size + 1].id, row[size + 2] or 0.0, row[size + 3] or 0.0),
+                converter.convert_move_lines(row[size + 1].id, row[size + 2] or 0.0, row[size + 3] or 0.0),
             )
             for row in rows
         ]
@@ -242,14 +242,14 @@ class AccountPlDashboard(models.AbstractModel):
         if converter:
             query = SQL(
                 """
-                SELECT %(keys)s, aml.date, aml.currency_id,
+                SELECT %(keys)s, date_trunc('month', aml.date)::date, aml.currency_id,
                        SUM(-aal.amount),
                        SUM(aml.amount_currency * -aal.amount / NULLIF(aml.balance, 0))
                   FROM account_analytic_line aal
                   JOIN account_move_line aml ON aml.id = aal.move_line_id
                   JOIN account_account aa ON aa.id = aml.account_id
                  WHERE %(where)s
-              GROUP BY %(keys)s, aml.date, aml.currency_id
+              GROUP BY %(keys)s, date_trunc('month', aml.date)::date, aml.currency_id
                 """,
                 keys=keys_sql,
                 where=SQL(" AND ").join(conditions),
@@ -259,7 +259,7 @@ class AccountPlDashboard(models.AbstractModel):
                 (
                     tuple(key_id or 0 for key_id in row[:size]),
                     self._column_key_of(row[size]),
-                    converter.convert_move_lines(row[size], row[size + 1], row[size + 2] or 0.0, row[size + 3] or 0.0),
+                    converter.convert_move_lines(row[size + 1], row[size + 2] or 0.0, row[size + 3] or 0.0),
                 )
                 for row in self.env.cr.fetchall()
             ]
@@ -459,10 +459,8 @@ class AccountPlDashboard(models.AbstractModel):
         accounting budget (account.report.budget: one item per account and
         month, in company currency).
 
-        In the secondary currency, each month's company-currency budget is
-        converted at the rate of the month's last day (for the current month,
-        the most recent rate, i.e. today's): the deviation then includes the
-        exchange rate effect.
+        In the secondary currency, the company-currency budget is converted at
+        the latest loaded rate, like the actual figures.
 
         Future months are left out, like the actual figures, so that totals
         compare the same months.
@@ -479,14 +477,12 @@ class AccountPlDashboard(models.AbstractModel):
             groupby=["account_id", "date:month"],
             aggregates=["amount:sum"],
         )
-        today = fields.Date.context_today(self)
         budget = defaultdict(float)
         for account, month, amount in rows:
             if not amount:
                 continue
             if converter:
-                month_end = month + relativedelta(months=1, days=-1)
-                amount = converter.convert_balance(amount, min(month_end, today))
+                amount = converter.convert_balance(amount)
             budget[account.id, self._column_key_of(month)] += amount
         return budget
 
@@ -610,23 +606,24 @@ class AccountPlDashboard(models.AbstractModel):
             "analytic_ids": analytic_ids,
         }
 
+    def _get_converter(self, request):
+        """Secondary currency converter (None in company currency). Raises a
+        UserError when the secondary currency has no rate at all: the company
+        currency view stays available, the frontend shows it as a warning."""
+        if request["display_currency"] != "secondary":
+            return None
+        if "converter" not in request:
+            request["converter"] = PlCurrencyConverter(self.env, request["company"], request["currency"])
+        return request["converter"]
+
     def _compute_request_amounts(self, request, with_budget=False):
         """:return: (amounts, budget) - budget is {} unless with_budget."""
-        converter = None
-        if request["display_currency"] == "secondary":
-            converter = PlCurrencyConverter(
-                self.env, request["company"], request["currency"],
-                request["structure"].rate_max_age_days, request["read_to"],
-            )
+        converter = self._get_converter(request)
         amounts = self._collect_amounts(
             request["structure"], request["date_from"], request["read_to"], converter, request["analytic_ids"],
             request["analytic_plan"],
         )
         budget = self._collect_budget(request, converter) if with_budget else {}
-        if converter:
-            # Never return a silently wrong amount: the company currency view
-            # stays available, the frontend shows this as a warning.
-            converter.raise_if_missing()
         return amounts, budget
 
     @api.model
@@ -701,6 +698,12 @@ class AccountPlDashboard(models.AbstractModel):
             "display_currency": request["display_currency"],
             "currency_id": currency.id,
             "currency_name": currency.name,
+            # The single rate every company-currency amount was converted at.
+            "secondary_rate": request.get("converter") and {
+                "value": request["converter"].company_units_per_unit,
+                "date": fields.Date.to_string(request["converter"].rate_date),
+                "company_currency_id": request["company"].currency_id.id,
+            },
             "analytic_ids": request["analytic_ids"] or [],
             "analytic_plan_id": request["analytic_plan"].id or False,
             "budget_shown": budget_shown,
@@ -981,3 +984,122 @@ class AccountPlDashboard(models.AbstractModel):
             name = " ".join(filter(None, [account.with_company(request["company"]).code, account.name]))
             return self._get_drilldown_action(model, domain=domain, name=name)
         return self._get_general_ledger_action(request, account)
+
+    # -------------------------------------------------------------------------
+    # Export
+    # -------------------------------------------------------------------------
+
+    @api.model
+    def get_dashboard_xlsx(self, period="fiscal_year", display_currency=None, analytic_ids=None, budget_id=None):
+        """The dashboard grid as an XLSX file, with the toolbar's current
+        choices (same figures as get_dashboard_data, every row expanded, as
+        Excel outline levels). Amounts are written unrounded, formatted with
+        the display currency's decimals.
+
+        :return: {"filename": str, "content": base64 str}
+        """
+        import xlsxwriter  # noqa: PLC0415 - same lazy import as account_reports
+
+        data = self.get_dashboard_data(period, display_currency, analytic_ids, budget_id)
+        if not data["has_structure"]:
+            raise UserError(self.env._("There is no active management P&L structure."))
+        currency = self.env["res.currency"].browse(data["currency_id"])
+        budget_shown = data["budget_shown"]
+        columns = data["columns"]
+
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+        sheet = workbook.add_worksheet(self.env._("Management P&L")[:31])
+        amount_format = "#,##0.%s" % ("0" * currency.decimal_places) if currency.decimal_places else "#,##0"
+        styles = {
+            "title": workbook.add_format({"bold": True, "font_size": 14}),
+            "info": workbook.add_format({"italic": True, "font_color": "#666666"}),
+            "header": workbook.add_format({"bold": True, "bottom": 1, "align": "center"}),
+            "name": workbook.add_format({}),
+            "amount": workbook.add_format({"num_format": amount_format}),
+            "percent": workbook.add_format({"num_format": "0.0%"}),
+        }
+        for kind, extra in (("section", {"bold": True, "bg_color": "#EEF1F5"}),
+                            ("group", {"bold": True}),
+                            ("computed", {"bold": True, "bg_color": "#E8F1FB"}),
+                            ("unassigned", {"italic": True, "font_color": "#666666"})):
+            styles["name_" + kind] = workbook.add_format(extra)
+            styles["amount_" + kind] = workbook.add_format({**extra, "num_format": amount_format})
+            styles["percent_" + kind] = workbook.add_format({**extra, "num_format": "0.0%"})
+
+        # Header: what the figures are.
+        filters = [self.env._("Currency: %s", currency.name)]
+        if data["secondary_rate"]:
+            filters.append(self.env._(
+                "Converted at the latest %(currency)s rate: %(rate)s (%(date)s)",
+                currency=currency.name,
+                rate=formatLang(self.env, data["secondary_rate"]["value"]),
+                date=format_date(self.env, data["secondary_rate"]["date"]),
+            ))
+        if data["analytic_ids"]:
+            analytics = self.env["account.analytic.account"].sudo().browse(data["analytic_ids"])
+            filters.append(self.env._("Analytic filter: %s", ", ".join(analytics.mapped("display_name"))))
+        if budget_shown:
+            budget = self.env["account.report.budget"].sudo().browse(budget_id)
+            filters.append(self.env._("Budget: %s", budget.name))
+        sheet.write(0, 0, "%s - %s" % (self.env._("Management P&L"), data["company_name"]), styles["title"])
+        sheet.write(1, 0, "%s - %s" % (format_date(self.env, data["date_from"]), format_date(self.env, data["date_to"])),
+                    styles["info"])
+        sheet.write(2, 0, " | ".join(filters), styles["info"])
+
+        # Column headers: one column per month (and Total), or three per
+        # month (actual, budget, deviation) when a budget is compared.
+        header_row = 4
+        sheet.write(header_row, 0, "", styles["header"])
+        col = 1
+        for column in columns:
+            label = (self.env._("Total") if column["is_total"]
+                     else format_date(self.env, column["date_from"], date_format="MMM yyyy"))
+            if budget_shown:
+                sheet.merge_range(header_row - 1, col, header_row - 1, col + 2, label, styles["header"])
+                for offset, sub_label in enumerate((self.env._("Actual"), self.env._("Budget"),
+                                                    self.env._("Deviation %"))):
+                    sheet.write(header_row, col + offset, sub_label, styles["header"])
+                col += 3
+            else:
+                sheet.write(header_row, col, label, styles["header"])
+                col += 1
+
+        row_index = header_row + 1
+        for row in data["rows"]:
+            kind = row["kind"]
+            style_key = ("section" if kind == "section" else "group" if kind == "group"
+                         else "computed" if kind.startswith("computed_") else "unassigned" if kind == "unassigned"
+                         else "")
+            suffix = "_" + style_key if style_key else ""
+            is_percent = kind == "computed_percent"
+            sheet.write(row_index, 0, "    " * row["level"] + row["name"], styles["name" + suffix])
+            col = 1
+            for column in columns:
+                value = row["values"].get(column["key"])
+                if value is not None:
+                    if is_percent:
+                        sheet.write_number(row_index, col, value / 100.0, styles["percent" + suffix])
+                    else:
+                        sheet.write_number(row_index, col, value, styles["amount" + suffix])
+                if budget_shown:
+                    budget_value = row.get("budget", {}).get(column["key"])
+                    deviation = row.get("deviation", {}).get(column["key"])
+                    if budget_value is not None:
+                        sheet.write_number(row_index, col + 1, budget_value, styles["amount" + suffix])
+                    if deviation is not None:
+                        sheet.write_number(row_index, col + 2, deviation / 100.0, styles["percent" + suffix])
+                    col += 3
+                else:
+                    col += 1
+            if row["level"]:
+                sheet.set_row(row_index, None, None, {"level": min(row["level"], 7)})
+            row_index += 1
+
+        sheet.set_column(0, 0, 45)
+        sheet.set_column(1, col, 16)
+        sheet.freeze_panes(header_row + 1, 1)
+        workbook.close()
+
+        filename = "%s - %s.xlsx" % (self.env._("Management P&L"), data["company_name"])
+        return {"filename": filename, "content": base64.b64encode(output.getvalue()).decode()}

@@ -40,20 +40,20 @@ Secondary currency
 
 The dashboard can also be shown in a **secondary currency** (USD by
 default), to reflect operations made in a foreign currency properly. The
-conversion follows a **hybrid criterion**, journal item by journal item:
+conversion works journal item by journal item:
 
 a. A journal item **in the secondary currency itself** keeps its
    **original amount** (``amount_currency``), never re-converted. A USD
    1,000.00 invoice shows USD 1,000.00, whatever the rate of the day is
    now.
 b. **Any other journal item** (in pesos, or in a third currency such as
-   EUR) has its company-currency balance converted at the rate of its
-   **accounting date**: the most recent rate on or before that date,
-   resolved like Odoo's own conversion (the company's rates first, then
-   the shared ones). ARS 1,000,000 booked on a day at 1,000 ARS/USD shows
-   USD 1,000.00; ARS 2,000,000 on a later day at 2,000 ARS/USD of the same
-   month also shows USD 1,000.00, so the month shows USD 2,000.00. A EUR
-   journal item is converted from its pesos, not from its euros.
+   EUR) has its company-currency balance converted at the **latest loaded
+   rate** of the secondary currency (up to today, the company's rates
+   first, then the shared ones, like Odoo's own conversion), **the same
+   for every month**. With a latest rate of 1,450 ARS/USD, ARS 1,000,000
+   shows USD 689.66 whatever its date, so past months change in USD when
+   a new rate is loaded. A EUR journal item is converted from its pesos,
+   not from its euros. The dashboard shows the rate used and its date.
 c. **Exchange difference journal items** (in the secondary currency, with
    an amount in that currency of 0 and a pesos balance) contribute **0**
    in the secondary currency view: no dollar was gained or lost, only
@@ -73,11 +73,10 @@ Exchange rates come exclusively from Odoo's currency rates
 Banco Nación's **"Divisas" selling rate** for USD, loaded once a day
 through Odoo's automatic currency rate update.
 
-A missing rate never turns into a silently wrong amount: if a needed day
-has no rate, or its most recent rate is older than the *Maximum rate age*
-of the structure (5 days by default, which covers weekends and bank
-holidays), the secondary currency view shows a clear warning listing the
-dates without a rate. The company currency view is not affected.
+A missing rate never turns into a silently wrong amount: if the secondary
+currency has no rate loaded at all, the secondary currency view shows a
+clear warning instead of converting at 1. The company currency view is
+not affected.
 
 Configuration
 =============
@@ -137,7 +136,6 @@ Parameters
 - **Secondary currency**: optional display currency (USD by default when
   active). It must be active and different from the company currency.
 - **Open dashboard in**: currency the dashboard opens in.
-- **Maximum rate age (days)**: see *Secondary currency* above.
 
 Budgets
 -------
@@ -173,6 +171,8 @@ Toolbar
   journal item is split at 100% on each plan.
 - **Budget**: the accounting budget to compare with, among the company's
   (*No budget*: no comparison).
+- **Export**: downloads the grid as shown (same period, currency,
+  analytic filter and budget, every row expanded) as an Excel file.
 - **Expand all**, **Collapse all** and **Refresh**. Sections and groups
   also collapse one by one with their arrow.
 
@@ -235,13 +235,9 @@ Budgets are by account: every leaf adds up the budget of its accounts,
 and groups and sections add up their lines; the popup shows each
 account's budget too. With the analytic filter, the budget is hidden.
 
-In the **secondary currency**, the budget (in company currency) is first
-allotted to each month, then **each month is converted at the rate of
-its last day** (for the current month, the most recent rate). The
-deviation shown in the secondary currency therefore **includes the
-exchange rate effect**: spending exactly the budgeted pesos at a
-different rate shows a deviation in dollars. The dashboard reminds it
-with a note.
+In the **secondary currency**, the budget (in company currency) is
+converted at the same latest rate as the actual figures, so spending
+exactly the budgeted pesos shows no deviation in dollars either.
 
 Bug Tracker
 ===========
