@@ -62,49 +62,68 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
     def test_invariant_with_analytic_filter(self):
         self._assert_details_match_cells(period="fiscal_year", analytic_ids=self.unit_1.ids)
 
-    def test_group_detail_lists_its_leaves(self):
+    def _accounts_of(self, detail):
+        return {entry["code"]: entry["amount"] for entry in detail["entries"]}
+
+    def test_group_detail_lists_accounts(self):
         detail = self.Dashboard.get_cell_detail("line-%d" % self.root_direct.id, "total")
-        self.assertEqual(detail["kind"], "lines")
-        self.assertEqual(
-            {entry["label"]: entry["amount"] for entry in detail["entries"]},
-            {"Staff / Salaries": 333.33, "Sales commissions": 50.0},
-        )
-        self.assertTrue(all(entry["open"] == "line" for entry in detail["entries"]))
+        self.assertEqual(detail["kind"], "items")
+        self.assertEqual(self._accounts_of(detail), {
+            "5.1.2.01.010": 300.0, "5.1.2.01.020": 33.33, "5.2.1.01.070": 50.0,
+        })
+        self.assertTrue(all(entry["open"] == "items" for entry in detail["entries"]))
 
     def test_leaf_detail_lists_accounts(self):
         detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_salaries.id, "2026-01")
-        self.assertEqual(detail["kind"], "items")
         self.assertEqual(
             [(entry["code"], entry["amount"]) for entry in detail["entries"]],
             [("5.1.2.01.010", 100.0), ("5.1.2.01.020", 33.33)],
         )
         self.assertAlmostEqual(detail["total"], 133.33)
 
-    def test_sales_detail_by_customer(self):
+    def test_sales_detail_lists_accounts(self):
         detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "total")
-        self.assertEqual(
-            {entry["label"]: entry["amount"] for entry in detail["entries"]},
-            {"Customer A": 1500.0, "Customer B": 100.0},
-        )
+        self.assertEqual(self._accounts_of(detail), {"4.1.1.01.001": 1600.0})
         self.assertTrue(detail["can_open_all"])
-        self.assertTrue(all(entry["open"] == "items" for entry in detail["entries"]))
+
+    def test_profit_row_detail(self):
+        # Gross profit = Sales accounts (+) and direct cost accounts (-).
+        data = self._data()
+        detail = self.Dashboard.get_cell_detail("gross_profit", "total")
+        self.assertEqual(self._accounts_of(detail), {
+            "4.1.1.01.001": 1600.0, "5.1.2.01.010": -300.0, "5.1.2.01.020": -33.33, "5.2.1.01.070": -50.0,
+        })
+        self.assertAlmostEqual(detail["total"], self._row(data, "gross_profit")["values"]["total"])
+        self.assertTrue(self._row(data, "net_profit")["drilldown"])
+        self.assertFalse(self._row(data, "net_profit_pct")["drilldown"])
 
     def test_unassigned_detail(self):
         detail = self.Dashboard.get_cell_detail("unassigned", "2026-02")
-        labels = {entry["label"]: entry["amount"] for entry in detail["entries"]}
         # Effect-on-result sign: income counts positive.
-        self.assertEqual(labels, {"Other income": 7.0})
-        self.assertTrue(all(entry["open"] == "items" for entry in detail["entries"]))
-        self.assertFalse(detail["can_open_all"])
+        self.assertEqual(
+            {entry["label"]: entry["amount"] for entry in detail["entries"]}, {"Other income": 7.0},
+        )
+        action = self.Dashboard.get_detail_action("unassigned", "2026-02", "all")
+        lines = self.env["account.move.line"].search(action["domain"])
+        self.assertEqual(lines.account_id, self.account_other_income)
 
-    def test_rpcs_accept_the_dashboard_request_params(self):
-        """The popup sends the dashboard's whole set of request parameters
-        to every RPC."""
-        params = {"period": "fiscal_year", "display_currency": "company", "analytic_ids": [], "show_budget": True}
-        self.Dashboard.get_dashboard_data(**params)
-        self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "total", **params)
-        action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "total", "all", **params)
-        self.assertEqual(action["res_model"], "account.move.line")
+    def test_account_opens_general_ledger(self):
+        closing_journal = self.env["account.journal"].create({
+            "name": "Closing", "code": "CLS", "type": "general", "company_id": self.company.id,
+        })
+        self.structure.excluded_journal_ids = [Command.set(closing_journal.ids)]
+        action = self.Dashboard.get_detail_action(
+            "line-%d" % self.leaf_salaries.id, "2026-02", "account-%d" % self.account_salaries.id,
+        )
+        self.assertEqual(action["tag"], "account_report")
+        options = action["params"]["options"]
+        self.assertEqual((options["date"]["date_from"], options["date"]["date_to"]), ("2026-02-01", "2026-02-28"))
+        self.assertTrue(options["unfold_all"])
+        self.assertEqual(action["context"]["default_filter_accounts"], "5.1.2.01.010 Salaries")
+        selected = {journal["id"] for journal in options["journals"]
+                    if journal.get("model") == "account.journal" and journal.get("selected")}
+        self.assertTrue(selected)
+        self.assertNotIn(closing_journal.id, selected)
 
     def test_open_all_journal_items_of_the_line(self):
         # Every journal item of the line's accounts, for the clicked column.
@@ -114,35 +133,27 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
         action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "total", "all")
         self.assertEqual(len(self.env["account.move.line"].search(action["domain"])), 3)
 
-    def test_open_account_journal_items(self):
-        action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_salaries.id, "2026-02", "account-%d" % self.account_salaries.id,
-        )
-        self.assertEqual(action["res_model"], "account.move.line")
-        self.assertEqual(action["context"].get("create"), False)
-        lines = self.env["account.move.line"].search(action["domain"])
-        self.assertEqual(lines.mapped("balance"), [200.0])
-
-    def test_open_customer_includes_contacts(self):
-        action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_sales.id, "total", "partner-%d" % self.customer_a.id,
-        )
-        lines = self.env["account.move.line"].search(action["domain"])
-        self.assertEqual(sorted(lines.mapped("balance")), [-1000.0, -500.0])
-        self.assertIn(self.customer_a_contact, lines.partner_id)
-
     def test_open_with_analytic_filter_lists_analytic_lines(self):
         detail = self.Dashboard.get_cell_detail(
             "line-%d" % self.leaf_sales.id, "total", analytic_ids=self.unit_1.ids,
         )
         self.assertAlmostEqual(detail["total"], 200.0)
         action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_sales.id, "total", "partner-%d" % self.customer_a.id,
+            "line-%d" % self.leaf_sales.id, "total", "account-%d" % self.account_sales.id,
             analytic_ids=self.unit_1.ids,
         )
         self.assertEqual(action["res_model"], "account.analytic.line")
         analytic_lines = self.env["account.analytic.line"].search(action["domain"])
         self.assertEqual(analytic_lines.mapped("amount"), [200.0])
+
+    def test_rpcs_accept_the_dashboard_request_params(self):
+        """The popup sends the dashboard's whole set of request parameters
+        to every RPC."""
+        params = {"period": "fiscal_year", "display_currency": "company", "analytic_ids": [], "show_budget": True}
+        self.Dashboard.get_dashboard_data(**params)
+        self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "total", **params)
+        action = self.Dashboard.get_detail_action("line-%d" % self.leaf_sales.id, "total", "all", **params)
+        self.assertEqual(action["res_model"], "account.move.line")
 
     def test_detail_requires_module_group(self):
         user = self.env["res.users"].create({

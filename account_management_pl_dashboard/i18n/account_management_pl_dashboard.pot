@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 17:17+0000\n"
-"PO-Revision-Date: 2026-10-07 17:17+0000\n"
+"POT-Creation-Date: 2026-10-07 18:38+0000\n"
+"PO-Revision-Date: 2026-10-07 18:38+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -46,6 +46,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid "A line can't be moved to another structure."
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
+msgid "Account"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -274,12 +280,6 @@ msgstr ""
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
-msgid "Detail"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "Deviation %"
@@ -373,6 +373,12 @@ msgstr ""
 msgid ""
 "Journal entries of these journals are ignored (e.g. year-end closing "
 "entries, which would otherwise empty the previous fiscal year's columns)."
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Journal items"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -516,6 +522,12 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__default_display_currency
 msgid "Open dashboard in"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
+msgid "Open the general ledger"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -779,12 +791,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid "Without accounts"
-msgstr ""
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
-msgid "Without customer"
 msgstr ""
 
 #. module: account_management_pl_dashboard

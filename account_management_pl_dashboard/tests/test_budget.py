@@ -117,11 +117,11 @@ class TestPlBudget(BudgetMixin, PlDashboardAnalyticMixin, PlDashboardCommon):
         self.assertAlmostEqual(sum(entry["budget"] for entry in detail["entries"]), 105.0)
 
     def test_detail_sales_line_budget(self):
-        # The line has a budget, its customers don't (budgets are by account).
+        # Budgets are by account, like the popup's rows.
         detail = self.Dashboard.get_cell_detail("line-%d" % self.leaf_sales.id, "2026-02")
         self.assertEqual(detail["total_budget"], 800.0)
         self.assertAlmostEqual(detail["total_deviation"], 25.0)
-        self.assertTrue(all(entry["budget"] is None for entry in detail["entries"]))
+        self.assertEqual([entry["budget"] for entry in detail["entries"]], [800.0])
         detail = self.Dashboard.get_cell_detail("line-%d" % self.root_income.id, "2026-02")
         self.assertEqual(detail["total_budget"], 800.0)
         self.assertEqual([entry["budget"] for entry in detail["entries"]], [800.0])

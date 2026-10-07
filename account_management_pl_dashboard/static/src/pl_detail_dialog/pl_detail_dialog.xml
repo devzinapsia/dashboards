@@ -21,7 +21,7 @@
                         <thead>
                             <tr>
                                 <th t-if="hasCodes" t-esc="labels.code"/>
-                                <th t-esc="current.detail.kind === 'lines' ? labels.line : labels.detail"/>
+                                <th t-esc="current.detail.kind === 'lines' ? labels.line : labels.account"/>
                                 <th class="text-end" t-esc="labels.amount"/>
                                 <t t-if="current.detail.budget_shown">
                                     <th class="text-end" t-esc="labels.budget"/>
@@ -42,7 +42,7 @@
                                     </t>
                                     <td class="o_pl_detail_open_col text-end">
                                         <i t-if="entry.open === 'line'" class="fa fa-chevron-right"/>
-                                        <i t-elif="entry.open === 'items'" class="fa fa-external-link"/>
+                                        <i t-elif="entry.open === 'items'" class="fa fa-book" t-att-title="labels.openLedger"/>
                                     </td>
                                 </tr>
                             </t>

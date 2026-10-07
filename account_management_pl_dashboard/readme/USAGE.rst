@@ -28,27 +28,29 @@ other line.
 Drill-down
 ==========
 
-Clicking a figure opens a popup with its detail, loaded on demand, in
-the currency being displayed, and always adding up to the figure clicked:
+Clicking a figure (a section, a group, a line, a profit amount or the
+Unassigned row) opens a popup, loaded on demand, with **the balance of
+each account behind it** for the clicked column, in the currency being
+displayed. The accounts always add up to the figure clicked. In a profit
+row, cost accounts count negative (e.g. gross profit = Sales accounts -
+direct cost accounts). Profit percentages have no drill-down.
 
-- a section or group lists its leaves, which can be opened in turn;
-- a cost leaf lists its accounts (code, name, amount), and an account
-  opens its journal items for the period (posted entries, excluded
-  journals left out);
-- a Sales leaf breaks its accounts' movements down by commercial
-  customer (contacts added up to their company); a customer opens its
-  journal items;
-- on any leaf, **View all journal items** opens every journal item of
-  the leaf's accounts for the month (or the whole period, in the Total
-  column) of the clicked cell;
-- the Total column covers the whole period. Profit rows have no
-  drill-down.
+- Clicking an account opens Odoo's **General Ledger** for that account and
+  the period of the clicked column (the whole period in the Total column),
+  without the structure's excluded journals; from the ledger, each line
+  opens its journal entry. As usual in Odoo, the ledger starts with the
+  account's balance since the beginning of the fiscal year (*Initial
+  balance*), followed by the period's movements, which are the ones
+  matching the popup.
+- **View all journal items** lists every journal item of those accounts
+  for the same period.
 
-The journal item lists are standard Odoo lists, **in company currency**:
+The General Ledger and the journal item lists are in **company currency**:
 they can't total in the secondary currency. In the secondary currency
-view the popup says so. With the analytic filter, the lists show the
+view the popup says so. With the analytic filter, an account opens its
 analytic lines (the share distributed to the selected analytic accounts)
-rather than the whole journal items.
+instead of the ledger. Opening ledgers and journal items requires the
+usual accounting read access.
 
 Budget
 ======
@@ -61,9 +63,8 @@ news: spending more than budgeted on costs, or selling less than
 budgeted, is shown as unfavorable.
 
 Budgets are by account: every leaf adds up the budget of its accounts,
-and groups and sections add up their lines. In a Sales leaf's popup, the
-customers have no budget of their own ("—"), only the leaf. With the
-analytic filter, the budget is hidden.
+and groups and sections add up their lines; the popup shows each
+account's budget too. With the analytic filter, the budget is hidden.
 
 In the **secondary currency**, the budget (in company currency) is first
 allotted to each month, then **each month is converted at the rate of

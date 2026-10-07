@@ -51,6 +51,12 @@ msgid "A line can't be moved to another structure."
 msgstr "Una línea no se puede mover a otra estructura."
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
+msgid "Account"
+msgstr "Cuenta"
+
+#. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid ""
@@ -293,12 +299,6 @@ msgstr "Mes actual"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
-#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
-msgid "Detail"
-msgstr "Detalle"
-
-#. module: account_management_pl_dashboard
-#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "Deviation %"
@@ -399,6 +399,12 @@ msgstr ""
 "Se ignoran los asientos de estos diarios (por ejemplo, los asientos de "
 "cierre de ejercicio, que de lo contrario vaciarían las columnas del "
 "ejercicio anterior)."
+
+#. module: account_management_pl_dashboard
+#. odoo-python
+#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
+msgid "Journal items"
+msgstr "Apuntes contables"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
@@ -548,6 +554,12 @@ msgstr "No se usa"
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__default_display_currency
 msgid "Open dashboard in"
 msgstr "Abrir el tablero en"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
+msgid "Open the general ledger"
+msgstr "Abrir el libro mayor"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__secondary_currency_id
@@ -834,12 +846,6 @@ msgstr ""
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid "Without accounts"
 msgstr "Sin cuentas"
-
-#. module: account_management_pl_dashboard
-#. odoo-python
-#: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
-msgid "Without customer"
-msgstr "Sin cliente"
 
 #. module: account_management_pl_dashboard
 #. odoo-python

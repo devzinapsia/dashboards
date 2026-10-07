@@ -9,7 +9,7 @@ Management P&L*:
   own, for the user's current company only).
 - **Administrator**: also configures the structures (implies User).
 
-Opening the journal items behind a figure still requires the usual
+Opening the general ledger or the journal items behind a figure still requires the usual
 accounting read access.
 
 Building the structure

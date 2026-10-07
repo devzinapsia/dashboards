@@ -1,3 +1,4 @@
+import ast
 from collections import defaultdict
 from datetime import timedelta
 
@@ -281,11 +282,11 @@ class AccountPlDashboard(models.AbstractModel):
         ]
 
     def _collect_amounts(self, structure, date_from, date_to, converter=None, analytic_ids=None):
-        """Gather the period's amounts, classified by structure leaf.
+        """Gather the period's amounts by P&L account, classified by
+        structure leaf.
 
         Every leaf adds up the balance of its accounts, with its section's
-        sign (Sales: credit - debit, costs: debit - credit). Sales leaves are
-        also broken down by commercial customer, for their drill-down.
+        sign (Sales: credit - debit, costs: debit - credit).
 
         :param list analytic_ids: toolbar analytic/project filter. When set,
             amounts are read from the analytic lines of those analytic
@@ -293,12 +294,11 @@ class AccountPlDashboard(models.AbstractModel):
             them), instead of from the journal items.
         :return: dict with
             - ``leaf``: {(line_id, month_key): amount};
-            - ``leaf_detail``: {(line_id, detail_key, month_key): amount}, the
-              per-account (costs) or per-customer (Sales) breakdown of each
-              leaf;
-            - ``unassigned``: {(detail_key, month_key): amount} for the P&L
-              accounts no line includes, with the "effect on the result" sign
-              (credit - debit), so that net profit + unassigned = the
+            - ``leaf_detail``: {(line_id, "account-<id>", month_key): amount},
+              the per-account breakdown of each leaf;
+            - ``unassigned``: {("account-<id>", month_key): amount} for the
+              P&L accounts no line includes, with the "effect on the result"
+              sign (credit - debit), so that net profit + unassigned = the
               accounting result of the period.
         """
         leaf = defaultdict(float)
@@ -307,48 +307,24 @@ class AccountPlDashboard(models.AbstractModel):
         account_leaf = {
             account.id: line for line in structure.line_ids for account in line.account_ids
         }
-        sales_accounts = structure._get_sales_accounts()
-
-        def read(domain_or_accounts, key_fields):
-            if analytic_ids is not None:
-                return self._read_analytic_amounts(
-                    structure, date_from, date_to, key_fields, domain_or_accounts, analytic_ids, converter,
-                )
-            operator, account_ids = domain_or_accounts
+        if analytic_ids is not None:
+            rows = self._read_analytic_amounts(
+                structure, date_from, date_to, ["account_id"], ("pl_except", []), analytic_ids, converter,
+            )
+        else:
             domain = self._base_move_line_domain(structure, date_from, date_to)
-            if operator == "in":
-                domain.append(("account_id", "in", list(account_ids)))
-            else:
-                domain += [
-                    ("account_id.account_type", "in", PL_ACCOUNT_TYPES),
-                    ("account_id", "not in", list(account_ids)),
-                ]
-            return self._read_move_line_amounts(domain, key_fields, converter)
+            domain.append(("account_id.account_type", "in", PL_ACCOUNT_TYPES))
+            rows = self._read_move_line_amounts(domain, ["account_id"], converter)
 
-        # Cost lines, and the P&L accounts no line includes, by account.
-        for (account_id,), month_key, balance in read(("pl_except", sales_accounts.ids), ["account_id"]):
+        for (account_id,), month_key, balance in rows:
             line = account_leaf.get(account_id)
             detail_key = "account-%d" % account_id
             if line:
-                sign = -1 if line.section == "income" else 1
-                leaf[line.id, month_key] += sign * balance
-                leaf_detail[line.id, detail_key, month_key] += sign * balance
+                amount = -balance if line.section == "income" else balance
+                leaf[line.id, month_key] += amount
+                leaf_detail[line.id, detail_key, month_key] += amount
             else:
                 unassigned[detail_key, month_key] -= balance
-
-        # Sales lines, by account and commercial customer.
-        if sales_accounts:
-            rows = read(("in", sales_accounts.ids), ["account_id", "partner_id"])
-            partners = self.env["res.partner"].sudo().browse(
-                {partner_id for (_account_id, partner_id), _month, _balance in rows if partner_id}
-            )
-            commercial_of = {partner.id: partner.commercial_partner_id.id for partner in partners}
-            for (account_id, partner_id), month_key, balance in rows:
-                line = account_leaf[account_id]
-                detail_key = "partner-%d" % commercial_of.get(partner_id, 0)
-                leaf[line.id, month_key] -= balance
-                leaf_detail[line.id, detail_key, month_key] -= balance
-
         return {"leaf": leaf, "leaf_detail": leaf_detail, "unassigned": unassigned}
 
     # -------------------------------------------------------------------------
@@ -674,7 +650,7 @@ class AccountPlDashboard(models.AbstractModel):
                 "level": 0,
                 "kind": "computed_" + definition["type"],
                 "values": computed[definition["key"]],
-                "drilldown": False,
+                "drilldown": definition["type"] == "amount",
             })
         if any(value is not None and not currency.is_zero(value) for value in unassigned.values()):
             rows.append({
@@ -742,154 +718,144 @@ class AccountPlDashboard(models.AbstractModel):
             raise UserError(self.env._("This row has no detail."))
         return line
 
-    def _describe_detail_keys(self, request, line, detail_keys):
-        """Labels (and account codes) of drill-down detail keys, read in batch.
+    def _get_row_weights(self, request, row_key):
+        """Leaves making up a drillable row, with the factor their amounts
+        (already in their section's sign) are counted with: 1 for a line's
+        own leaves, the section coefficient for a computed row (e.g. gross
+        profit = Sales leaves x 1 + direct cost leaves x -1). None for the
+        Unassigned row, which isn't made of leaves.
 
-        Keys are "account-<id>", "partner-<id>" (0 = no customer) or "all"
-        (every journal item of the line's accounts).
+        :return: {leaf record: factor} or None
         """
-        ids = defaultdict(set)
-        for key in detail_keys:
-            if key != "all":
-                kind, record_id = key.rsplit("-", 1)
-                ids[kind].add(int(record_id))
-        records = {
-            "account": self.env["account.account"].sudo().with_company(request["company"]).browse(ids["account"]),
-            "partner": self.env["res.partner"].sudo().browse(ids["partner"] - {0}),
-        }
-        names = {kind: {record.id: record for record in recordset} for kind, recordset in records.items()}
-        descriptions = {}
-        for key in detail_keys:
-            if key == "all":
-                descriptions[key] = {"label": line.name, "code": False}
-                continue
-            kind, record_id = key.rsplit("-", 1)
-            record = names[kind].get(int(record_id))
-            if kind == "account":
-                descriptions[key] = {"label": record.name, "code": record.code}
-            else:
-                descriptions[key] = {
-                    "label": record.display_name if record else self.env._("Without customer"),
-                    "code": False,
-                }
-        return descriptions
+        structure = request["structure"]
+        if row_key == UNASSIGNED_ROW:
+            return None
+        definition = next((row for row in COMPUTED_ROWS if row["key"] == row_key), None)
+        leaves = structure.line_ids.filtered(lambda line: not line.child_ids and not line.is_root)
+        if definition:
+            if definition["type"] != "amount":
+                raise UserError(self.env._("This row has no detail."))
+            return {
+                leaf: definition["coefficients"][leaf.section]
+                for leaf in leaves if leaf.section in definition["coefficients"]
+            }
+        line = self._get_request_line(request, row_key)
+        if line.is_root or line.child_ids:
+            # Descendants share their ancestor's sort key as prefix.
+            return {leaf: 1 for leaf in leaves if leaf.sort_key.startswith(line.sort_key + "/")}
+        return {line: 1}
+
+    def _get_row_accounts(self, request, row_key, amounts=None, month_keys=None):
+        """Accounts behind a drillable row (for "View all journal items")."""
+        weights = self._get_row_weights(request, row_key)
+        if weights is not None:
+            return self.env["account.account"].union(*(leaf.account_ids for leaf in weights))
+        account_ids = {int(key.rsplit("-", 1)[1]) for key, month_key in amounts["unassigned"]
+                       if month_key in month_keys}
+        return self.env["account.account"].browse(account_ids)
+
+    def _describe_accounts(self, request, detail_keys):
+        """{"account-<id>": {"label", "code"}}, read in batch."""
+        accounts = self.env["account.account"].sudo().with_company(request["company"]).browse(
+            {int(key.rsplit("-", 1)[1]) for key in detail_keys}
+        )
+        return {"account-%d" % account.id: {"label": account.name, "code": account.code} for account in accounts}
+
+    def _can_open_ledger(self):
+        return self.env["account.report"].has_access("read") and self.env["account.move.line"].has_access("read")
 
     @api.model
     def get_cell_detail(self, row_key, column_key, period="fiscal_year", display_currency=None,
                         analytic_ids=None, show_budget=True):
-        """Detail of one grid cell, loaded on demand by the drill-down popup.
-
-        - a section or group: its leaves, each one can be opened in turn;
-        - a cost line: its accounts;
-        - a Sales line: its amount by commercial customer;
-        - the Unassigned row: the P&L accounts no line includes.
+        """Detail of one grid cell, loaded on demand by the drill-down popup:
+        whatever the row (section, group, line, profit row or Unassigned), the
+        balance of each account behind it, for the clicked column.
 
         Amounts are in the display currency and add up exactly to the cell's
-        value (same computation as the grid); so do the budgets of a line's
-        sub-lines or of a cost line's accounts. Budgets are by account, so a
-        Sales line's customers have none (only the line itself).
+        value (same computation as the grid); so do the accounts' budgets
+        (budgeted accounts without movements are listed too). Each account
+        opens its general ledger for the column's period.
         """
         request = self._prepare_request(period, display_currency, analytic_ids)
         if not request:
             raise UserError(self.env._("There is no active management P&L structure."))
         column, month_keys = self._get_request_column(request, column_key)
-        request["detail_from"] = column["date_from"]
-        request["detail_to"] = min(column["date_to"], request["read_to"])
-        line = self._get_request_line(request, row_key)
-        budget_shown = self._is_budget_shown(request, show_budget) and line is not None
+        weights = self._get_row_weights(request, row_key)
+        line = (
+            self._get_request_line(request, row_key)
+            if row_key.startswith("line-") else self.env["account.pl.structure.line"]
+        )
+        budget_shown = self._is_budget_shown(request, show_budget) and bool(line)
         amounts, budget = self._compute_request_amounts(request, with_budget=budget_shown)
-        budget_values = self._build_budget_values(request, budget) if budget_shown else {}
-        can_read = {
-            model: self.env[model].has_access("read") for model in ("account.move.line", "account.analytic.line")
-        }
 
-        entries = []
-        if line and (line.is_root or line.child_ids):
-            # Descendants share their ancestor's sort key as prefix.
-            leaves = request["structure"].line_ids.filtered(
-                lambda leaf: not leaf.child_ids and leaf.sort_key.startswith(line.sort_key + "/")
-            )
-            for leaf in leaves:
-                entries.append({
-                    "key": "line-%d" % leaf.id,
-                    "label": leaf.complete_name.split(" / ", line.level + 1)[-1],
-                    "code": False,
-                    "amount": sum(amounts["leaf"].get((leaf.id, month_key), 0.0) for month_key in month_keys),
-                    "open": "line",
-                })
-                if budget_shown:
-                    entries[-1]["budget"] = sum(
-                        budget_values[leaf.id][month_key] or 0.0 for month_key in month_keys
-                    )
-            kind = "lines"
+        totals = defaultdict(float)
+        account_budgets = defaultdict(float)
+        if weights is None:
+            for (detail_key, month_key), amount in amounts["unassigned"].items():
+                if month_key in month_keys:
+                    totals[detail_key] += amount
         else:
-            totals = defaultdict(float)
-            account_budgets = {}
-            if line:
-                for (line_id, detail_key, month_key), amount in amounts["leaf_detail"].items():
-                    if line_id == line.id and month_key in month_keys:
-                        totals[detail_key] += amount
-                if budget_shown and line.section != "income":
-                    # Budgeted accounts without any movement are listed too, so
-                    # that the budgets add up to the cell's budget.
-                    for account in line.account_ids:
-                        account_budget = sum(budget.get((account.id, month_key), 0.0) for month_key in month_keys)
-                        account_budgets["account-%d" % account.id] = account_budget
-                        if account_budget:
-                            totals.setdefault("account-%d" % account.id, 0.0)
-            else:
-                for (detail_key, month_key), amount in amounts["unassigned"].items():
-                    if month_key in month_keys:
-                        totals[detail_key] += amount
-            descriptions = self._describe_detail_keys(request, line, totals)
-            for detail_key, amount in totals.items():
-                model, _domain = self._get_detail_target(request, line, detail_key)
-                entries.append({
-                    "key": detail_key,
-                    **descriptions[detail_key],
-                    "amount": amount,
-                    "open": "items" if can_read[model] else False,
-                })
-                if budget_shown:
-                    entries[-1]["budget"] = account_budgets.get(detail_key)
-            entries.sort(key=lambda entry: (entry["code"] or "", entry["label"]))
-            kind = "items"
+            factors = {leaf.id: factor for leaf, factor in weights.items()}
+            for (line_id, detail_key, month_key), amount in amounts["leaf_detail"].items():
+                if line_id in factors and month_key in month_keys:
+                    totals[detail_key] += factors[line_id] * amount
+            if budget_shown:
+                for leaf, factor in weights.items():
+                    sign = -1 if leaf.section == "income" else 1
+                    for account in leaf.account_ids:
+                        detail_key = "account-%d" % account.id
+                        account_budgets[detail_key] += factor * sign * sum(
+                            budget.get((account.id, month_key), 0.0) for month_key in month_keys
+                        )
+                        if account_budgets[detail_key]:
+                            # Budgeted accounts without any movement are listed
+                            # too, so that the budgets add up to the cell's.
+                            totals.setdefault(detail_key, 0.0)
+
+        can_open = (
+            self.env["account.analytic.line"].has_access("read") if request["analytic_ids"] is not None
+            else self._can_open_ledger()
+        )
+        descriptions = self._describe_accounts(request, totals)
+        entries = []
+        for detail_key, amount in totals.items():
+            entries.append({
+                "key": detail_key,
+                **descriptions[detail_key],
+                "amount": amount,
+                "open": "items" if can_open else False,
+            })
+            if budget_shown:
+                entries[-1]["budget"] = account_budgets.get(detail_key, 0.0)
+                entries[-1]["deviation"] = self._deviation(amount, entries[-1]["budget"])
+        entries.sort(key=lambda entry: (entry["code"] or "", entry["label"]))
 
         total = sum(entry["amount"] for entry in entries)
-        total_budget = budget_values[line.id][column_key] if budget_shown else None
-        for entry in entries:
-            if budget_shown:
-                entry["deviation"] = self._deviation(entry["amount"], entry["budget"])
-        is_leaf = bool(line) and not line.is_root and not line.child_ids
+        total_budget = None
+        if budget_shown:
+            total_budget = self._build_budget_values(request, budget)[line.id][column_key]
         return {
-            "kind": kind,
+            "kind": "items",
             "row_key": row_key,
             "column_key": column_key,
             "currency_id": request["currency"].id,
             "display_currency": request["display_currency"],
             "company_currency_name": request["company"].currency_id.name,
-            "section": line.section if line else False,
+            "section": line.section if line else ("income" if weights is not None else False),
             "entries": entries,
             "total": total,
-            # A line with accounts: every journal item of those accounts for
-            # the column's period can be opened at once.
-            "can_open_all": is_leaf and bool(line.account_ids) and can_read[
-                "account.analytic.line" if request["analytic_ids"] is not None else "account.move.line"
-            ],
+            "can_open_all": bool(entries) and (
+                self.env["account.analytic.line" if request["analytic_ids"] is not None
+                         else "account.move.line"].has_access("read")
+            ),
             "budget_shown": budget_shown,
             "total_budget": total_budget,
             "total_deviation": self._deviation(total, total_budget) if budget_shown else None,
         }
 
-    def _get_detail_target(self, request, line, detail_key):
-        """(model, domain) listing the journal items (or, with the analytic
-        filter, the analytic lines) behind one drill-down detail entry:
-
-        - "account-<id>": that account's items;
-        - "partner-<id>": the items of the Sales line's accounts for that
-          commercial customer (its contacts included; 0 = no customer);
-        - "all": every item of the line's accounts.
-        """
+    def _get_items_target(self, request, accounts):
+        """(model, domain) of the journal items (or, with the analytic filter,
+        the analytic lines) of ``accounts`` for the request's detail period."""
         structure = request["structure"]
         analytic_ids = request["analytic_ids"]
         if analytic_ids is not None:
@@ -899,53 +865,86 @@ class AccountPlDashboard(models.AbstractModel):
                 ("move_line_id.parent_state", "=", "posted"),
                 ("move_line_id.date", ">=", request["detail_from"]),
                 ("move_line_id.date", "<=", request["detail_to"]),
+                ("move_line_id.account_id", "in", accounts.ids),
                 (plan_field, "in", analytic_ids),
             ]
             if structure.excluded_journal_ids:
                 domain.append(("move_line_id.journal_id", "not in", structure.excluded_journal_ids.ids))
-            prefix, model = "move_line_id.", "account.analytic.line"
-        else:
-            domain = self._base_move_line_domain(structure, request["detail_from"], request["detail_to"])
-            prefix, model = "", "account.move.line"
+            return "account.analytic.line", domain
+        domain = self._base_move_line_domain(structure, request["detail_from"], request["detail_to"])
+        domain.append(("account_id", "in", accounts.ids))
+        return "account.move.line", domain
 
-        if detail_key == "all":
-            if not line:
-                raise UserError(self.env._("This row has no detail."))
-            domain.append((prefix + "account_id", "in", line.account_ids.ids))
-            return model, domain
-        kind, record_id = detail_key.rsplit("-", 1)
-        record_id = int(record_id)
-        if kind == "account":
-            domain.append((prefix + "account_id", "=", record_id))
-        elif kind == "partner" and line:
-            domain.append((prefix + "account_id", "in", line.account_ids.ids))
-            domain.append(
-                (prefix + "partner_id.commercial_partner_id", "=", record_id) if record_id
-                else (prefix + "partner_id", "=", False)
-            )
-        else:
-            raise UserError(self.env._("This row has no detail."))
-        return model, domain
+    def _get_general_ledger_action(self, request, account):
+        """Odoo's General Ledger, unfolded on ``account``, for the request's
+        detail period and without the structure's excluded journals, so that
+        its total matches the dashboard (from there, each entry opens its
+        journal entry)."""
+        structure = request["structure"]
+        general_ledger = self.env.ref("account_reports.general_ledger_report")
+        journals = self.env["account.journal"].search([
+            ("company_id", "in", structure.company_id.parent_ids.ids),
+            ("id", "not in", structure.excluded_journal_ids.ids),
+        ])
+        previous_options = {
+            "date": {
+                "date_from": fields.Date.to_string(request["detail_from"]),
+                "date_to": fields.Date.to_string(request["detail_to"]),
+                "mode": "range",
+                "filter": "custom",
+            },
+            "not_reset_journals_filter": True,
+            "journals": [
+                {"id": journal.id, "model": "account.journal", "selected": True} for journal in journals
+            ] if structure.excluded_journal_ids else [],
+        }
+        # Same as Odoo's own "General Ledger" caret option: the report's
+        # search bar (read by the web client from the action's context)
+        # narrows it down to the account, and everything left is unfolded.
+        # The ledger shows accounts by their display name, which only
+        # includes the code for users with accounting read access: search
+        # what this user actually sees.
+        code = account.with_company(structure.company_id).display_name
+        options = general_ledger.get_options(previous_options)
+        options["unfold_all"] = True
+        options["filter_search_bar"] = code
+        action = self.env["ir.actions.actions"]._for_xml_id("account_reports.action_account_report_general_ledger")
+        action["params"] = {"options": options, "ignore_session": True}
+        action["context"] = dict(ast.literal_eval(action.get("context") or "{}"), default_filter_accounts=code)
+        return action
 
     @api.model
     def get_detail_action(self, row_key, column_key, detail_key, period="fiscal_year", display_currency=None,
                           analytic_ids=None, show_budget=True):
-        """Window action listing the journal items behind a popup entry, or
-        every journal item of a line's accounts ("all"), for the period of the
-        clicked column (in company currency: the list views can't total in
-        another currency).
+        """What a popup entry opens, for the period of the clicked column:
 
-        Takes the same parameters as the other dashboard RPCs (the popup sends
-        them all); ``show_budget`` doesn't change which journal items match.
+        - "account-<id>": the account's general ledger (or, with the analytic
+          filter, its analytic lines);
+        - "all": every journal item of the row's accounts.
+
+        Ledgers and lists are in company currency (they can't total in another
+        currency). Takes the same parameters as the other dashboard RPCs (the
+        popup sends them all); ``show_budget`` doesn't change what matches.
         """
         request = self._prepare_request(period, display_currency, analytic_ids)
         if not request:
             raise UserError(self.env._("There is no active management P&L structure."))
-        column, _month_keys = self._get_request_column(request, column_key)
+        column, month_keys = self._get_request_column(request, column_key)
         request["detail_from"] = column["date_from"]
         request["detail_to"] = min(column["date_to"], request["read_to"])
-        line = self._get_request_line(request, row_key)
-        model, domain = self._get_detail_target(request, line, detail_key)
-        description = self._describe_detail_keys(request, line, [detail_key])[detail_key]
-        name = " ".join(filter(None, [description["code"], description["label"]]))
-        return self._get_drilldown_action(model, domain=domain, name=name)
+        if detail_key == "all":
+            amounts = None
+            if row_key == UNASSIGNED_ROW:
+                amounts, _budget = self._compute_request_amounts(request)
+            accounts = self._get_row_accounts(request, row_key, amounts, month_keys)
+            model, domain = self._get_items_target(request, accounts)
+            return self._get_drilldown_action(model, domain=domain, name=self.env._("Journal items"))
+        try:
+            account = self.env["account.account"].browse(int(detail_key.removeprefix("account-")))
+        except ValueError:
+            raise UserError(self.env._("This row has no detail.")) from None
+        if request["analytic_ids"] is not None:
+            model, domain = self._get_items_target(request, account)
+            name = " ".join(filter(None, [account.with_company(request["company"]).code, account.name]))
+            return self._get_drilldown_action(model, domain=domain, name=name)
+        return self._get_general_ledger_action(request, account)
