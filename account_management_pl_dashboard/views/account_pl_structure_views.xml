@@ -27,10 +27,12 @@
                             <div class="alert alert-info" role="status" invisible="id">
                                 Save the structure to create its sections (Sales, Direct costs, Indirect costs) and start adding lines below them.
                             </div>
-                            <field name="line_ids" invisible="not id"
+                            <!-- pl_structure_lines: "Add a line" adds a sibling of the
+                                 edited row, never a section (see its JS). -->
+                            <field name="line_ids" invisible="not id" widget="pl_structure_lines"
                                    context="{'default_structure_id': id}">
                                 <list editable="bottom" decoration-bf="is_root or is_group"
-                                      default_order="sort_key, id" open_form_view="True">
+                                      default_order="sort_key, id" open_form_view="True" limit="1000">
                                     <field name="sequence" widget="handle"/>
                                     <field name="structure_id" column_invisible="1"/>
                                     <field name="company_id" column_invisible="1"/>

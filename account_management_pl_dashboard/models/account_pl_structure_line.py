@@ -4,6 +4,11 @@ from odoo.exceptions import UserError, ValidationError
 from .account_pl_structure import PL_ACCOUNT_TYPES, SECTIONS
 
 SECTION_ORDER = {section: index for index, (section, _label) in enumerate(SECTIONS, start=1)}
+# Sequences sent by the lines list's "Add a line" (see
+# static/src/pl_structure_lines): END_SEQUENCE means "after the parent's
+# last line", INSERT_AFTER + n means "right after the sibling of sequence n".
+END_SEQUENCE = 1000000
+INSERT_AFTER = 2000000
 
 
 class AccountPlStructureLine(models.Model):
@@ -176,14 +181,47 @@ class AccountPlStructureLine(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        """Only the structure creates its three sections: any other line
+        goes below a section or group - at the end of Indirect costs when
+        none is given - and never becomes a section itself."""
         allow_root = self.env.context.get("pl_allow_root_create")
         for vals in vals_list:
             vals["is_root"] = bool(allow_root)
-            if not allow_root:
-                vals.pop("root_section", None)
-            elif "section" in vals:
-                vals["root_section"] = vals.pop("section")
-        return super().create(vals_list)
+            if allow_root:
+                if "section" in vals:
+                    vals["root_section"] = vals.pop("section")
+                continue
+            vals.pop("root_section", None)
+            if not vals.get("parent_id") and vals.get("structure_id"):
+                structure = self.env["account.pl.structure"].browse(vals["structure_id"])
+                vals["parent_id"] = structure.line_ids.filtered(
+                    lambda line: line.is_root and line.section == "indirect_cost"
+                ).id
+            sequence = vals.get("sequence", 0)
+            if sequence >= INSERT_AFTER:
+                vals["sequence"] = sequence - INSERT_AFTER + 1
+                vals["_pl_make_room"] = True
+            elif sequence >= END_SEQUENCE and vals.get("parent_id"):
+                siblings = self.search([("parent_id", "=", vals["parent_id"])])
+                vals["sequence"] = max(siblings.mapped("sequence"), default=0) + 10
+        make_room = [vals.pop("_pl_make_room", False) for vals in vals_list]
+        lines = super().create(vals_list)
+        for line, needs_room in zip(lines, make_room):
+            if needs_room:
+                line._make_room_for_sequence()
+        return lines
+
+    def _make_room_for_sequence(self):
+        """A line added right after a sibling (sibling's sequence + 1) may
+        tie with the next sibling: push the following siblings one step
+        down so that it stays right after the one it was added next to."""
+        self.ensure_one()
+        followers = self.parent_id.child_ids.filtered(
+            lambda sibling: sibling != self and sibling.sequence >= self.sequence
+        )
+        if any(sibling.sequence == self.sequence for sibling in followers):
+            for sibling in followers:
+                sibling.sequence += 1
 
     def write(self, vals):
         if self.filtered("is_root") and {"parent_id", "structure_id", "root_section", "is_root"} & set(vals):

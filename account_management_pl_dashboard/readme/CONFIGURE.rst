@@ -23,8 +23,12 @@ deleted or moved.
 
 Add the lines in the *Lines* tab, which shows the tree indented:
 
-- Use **+ Sub-line** on a section or group to add a line below it. Drag
-  the handle to reorder lines among their siblings. The *Parent line*
+- Use **+ Sub-line** on a section or group to add a line below it.
+  **Add a line** adds a line at the same level as the selected row,
+  right after it (at the end of the section when a section is selected,
+  at the end of Indirect costs when no row is selected): it never creates
+  a section, there are always exactly three. Drag the handle to reorder
+  lines among their siblings. The *Parent line*
   column is hidden by default; show it from the list's optional columns
   to move a line elsewhere.
 - **View**, at the end of each row (like in the chart of accounts),

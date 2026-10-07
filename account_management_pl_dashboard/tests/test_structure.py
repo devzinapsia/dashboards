@@ -37,9 +37,36 @@ class TestPlStructure(PlDashboardCommon):
             "Indirect costs", "Rent",
         ])
 
-    def test_non_root_line_needs_parent(self):
+    def test_line_without_parent_goes_to_indirect_costs(self):
+        # Never a new section: there are exactly three.
+        line = self.Line.create({"structure_id": self.structure.id, "name": "Orphan"})
+        self.assertEqual(line.parent_id, self.root_indirect)
+        self.assertFalse(line.is_root)
+        self.assertEqual(len(self.structure.line_ids.filtered("is_root")), 3)
         with self.assertRaises(ValidationError):
-            self.Line.create({"structure_id": self.structure.id, "name": "Orphan"})
+            line.parent_id = False
+
+    def test_add_line_at_the_end_of_its_parent(self):
+        # What "Add a line" sends when a section (or nothing) is selected.
+        line = self.Line.create({
+            "structure_id": self.structure.id, "parent_id": self.root_direct.id,
+            "name": "Taxes", "sequence": 1000000,
+        })
+        self.assertEqual(self.root_direct.child_ids.sorted("sort_key")[-1], line)
+        self.assertLess(line.sequence, 1000000)
+
+    def test_add_line_right_after_the_selected_one(self):
+        # What "Add a line" sends when a line is selected: its parent, and
+        # INSERT_AFTER + its sequence.
+        self.group_staff.sequence = 10
+        self.leaf_commissions.sequence = 11
+        line = self.Line.create({
+            "structure_id": self.structure.id, "parent_id": self.root_direct.id,
+            "name": "Bonuses", "sequence": 2000000 + 10,
+        })
+        names = self.root_direct.child_ids.sorted("sort_key").mapped("name")
+        self.assertEqual(names, ["Staff", "Bonuses", "Sales commissions"])
+        self.assertEqual(line.parent_id, self.root_direct)
 
     def test_group_cannot_have_assignments(self):
         with self.assertRaisesRegex(ValidationError, "is a group"):
