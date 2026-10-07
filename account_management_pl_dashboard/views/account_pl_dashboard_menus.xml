@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_account_pl_dashboard" model="ir.actions.client">
+        <field name="name">Management P&amp;L</field>
+        <field name="tag">account_management_pl_dashboard.dashboard</field>
+    </record>
+
+    <menuitem
+        id="menu_account_pl_dashboard"
+        name="Management P&amp;L"
+        parent="dashboards_base.menu_dashboards_boards"
+        action="action_account_pl_dashboard"
+        groups="group_management_pl_user"
+        sequence="20"/>
+
+    <menuitem
+        id="menu_account_pl_structure"
+        name="Management P&amp;L"
+        parent="dashboards_base.menu_dashboards_config"
+        action="action_account_pl_structure"
+        groups="group_management_pl_manager"
+        sequence="20"/>
+
+</odoo>

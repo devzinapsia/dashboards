@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_pl_structure_form" model="ir.ui.view">
+        <field name="name">account.pl.structure.form</field>
+        <field name="model">account.pl.structure</field>
+        <field name="arch" type="xml">
+            <form string="Management P&amp;L structure">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <field name="company_currency_id" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Management P&amp;L"/></h1>
+                    </div>
+                    <group>
+                        <group string="Sales">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="sales_dimension" widget="radio"/>
+                            <field name="sales_account_ids" widget="many2many_tags"
+                                   placeholder="Every account of type Income"/>
+                            <field name="excluded_journal_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Analytics">
+                            <field name="analytic_mode" widget="radio"/>
+                            <field name="analytic_plan_id"
+                                   invisible="analytic_mode != 'analytic'"
+                                   required="analytic_mode == 'analytic'"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Currency">
+                            <field name="secondary_currency_id" options="{'no_create': True}"/>
+                            <field name="default_display_currency" widget="radio"/>
+                            <field name="rate_max_age_days" invisible="not secondary_currency_id"/>
+                        </group>
+                        <group string="Budget">
+                            <field name="budget_enabled"/>
+                            <field name="budget_id"
+                                   invisible="not budget_enabled"
+                                   required="budget_enabled"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines" name="lines">
+                            <div class="alert alert-info" role="status" invisible="id">
+                                Save the structure to create its sections (Sales, Direct costs, Indirect costs) and start adding lines below them.
+                            </div>
+                            <field name="line_ids" invisible="not id"
+                                   context="{'default_structure_id': id}">
+                                <list editable="bottom" decoration-bf="is_root or is_group"
+                                      default_order="sort_key, id">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="structure_id" column_invisible="1"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="is_root" column_invisible="1"/>
+                                    <field name="is_group" column_invisible="1"/>
+                                    <field name="level" column_invisible="1"/>
+                                    <field name="sort_key" column_invisible="1"/>
+                                    <field name="section" column_invisible="1"/>
+                                    <field name="sales_dimension" column_invisible="1"/>
+                                    <field name="analytic_plan_id" column_invisible="1"/>
+                                    <field name="name" widget="pl_indented_char"/>
+                                    <field name="parent_id" readonly="is_root" required="not is_root"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="account_ids" widget="many2many_tags"
+                                           invisible="is_root or is_group or section == 'income'"
+                                           options="{'no_create': True}"/>
+                                    <field name="partner_ids" widget="many2many_tags"
+                                           invisible="is_root or is_group or section != 'income' or sales_dimension == 'analytic'"
+                                           options="{'no_create': True}"/>
+                                    <field name="analytic_account_ids" widget="many2many_tags"
+                                           invisible="is_root or is_group or section != 'income' or sales_dimension != 'analytic'"
+                                           options="{'no_create': True}"/>
+                                    <field name="assignment_status" string="Status" widget="badge"
+                                           decoration-warning="assignment_status"/>
+                                    <button name="action_add_child" type="object" icon="fa-plus"
+                                            title="Add sub-line" string="Sub-line"
+                                            invisible="account_ids or partner_ids or analytic_account_ids"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_pl_structure_list" model="ir.ui.view">
+        <field name="name">account.pl.structure.list</field>
+        <field name="model">account.pl.structure</field>
+        <field name="arch" type="xml">
+            <list string="Management P&amp;L structures">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="sales_dimension"/>
+                <field name="secondary_currency_id"/>
+                <field name="budget_enabled" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_account_pl_structure_search" model="ir.ui.view">
+        <field name="name">account.pl.structure.search</field>
+        <field name="model">account.pl.structure</field>
+        <field name="arch" type="xml">
+            <search string="Management P&amp;L structures">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_pl_structure" model="ir.actions.act_window">
+        <field name="name">Management P&amp;L structures</field>
+        <field name="res_model">account.pl.structure</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create the management P&amp;L structure of the company</p>
+            <p>Group income and expense accounts, customers or analytic accounts in your own rows.</p>
+        </field>
+    </record>
+
+</odoo>

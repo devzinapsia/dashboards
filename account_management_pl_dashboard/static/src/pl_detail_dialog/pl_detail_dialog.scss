@@ -1,0 +1,75 @@
+// Same approach as the grid: plain classes for both themes, driven by
+// isDarkMode (see pl_dashboard.scss).
+$pl-detail-themes: (
+    light: (border: rgba(0, 0, 0, .08), hover: rgba(0, 0, 0, .04), muted: #6c757d, negative: #c0392b,
+            note-bg: #e8f1fb, favorable: #1e8449, unfavorable: #c0392b),
+    dark: (border: rgba(255, 255, 255, .08), hover: rgba(255, 255, 255, .05), muted: #9095a6, negative: #ff7b72,
+           note-bg: #22334a, favorable: #56d364, unfavorable: #ff7b72),
+);
+
+@mixin pl-detail-theme($colors) {
+    .o_pl_detail_table {
+        th, td {
+            border-bottom: 1px solid map-get($colors, border);
+        }
+
+        .o_pl_detail_clickable:hover td {
+            background-color: map-get($colors, hover);
+        }
+    }
+
+    .o_pl_detail_code, .o_pl_detail_muted, .o_pl_detail_open_col {
+        color: map-get($colors, muted);
+    }
+
+    .o_pl_negative {
+        color: map-get($colors, negative);
+    }
+
+    .o_pl_favorable {
+        color: map-get($colors, favorable);
+    }
+
+    .o_pl_unfavorable {
+        color: map-get($colors, unfavorable);
+    }
+
+    .o_pl_detail_note {
+        background-color: map-get($colors, note-bg);
+    }
+}
+
+.o_pl_detail {
+    @include pl-detail-theme(map-get($pl-detail-themes, light));
+
+    &.o_pl_detail_dark {
+        @include pl-detail-theme(map-get($pl-detail-themes, dark));
+    }
+
+    .o_pl_detail_note {
+        padding: .5rem .75rem;
+        border-radius: .25rem;
+        font-size: .9em;
+    }
+
+    .o_pl_detail_table {
+        font-variant-numeric: tabular-nums;
+
+        th, td {
+            padding: .4rem .5rem;
+        }
+
+        tfoot td {
+            font-weight: 700;
+            border-bottom: none;
+        }
+
+        .o_pl_detail_clickable {
+            cursor: pointer;
+        }
+
+        .o_pl_detail_open_col {
+            width: 2rem;
+        }
+    }
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_management_pl_dashboard.PlIndentedCharField">
+        <div class="d-flex align-items-center" t-attf-style="padding-left: {{ indent }}rem;">
+            <i t-if="isGroup" class="fa fa-folder-open-o me-2" aria-hidden="true"/>
+            <div class="flex-grow-1"><t t-call="web.CharField"/></div>
+        </div>
+    </t>
+
+</templates>

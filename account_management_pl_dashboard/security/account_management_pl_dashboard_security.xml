@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Following dashboards_base's documented pattern: one res.groups.privilege
+        per feature, category_id pointing to the shared "Dashboards" category,
+        and res.groups records chained with implied_ids (lowest level first).
+    -->
+    <record model="res.groups.privilege" id="res_groups_privilege_management_pl">
+        <field name="name">Management P&amp;L</field>
+        <field name="sequence">20</field>
+        <field name="category_id" ref="dashboards_base.module_category_dashboards"/>
+    </record>
+
+    <record id="group_management_pl_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_management_pl"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_management_pl_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_management_pl"/>
+        <field name="implied_ids" eval="[(4, ref('group_management_pl_user'))]"/>
+    </record>
+
+    <!-- Multi-company: a structure (and its lines) is only visible from its own company. -->
+    <record id="account_pl_structure_comp_rule" model="ir.rule">
+        <field name="name">Management P&amp;L structure: multi-company</field>
+        <field name="model_id" ref="model_account_pl_structure"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="account_pl_structure_line_comp_rule" model="ir.rule">
+        <field name="name">Management P&amp;L structure line: multi-company</field>
+        <field name="model_id" ref="model_account_pl_structure_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+</odoo>

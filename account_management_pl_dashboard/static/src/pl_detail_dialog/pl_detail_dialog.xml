@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_management_pl_dashboard.PlDetailDialog">
+        <Dialog title="title" size="'lg'">
+            <div class="o_pl_detail" t-att-class="{ 'o_pl_detail_dark': isDarkMode }">
+                <div t-if="state.stack.length > 1" class="mb-2">
+                    <button class="btn btn-link px-0" t-on-click="back">
+                        <i class="fa fa-arrow-left me-1"/><t t-esc="labels.back"/>
+                    </button>
+                </div>
+                <div t-if="secondaryNote" class="o_pl_detail_note mb-3" role="status">
+                    <i class="fa fa-info-circle me-1"/><t t-esc="secondaryNote"/>
+                </div>
+                <t t-if="current">
+                    <p t-if="!current.detail.entries.length" class="o_pl_detail_muted" t-esc="labels.empty"/>
+                    <table t-else="" class="o_pl_detail_table w-100">
+                        <thead>
+                            <tr>
+                                <th t-if="hasCodes" t-esc="labels.code"/>
+                                <th t-esc="current.detail.kind === 'lines' ? labels.line : labels.detail"/>
+                                <th class="text-end" t-esc="labels.amount"/>
+                                <t t-if="current.detail.budget_shown">
+                                    <th class="text-end" t-esc="labels.budget"/>
+                                    <th class="text-end" t-esc="labels.deviation"/>
+                                </t>
+                                <th class="o_pl_detail_open_col"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="current.detail.entries" t-as="entry" t-key="entry.key">
+                                <tr t-att-class="{ 'o_pl_detail_clickable': entry.open }" t-on-click="() => this.onEntryClick(entry)">
+                                    <td t-if="hasCodes" class="o_pl_detail_code" t-esc="entry.code or ''"/>
+                                    <td t-esc="entry.label"/>
+                                    <td class="text-end" t-att-class="{ 'o_pl_negative': entry.amount &lt; 0 }" t-esc="formatAmount(entry.amount)"/>
+                                    <t t-if="current.detail.budget_shown">
+                                        <td class="text-end o_pl_detail_muted" t-esc="formatBudget(entry.budget)"/>
+                                        <td class="text-end" t-att-class="deviationClass(entry.deviation)" t-esc="formatDeviation(entry.budget, entry.deviation)"/>
+                                    </t>
+                                    <td class="o_pl_detail_open_col text-end">
+                                        <i t-if="entry.open === 'line'" class="fa fa-chevron-right"/>
+                                        <i t-elif="entry.open === 'items'" class="fa fa-external-link"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td t-if="hasCodes"/>
+                                <td t-esc="labels.total"/>
+                                <td class="text-end" t-att-class="{ 'o_pl_negative': current.detail.total &lt; 0 }" t-esc="formatAmount(current.detail.total)"/>
+                                <t t-if="current.detail.budget_shown">
+                                    <td class="text-end" t-esc="formatBudget(current.detail.total_budget)"/>
+                                    <td class="text-end" t-att-class="deviationClass(current.detail.total_deviation)"
+                                        t-esc="formatDeviation(current.detail.total_budget, current.detail.total_deviation)"/>
+                                </t>
+                                <td/>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </t>
+                <div t-if="state.loading" class="text-center py-2"><i class="fa fa-circle-o-notch fa-spin"/></div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="props.close" t-esc="labels.close"/>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

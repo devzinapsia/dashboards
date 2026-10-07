@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_management_pl_dashboard.PlDashboard">
+      <!-- "o_action" makes the web client size the action to the viewport,
+           so that the grid scrolls inside it instead of overflowing. -->
+      <div class="o_action">
+        <Layout display="display">
+            <div class="o_pl_dashboard d-flex flex-column h-100" t-att-class="{ 'o_pl_dashboard_dark': isDarkMode }">
+                <t t-set="config" t-value="state.config"/>
+
+                <div t-if="config and !config.has_structure" class="p-3">
+                    <div class="alert alert-info d-flex align-items-center gap-3 mb-0" role="status">
+                        <span t-esc="labels.noStructure.replace('%s', config.company_name)"/>
+                        <button t-if="config.can_configure" class="btn btn-primary btn-sm" t-on-click="openConfiguration" t-esc="labels.configure"/>
+                    </div>
+                </div>
+
+                <t t-elif="config">
+                    <div class="o_pl_toolbar d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+                        <select class="form-select w-auto" t-on-change="onPeriodChange" aria-label="Period">
+                            <t t-foreach="periodOptions" t-as="option" t-key="option.value">
+                                <option t-att-value="option.value" t-att-selected="state.period === option.value" t-esc="option.label"/>
+                            </t>
+                        </select>
+                        <div t-if="currencyOptions.length > 1" class="btn-group" role="group" aria-label="Display currency">
+                            <t t-foreach="currencyOptions" t-as="option" t-key="option.value">
+                                <button type="button" class="btn"
+                                        t-att-class="state.displayCurrency === option.value ? 'btn-primary' : 'btn-secondary'"
+                                        t-on-click="() => this.onCurrencyChange(option.value)"
+                                        t-esc="option.label"/>
+                            </t>
+                        </div>
+                        <div t-if="config.analytic_mode !== 'none'" class="o_pl_analytic_filter">
+                            <SelectMenu
+                                choices="analyticChoices"
+                                value="state.analyticIds"
+                                multiSelect="true"
+                                searchable="true"
+                                placeholder="analyticPlaceholder"
+                                onSelect.bind="onAnalyticChange"/>
+                        </div>
+                        <button t-if="config.budget_enabled" type="button" class="btn"
+                                t-att-class="state.showBudget ? 'btn-primary' : 'btn-secondary'"
+                                t-att-aria-pressed="state.showBudget ? 'true' : 'false'"
+                                t-on-click="toggleBudget">
+                            <i class="fa fa-balance-scale me-1"/><t t-esc="labels.budget"/>
+                        </button>
+                        <div class="ms-auto d-flex gap-2">
+                            <button class="btn btn-secondary" t-on-click="expandAll" t-att-title="labels.expandAll">
+                                <i class="fa fa-plus-square-o me-1"/><span t-esc="labels.expandAll"/>
+                            </button>
+                            <button class="btn btn-secondary" t-on-click="collapseAll" t-att-title="labels.collapseAll">
+                                <i class="fa fa-minus-square-o me-1"/><span t-esc="labels.collapseAll"/>
+                            </button>
+                            <button class="btn btn-secondary" t-on-click="refresh" t-att-title="labels.refresh">
+                                <i class="fa fa-refresh" t-att-class="{ 'fa-spin': state.loading }"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div t-if="state.error" class="px-3">
+                        <div class="o_pl_warning alert alert-warning d-flex align-items-center gap-3" role="alert">
+                            <i class="fa fa-exclamation-triangle"/>
+                            <span class="flex-grow-1" t-esc="state.error"/>
+                            <button t-if="state.displayCurrency === 'secondary'" class="btn btn-sm btn-secondary"
+                                    t-on-click="showCompanyCurrency" t-esc="labels.viewInCompanyCurrency"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.data and (state.data.budget_unavailable_reason or (budgetShown and state.data.display_currency === 'secondary'))"
+                         class="o_pl_note mx-3 mb-2" role="status">
+                        <i class="fa fa-info-circle me-1"/>
+                        <t t-esc="state.data.budget_unavailable_reason or labels.budgetCurrencyNote"/>
+                    </div>
+                    <div t-if="state.data" class="o_pl_grid_wrapper flex-grow-1 mx-3 mb-3">
+                        <table class="o_pl_grid">
+                            <thead>
+                                <tr>
+                                    <th class="o_pl_name_col">
+                                        <span t-esc="state.data.company_name"/>
+                                        <span class="o_pl_muted ms-1">(<t t-esc="state.data.currency_name"/>)</span>
+                                    </th>
+                                    <t t-foreach="columns" t-as="column" t-key="column.key">
+                                        <t t-if="budgetSplitColumns">
+                                            <th class="o_pl_value_col"><t t-esc="columnLabel(column)"/> · <t t-esc="labels.actual"/></th>
+                                            <th class="o_pl_value_col" t-esc="labels.budget"/>
+                                            <th class="o_pl_value_col" t-esc="labels.deviation"/>
+                                        </t>
+                                        <th t-else="" class="o_pl_value_col" t-att-class="{ 'o_pl_total_col': column.is_total }" t-esc="columnLabel(column)"/>
+                                    </t>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="visibleRows" t-as="row" t-key="row.key">
+                                    <tr t-att-class="rowClass(row)">
+                                        <td class="o_pl_name_col" t-on-click="() => this.toggleRow(row)"
+                                            t-att-title="row.kind === 'unassigned' ? labels.unassignedHelp : undefined">
+                                            <div class="d-flex align-items-center" t-attf-style="padding-left: {{ row.level * 1.25 }}rem;">
+                                                <i t-if="isCollapsible(row)" class="fa fa-fw o_pl_chevron"
+                                                   t-att-class="state.collapsed[row.key] ? 'fa-caret-right' : 'fa-caret-down'"/>
+                                                <i t-elif="row.kind === 'unassigned'" class="fa fa-fw fa-info-circle o_pl_muted"/>
+                                                <span t-else="" class="o_pl_chevron_spacer"/>
+                                                <span class="text-truncate" t-esc="row.name"/>
+                                                <span t-if="row.assignment_status" class="o_pl_status_badge ms-2"
+                                                      t-att-title="labels.withoutAssignments" t-esc="row.assignment_status"/>
+                                            </div>
+                                        </td>
+                                        <t t-foreach="columns" t-as="column" t-key="column.key">
+                                            <td class="o_pl_value_col"
+                                                t-att-class="{ 'o_pl_total_col': column.is_total, 'o_pl_clickable': isCellClickable(row, column) }"
+                                                t-on-click="() => this.openCell(row, column)">
+                                                <div t-att-class="{ 'o_pl_negative': isNegative(row, column) }" t-esc="formatValue(row, column)"/>
+                                                <div t-if="hasBudgetLine(row) and !budgetSplitColumns and !column.is_future"
+                                                     class="o_pl_budget_line"
+                                                     t-att-title="row.budget[column.key] === null ? labels.noBudgetHelp : undefined">
+                                                    <t t-esc="formatBudget(row, column)"/>
+                                                    <span t-if="row.budget[column.key] !== null" class="ms-1" t-att-class="deviationClass(row, column)" t-esc="formatDeviation(row, column)"/>
+                                                </div>
+                                            </td>
+                                            <t t-if="budgetSplitColumns">
+                                                <td class="o_pl_value_col o_pl_budget_col"
+                                                    t-att-title="hasBudgetLine(row) and row.budget[column.key] === null ? labels.noBudgetHelp : undefined"
+                                                    t-esc="hasBudgetLine(row) ? formatBudget(row, column) : ''"/>
+                                                <td class="o_pl_value_col o_pl_budget_col" t-att-class="hasBudgetLine(row) ? deviationClass(row, column) : ''"
+                                                    t-esc="hasBudgetLine(row) ? formatDeviation(row, column) : ''"/>
+                                            </t>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </div>
+        </Layout>
+      </div>
+    </t>
+
+</templates>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_pl_structure_manager,account.pl.structure.manager,model_account_pl_structure,group_management_pl_manager,1,1,1,1
+access_account_pl_structure_line_manager,account.pl.structure.line.manager,model_account_pl_structure_line,group_management_pl_manager,1,1,1,1
+access_account_journal_pl_manager,account.journal.pl.manager,account.model_account_journal,group_management_pl_manager,1,0,0,0
+access_account_analytic_plan_pl_manager,account.analytic.plan.pl.manager,analytic.model_account_analytic_plan,group_management_pl_manager,1,0,0,0
+access_account_report_budget_pl_manager,account.report.budget.pl.manager,account_reports.model_account_report_budget,group_management_pl_manager,1,0,0,0

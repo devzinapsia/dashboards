@@ -1,0 +1,214 @@
+// Theme-aware colors. Odoo 19's dark theme is a separately compiled bundle
+// (not live CSS variables), and it isn't reliably loaded for a plain client
+// action, so both variants are plain classes driven by `isDarkMode` from
+// dashboards_base (see dashboards_base/static/src/js/dashboards_theme.js).
+$pl-themes: (
+    light: (
+        surface: #fff,
+        section-bg: #eef1f5,
+        computed-bg: #e8f1fb,
+        border: rgba(0, 0, 0, .08),
+        muted: #6c757d,
+        negative: #c0392b,
+        warning-bg: #fff3cd,
+        warning-fg: #8a6d1d,
+        favorable: #1e8449,
+        unfavorable: #c0392b,
+        note-bg: #e8f1fb,
+    ),
+    dark: (
+        surface: #242631,
+        section-bg: #2f3241,
+        computed-bg: #22334a,
+        border: rgba(255, 255, 255, .08),
+        muted: #9095a6,
+        negative: #ff7b72,
+        warning-bg: #4a3f1c,
+        warning-fg: #f2d68a,
+        favorable: #56d364,
+        unfavorable: #ff7b72,
+        note-bg: #22334a,
+    ),
+);
+
+@mixin pl-theme($colors) {
+    .o_pl_grid_wrapper {
+        background-color: map-get($colors, surface);
+        border: 1px solid map-get($colors, border);
+    }
+
+    .o_pl_grid {
+        th, td {
+            background-color: map-get($colors, surface);
+            border-bottom: 1px solid map-get($colors, border);
+        }
+
+        .o_pl_row_section td {
+            background-color: map-get($colors, section-bg);
+        }
+
+        .o_pl_row_computed td {
+            background-color: map-get($colors, computed-bg);
+        }
+
+        .o_pl_row_unassigned td {
+            border-top: 1px dashed map-get($colors, border);
+            color: map-get($colors, muted);
+        }
+
+        .o_pl_negative {
+            color: map-get($colors, negative);
+        }
+
+        .o_pl_total_col {
+            border-left: 1px solid map-get($colors, border);
+        }
+    }
+
+    .o_pl_muted, .o_pl_budget_line, .o_pl_budget_col {
+        color: map-get($colors, muted);
+    }
+
+    .o_pl_favorable {
+        color: map-get($colors, favorable);
+    }
+
+    .o_pl_unfavorable {
+        color: map-get($colors, unfavorable);
+    }
+
+    .o_pl_note {
+        background-color: map-get($colors, note-bg);
+    }
+
+    .o_pl_status_badge {
+        background-color: map-get($colors, warning-bg);
+        color: map-get($colors, warning-fg);
+    }
+}
+
+.o_pl_dashboard {
+    @include pl-theme(map-get($pl-themes, light));
+
+    &.o_pl_dashboard_dark {
+        @include pl-theme(map-get($pl-themes, dark));
+    }
+
+    .o_pl_note {
+        padding: .4rem .75rem;
+        border-radius: .25rem;
+        font-size: .9em;
+    }
+
+    .o_pl_budget_line {
+        font-size: .78em;
+        font-weight: 400;
+        font-style: normal;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    .o_pl_analytic_filter {
+        min-width: 16rem;
+    }
+
+    .o_pl_grid_wrapper {
+        // A flex child only scrolls on its own once it's allowed to shrink
+        // below its content's height.
+        min-height: 0;
+        overflow: auto;
+        border-radius: .25rem;
+    }
+
+    .o_pl_grid {
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 100%;
+        font-variant-numeric: tabular-nums;
+
+        th, td {
+            padding: .35rem .75rem;
+            white-space: nowrap;
+        }
+
+        // Sticky header row and name column while scrolling.
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            font-weight: 600;
+        }
+
+        .o_pl_name_col {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            min-width: 18rem;
+            max-width: 28rem;
+            text-align: left;
+        }
+
+        thead .o_pl_name_col {
+            z-index: 3;
+        }
+
+        .o_pl_value_col {
+            text-align: right;
+            min-width: 8rem;
+        }
+
+        .o_pl_total_col {
+            font-weight: 600;
+        }
+
+        .o_pl_clickable {
+            cursor: pointer;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        .o_pl_row_section td {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: .9em;
+            letter-spacing: .02em;
+        }
+
+        .o_pl_row_group td {
+            font-weight: 600;
+        }
+
+        .o_pl_row_section .o_pl_name_col,
+        .o_pl_row_group .o_pl_name_col {
+            cursor: pointer;
+        }
+
+        .o_pl_row_computed td {
+            font-weight: 700;
+        }
+
+        .o_pl_row_computed_percent td {
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .o_pl_row_unassigned td {
+            font-style: italic;
+        }
+    }
+
+    .o_pl_chevron, .o_pl_chevron_spacer {
+        width: 1.25em;
+        flex: 0 0 1.25em;
+    }
+
+    .o_pl_status_badge {
+        font-size: .75em;
+        font-weight: 500;
+        padding: .1em .5em;
+        border-radius: 1em;
+        text-transform: none;
+    }
+}
