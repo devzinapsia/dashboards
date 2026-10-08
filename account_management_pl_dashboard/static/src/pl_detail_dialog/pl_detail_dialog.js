@@ -41,7 +41,7 @@ export class PlDetailDialog extends Component {
             empty: _t("No movements in this period."),
             line: _t("Line"),
             account: _t("Account"),
-            openLedger: _t("Open the general ledger"),
+            openItems: _t("Open the journal items"),
             budget: _t("Budget"),
             openAll: _t("View all journal items"),
             deviation: _t("Deviation %"),

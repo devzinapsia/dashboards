@@ -18,7 +18,7 @@ class AccountPlStructureLine(models.Model):
     can't be removed or retyped. Below them, a line with sub-lines is a
     *group* (its amount is the sum of its sub-lines) and a line without
     sub-lines is a *leaf*, the only kind of line that gets accounts assigned
-    (income accounts for Sales, expense accounts for costs).
+    (income accounts for Income, expense accounts for costs).
     """
 
     _name = "account.pl.structure.line"
@@ -235,7 +235,24 @@ class AccountPlStructureLine(models.Model):
     @api.ondelete(at_uninstall=False)
     def _unlink_except_section(self):
         if self.filtered("is_root"):
-            raise UserError(self.env._("The section lines (Sales, Direct costs, Indirect costs) can't be deleted."))
+            raise UserError(self.env._("The section lines (Income, Direct costs, Indirect costs) can't be deleted."))
+
+    @api.model
+    def _rename_default_income_sections(self):
+        """The first section used to be called "Sales" ("Ventas"): rename it
+        to "Income" ("Ingresos") wherever it still has that default name.
+        Sections an administrator renamed are left alone. Called by the
+        19.0.1.0.9 migration; the section's technical value ("income")
+        doesn't change."""
+        renames = {"Sales": "Income", "Ventas": "Ingresos"}
+        sections = self.sudo().search([
+            ("is_root", "=", True),
+            ("root_section", "=", "income"),
+            ("name", "in", list(renames)),
+        ])
+        for section in sections:
+            section.name = renames[section.name]
+        return sections
 
     def action_add_child(self):
         self.ensure_one()

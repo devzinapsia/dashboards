@@ -15,6 +15,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "% of the month's total"
+msgstr "% del total del mes"
+
+#. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
 msgid "%s (copy)"
@@ -162,6 +168,12 @@ msgstr "Presupuesto: %s"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Chart"
+msgstr "Gráfico"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
 msgid "Close"
 msgstr "Cerrar"
@@ -217,13 +229,13 @@ msgstr "Configurar la estructura"
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid ""
-"Control row: movements of P&L accounts, customers or analytic accounts not "
-"included in any line. Not included in the totals. Net profit + Unassigned = "
-"accounting result of the period."
+"Control row: movements of P&L accounts not included in any line. Not "
+"included in the totals. Net profit + Unassigned = accounting result of the "
+"period."
 msgstr ""
-"Fila de control: movimientos de cuentas de resultado, clientes o cuentas "
-"analíticas que no están en ninguna línea. No se incluye en los totales. "
-"Utilidad neta + Sin asignar = resultado contable del período."
+"Fila de control: movimientos de cuentas de resultado que no están en ninguna"
+" línea. No se incluye en los totales. Utilidad neta + Sin asignar = "
+"resultado contable del período."
 
 #. module: account_management_pl_dashboard
 #. odoo-python
@@ -296,6 +308,16 @@ msgid "Display currency"
 msgstr "Moneda de visualización"
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid ""
+"Each month's bar is its income + direct costs + indirect costs (100%), split"
+" by section."
+msgstr ""
+"La barra de cada mes es la suma de ingresos + costos directos + costos "
+"indirectos (100%), dividida por sección."
+
+#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__excluded_journal_ids
 msgid "Excluded journals"
 msgstr "Diarios excluidos"
@@ -329,6 +351,12 @@ msgid "General"
 msgstr "General"
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Grid"
+msgstr "Grilla"
+
+#. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid "Gross profit"
@@ -346,6 +374,12 @@ msgstr "Utilidad bruta %"
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__id
 msgid "ID"
 msgstr "ID"
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__root_section__income
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__section__income
+msgid "Income"
+msgstr "Ingresos"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__root_section__indirect_cost
@@ -534,8 +568,8 @@ msgstr "Abrir el tablero en"
 #. module: account_management_pl_dashboard
 #. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_detail_dialog/pl_detail_dialog.js:0
-msgid "Open the general ledger"
-msgstr "Abrir el libro mayor"
+msgid "Open the journal items"
+msgstr "Abrir los apuntes contables"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__secondary_currency_id
@@ -574,18 +608,12 @@ msgid "Root section"
 msgstr "Sección raíz"
 
 #. module: account_management_pl_dashboard
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__root_section__income
-#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure_line__section__income
-msgid "Sales"
-msgstr "Ventas"
-
-#. module: account_management_pl_dashboard
 #: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_form
 msgid ""
-"Save the structure to create its sections (Sales, Direct costs, Indirect "
+"Save the structure to create its sections (Income, Direct costs, Indirect "
 "costs) and start adding lines below them."
 msgstr ""
-"Guarde la estructura para crear sus secciones (Ventas, Costos directos, "
+"Guarde la estructura para crear sus secciones (Ingresos, Costos directos, "
 "Costos indirectos) y empezar a agregar líneas debajo de ellas."
 
 #. module: account_management_pl_dashboard
@@ -702,9 +730,9 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid ""
-"The section lines (Sales, Direct costs, Indirect costs) can't be deleted."
+"The section lines (Income, Direct costs, Indirect costs) can't be deleted."
 msgstr ""
-"Las líneas de sección (Ventas, Costos directos, Costos indirectos) no se "
+"Las líneas de sección (Ingresos, Costos directos, Costos indirectos) no se "
 "pueden eliminar."
 
 #. module: account_management_pl_dashboard
@@ -783,6 +811,12 @@ msgstr "Período desconocido: %s"
 #: model:res.groups,name:account_management_pl_dashboard.group_management_pl_user
 msgid "User"
 msgstr "Usuario"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.xml:0
+msgid "View"
+msgstr "Vista"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript

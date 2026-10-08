@@ -54,15 +54,27 @@
                                 <option t-att-value="budget.id" t-att-selected="state.budgetId === budget.id" t-esc="budget.name"/>
                             </t>
                         </select>
+                        <div class="btn-group" role="group" aria-label="View">
+                            <button type="button" class="btn"
+                                    t-att-class="state.view === 'grid' ? 'btn-primary' : 'btn-secondary'"
+                                    t-on-click="() => this.setView('grid')">
+                                <i class="fa fa-table me-1"/><t t-esc="labels.grid"/>
+                            </button>
+                            <button type="button" class="btn"
+                                    t-att-class="state.view === 'chart' ? 'btn-primary' : 'btn-secondary'"
+                                    t-on-click="() => this.setView('chart')">
+                                <i class="fa fa-bar-chart me-1"/><t t-esc="labels.chart"/>
+                            </button>
+                        </div>
                         <div class="ms-auto d-flex gap-2">
                             <button class="btn btn-secondary" t-on-click="exportXlsx" t-att-title="labels.exportXlsxHelp"
                                     t-att-disabled="!state.data">
                                 <i class="fa fa-file-excel-o me-1"/><span t-esc="labels.exportXlsx"/>
                             </button>
-                            <button class="btn btn-secondary" t-on-click="expandAll" t-att-title="labels.expandAll">
+                            <button t-if="state.view === 'grid'" class="btn btn-secondary" t-on-click="expandAll" t-att-title="labels.expandAll">
                                 <i class="fa fa-plus-square-o me-1"/><span t-esc="labels.expandAll"/>
                             </button>
-                            <button class="btn btn-secondary" t-on-click="collapseAll" t-att-title="labels.collapseAll">
+                            <button t-if="state.view === 'grid'" class="btn btn-secondary" t-on-click="collapseAll" t-att-title="labels.collapseAll">
                                 <i class="fa fa-minus-square-o me-1"/><span t-esc="labels.collapseAll"/>
                             </button>
                             <button class="btn btn-secondary" t-on-click="refresh" t-att-title="labels.refresh">
@@ -86,7 +98,13 @@
                     <div t-if="secondaryRateNote" class="o_pl_note mx-3 mb-2" role="status">
                         <i class="fa fa-exchange me-1"/><t t-esc="secondaryRateNote"/>
                     </div>
-                    <div t-if="state.data" class="o_pl_grid_wrapper flex-grow-1 mx-3 mb-3">
+                    <div t-if="state.data and state.view === 'chart'" class="o_pl_chart_wrapper flex-grow-1 mx-3 mb-3 p-3">
+                        <div class="o_pl_muted small mb-2" t-esc="labels.chartHelp"/>
+                        <div class="o_pl_chart_canvas">
+                            <DashboardsChart type="'bar'" data="chartData" options="chartOptions"/>
+                        </div>
+                    </div>
+                    <div t-if="state.data and state.view === 'grid'" class="o_pl_grid_wrapper flex-grow-1 mx-3 mb-3">
                         <table class="o_pl_grid">
                             <thead>
                                 <tr>

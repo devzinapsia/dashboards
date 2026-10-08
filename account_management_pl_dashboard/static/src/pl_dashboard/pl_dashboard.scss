@@ -32,7 +32,7 @@ $pl-themes: (
 );
 
 @mixin pl-theme($colors) {
-    .o_pl_grid_wrapper {
+    .o_pl_grid_wrapper, .o_pl_chart_wrapper {
         background-color: map-get($colors, surface);
         border: 1px solid map-get($colors, border);
     }
@@ -106,6 +106,27 @@ $pl-themes: (
         font-style: normal;
         text-transform: none;
         letter-spacing: normal;
+    }
+
+    .o_pl_chart_wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        border-radius: .25rem;
+
+        .o_pl_chart_canvas {
+            flex: 1 1 auto;
+            min-height: 320px;
+            position: relative;
+        }
+
+        // dashboards_base's chart has a fixed height for cards: here it
+        // fills the dashboard's height instead.
+        .o_dashboards_chart {
+            position: absolute;
+            inset: 0;
+            height: auto;
+        }
     }
 
     .o_pl_analytic_filter {

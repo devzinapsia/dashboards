@@ -17,6 +17,13 @@ Toolbar
   journal item is split at 100% on each plan.
 - **Budget**: the accounting budget to compare with, among the company's
   (*No budget*: no comparison).
+- **Grid / Chart**: shows either the grid or a chart (one at a time).
+  The chart has one stacked bar per month of the grid, adding up to 100%
+  (income + direct costs + indirect costs of the month), split into
+  **Income** (blue), **Direct costs** (red) and **Indirect costs**
+  (orange); hovering a segment shows its share and its amount. A negative
+  section amount counts as 0 in the shares. It follows the same period,
+  currency and analytic filter as the grid.
 - **Export**: downloads the grid as shown (same period, currency,
   analytic filter and budget, every row expanded) as an Excel file.
 - **Expand all**, **Collapse all** and **Refresh**. Sections and groups
@@ -42,30 +49,23 @@ behind it** for the clicked column, in the currency being displayed. The
 accounts always add up to the figure clicked. Profit rows (amounts and
 percentages) have no drill-down.
 
-- Clicking an account opens Odoo's **General Ledger** for that account and
-  the period of the clicked column (the whole period in the Total column),
-  without the structure's excluded journals; from the ledger, each line
-  opens its journal entry. As usual in Odoo, the ledger starts with the
-  account's balance since the beginning of the fiscal year (*Initial
-  balance*), followed by the period's movements, which are the ones
-  matching the popup.
+- Clicking an account opens **its journal items** for the month of the
+  clicked cell (the whole period in the Total column): posted entries
+  only, without the structure's excluded journals, so they add up to the
+  account's amount in the popup. Each journal item opens its journal
+  entry.
 - **View all journal items** lists every journal item of those accounts
   for the same period.
 
-The General Ledger and the journal item lists are in **company currency**:
-they can't total in the secondary currency. In the secondary currency
-view the popup says so.
+The journal item lists are in **company currency**: they can't total in
+the secondary currency. In the secondary currency view the popup says
+so.
 
 With the analytic filter, the popup's balances are the period's
-movements distributed to the selected analytic accounts (no opening
-balance), and an account opens the General Ledger with the same analytic
-filter. Odoo's ledger lists the journal items carrying those analytic
-accounts at their **full** amount: it matches the popup for items fully
-distributed to them, not for items split with other analytic accounts.
-**View all journal items** then lists the analytic lines, with the exact
-shares. Users without analytic accounting rights get the analytic lines
-instead of the ledger. Opening ledgers and journal items requires the
-usual accounting read access.
+movements distributed to the selected analytic accounts, and an account
+opens its **analytic lines** (the exact share distributed to them)
+instead of the journal items. Opening journal items or analytic lines
+requires the usual accounting read access.
 
 Budget
 ======

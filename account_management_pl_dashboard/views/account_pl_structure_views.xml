@@ -25,7 +25,7 @@
                     <notebook>
                         <page string="Lines" name="lines">
                             <div class="alert alert-info" role="status" invisible="id">
-                                Save the structure to create its sections (Sales, Direct costs, Indirect costs) and start adding lines below them.
+                                Save the structure to create its sections (Income, Direct costs, Indirect costs) and start adding lines below them.
                             </div>
                             <!-- pl_structure_lines: "Add a line" adds a sibling of the
                                  edited row, never a section (see its JS). -->

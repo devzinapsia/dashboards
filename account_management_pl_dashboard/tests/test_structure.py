@@ -32,7 +32,7 @@ class TestPlStructure(PlDashboardCommon):
     def test_hierarchical_order(self):
         lines = self.structure.line_ids
         self.assertEqual(lines.mapped("name"), [
-            "Sales", "Services sales",
+            "Income", "Services sales",
             "Direct costs", "Staff", "Salaries", "Sales commissions",
             "Indirect costs", "Rent",
         ])
@@ -113,7 +113,7 @@ class TestPlStructure(PlDashboardCommon):
 
     def test_account_once_across_sections(self):
         # A Sales account can't be counted again by a cost line.
-        with self.assertRaisesRegex(ValidationError, "already used in line Sales / Services sales"):
+        with self.assertRaisesRegex(ValidationError, "already used in line Income / Services sales"):
             self.leaf_rent.account_ids = [Command.link(self.account_sales.id)]
 
     def test_sales_line_takes_accounts(self):
@@ -205,3 +205,14 @@ class TestPlStructure(PlDashboardCommon):
         self.assertEqual(len(created.line_ids), 3)
         # Opening it again reuses it.
         self.assertEqual(self.Structure.action_open_config()["res_id"], created.id)
+
+    def test_rename_default_income_section(self):
+        # What the 19.0.1.0.9 migration does on existing structures.
+        self.root_income.name = "Ventas"
+        renamed_root = self.Structure.create({"name": "Other", "active": False, "company_id": self.company.id})
+        custom = renamed_root.line_ids.filtered(lambda line: line.section == "income")
+        custom.name = "Facturación"
+        self.Line._rename_default_income_sections()
+        self.assertEqual(self.root_income.name, "Ingresos")
+        self.assertEqual(custom.name, "Facturación")
+        self.assertEqual(self.root_income.section, "income")

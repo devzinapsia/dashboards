@@ -103,23 +103,27 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
         lines = self.env["account.move.line"].search(action["domain"])
         self.assertEqual(lines.account_id, self.account_other_income)
 
-    def test_account_opens_general_ledger(self):
+    def test_account_opens_its_journal_items_of_the_month(self):
         closing_journal = self.env["account.journal"].create({
             "name": "Closing", "code": "CLS", "type": "general", "company_id": self.company.id,
         })
         self.structure.excluded_journal_ids = [Command.set(closing_journal.ids)]
+        self._entry("2026-02-28", [(self.account_salaries, 999.0, None)], journal=closing_journal)
+        self._entry("2026-02-12", [(self.account_salaries, 5.0, None)], post=False)
         action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_salaries.id, "2026-02", "account-%d" % self.account_salaries.id,
+            "line-%d" % self.root_direct.id, "2026-02", "account-%d" % self.account_salaries.id,
         )
-        self.assertEqual(action["tag"], "account_report")
-        options = action["params"]["options"]
-        self.assertEqual((options["date"]["date_from"], options["date"]["date_to"]), ("2026-02-01", "2026-02-28"))
-        self.assertTrue(options["unfold_all"])
-        self.assertEqual(action["context"]["default_filter_accounts"], "5.1.2.01.010 Salaries")
-        selected = {journal["id"] for journal in options["journals"]
-                    if journal.get("model") == "account.journal" and journal.get("selected")}
-        self.assertTrue(selected)
-        self.assertNotIn(closing_journal.id, selected)
+        self.assertEqual(action["res_model"], "account.move.line")
+        self.assertEqual(action["name"], "5.1.2.01.010 Salaries")
+        # Only that account, that month, posted, without excluded journals.
+        lines = self.env["account.move.line"].search(action["domain"])
+        self.assertEqual(lines.mapped("balance"), [200.0])
+        # The Total column covers the whole period.
+        action = self.Dashboard.get_detail_action(
+            "line-%d" % self.root_direct.id, "total", "account-%d" % self.account_salaries.id,
+        )
+        self.assertEqual(sorted(self.env["account.move.line"].search(action["domain"]).mapped("balance")),
+                         [100.0, 200.0])
 
     def test_open_all_journal_items_of_the_line(self):
         # Every journal item of the line's accounts, for the clicked column.
@@ -141,15 +145,6 @@ class TestPlDrilldown(DrilldownAssertions, PlDashboardAnalyticMixin, PlDashboard
         self.assertEqual(action["res_model"], "account.analytic.line")
         analytic_lines = self.env["account.analytic.line"].search(action["domain"])
         self.assertEqual(analytic_lines.mapped("amount"), [200.0])
-
-    def test_ledger_keeps_the_analytic_filter(self):
-        self.env.user.group_ids += self.env.ref("analytic.group_analytic_accounting")
-        action = self.Dashboard.get_detail_action(
-            "line-%d" % self.leaf_sales.id, "total", "account-%d" % self.account_sales.id,
-            analytic_ids=self.unit_1.ids,
-        )
-        self.assertEqual(action["tag"], "account_report")
-        self.assertEqual(action["params"]["options"]["analytic_accounts"], self.unit_1.ids)
 
     def test_rpcs_accept_the_dashboard_request_params(self):
         """The popup sends the dashboard's whole set of request parameters

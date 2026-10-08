@@ -9,7 +9,7 @@ Management P&L*:
   own, for the user's current company only).
 - **Administrator**: also configures the structures (implies User).
 
-Opening the general ledger or the journal items behind a figure still requires the usual
+Opening the journal items behind a figure still requires the usual
 accounting read access.
 
 Building the structure
@@ -18,7 +18,7 @@ Building the structure
 Go to *Dashboards > Configuration > Management P&L*: it opens the
 structure of the current company directly, like a company setting (one
 structure per company, created on first use). It has three sections:
-Sales, Direct costs and Indirect costs. They can be renamed but not
+Income, Direct costs and Indirect costs. They can be renamed but not
 deleted or moved.
 
 Add the lines in the *Lines* tab, which shows the tree indented:
@@ -36,7 +36,7 @@ Add the lines in the *Lines* tab, which shows the tree indented:
 - A line with sub-lines is a **group**: its amount is the sum of its
   sub-lines, and it can't have accounts.
 - A line without sub-lines is a **leaf**: it gets **accounts** (income
-  accounts for Sales, expense accounts for costs) and shows their
+  accounts for Income, expense accounts for costs) and shows their
   balance. A leaf with accounts can't receive sub-lines.
 - A leaf without accounts is flagged *Without accounts* and shows 0 in
   the dashboard.

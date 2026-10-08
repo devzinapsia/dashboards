@@ -13,19 +13,21 @@ organized in a structure defined by the administrator, in rows that make
 sense for the business (Salaries, IT infrastructure, Sales commissions,
 ...) rather than in the chart of accounts' order.
 
-- Three fixed sections: **Sales**, **Direct costs** and **Indirect costs**.
+- Three fixed sections: **Income** (called *Sales* before version
+  19.0.1.0.9; existing structures are renamed on update unless the section
+  had been renamed by hand), **Direct costs** and **Indirect costs**.
   Below each one, groups and leaves are freely defined. Every leaf groups
   one or more accounts and shows their balance: income accounts for
-  Sales, expense accounts for costs.
+  Income, expense accounts for costs.
 - Rows computed from the sections, defined in a single place of the code
   (``COMPUTED_ROWS``) so that more can be added later:
 
-  - Gross profit = Sales - Direct costs
-  - Gross profit % = Gross profit / Sales
-  - Net profit = Sales - (Direct costs + Indirect costs)
-  - Net profit % = Net profit / Sales
+  - Gross profit = Income - Direct costs
+  - Gross profit % = Gross profit / Income
+  - Net profit = Income - (Direct costs + Indirect costs)
+  - Net profit % = Net profit / Income
 
-  When Sales are 0, percentages are left empty (never a division by
+  When Income is 0, percentages are left empty (never a division by
   zero).
 - An informative **Unassigned** row (see *Usage*).
 - Columns by month for the current month, the current or previous fiscal
@@ -59,7 +61,7 @@ c. **Exchange difference journal items** (in the secondary currency, with
    in the secondary currency view: no dollar was gained or lost, only
    pesos. They show their normal amount in the company currency view.
 d. Signs and formulas are the same as in the company currency (costs:
-   debit - credit; Sales: credit - debit, so credit notes subtract on
+   debit - credit; Income: credit - debit, so credit notes subtract on
    their own), applied to the amounts already expressed in the secondary
    currency.
 
@@ -92,7 +94,7 @@ Management P&L*:
   own, for the user's current company only).
 - **Administrator**: also configures the structures (implies User).
 
-Opening the general ledger or the journal items behind a figure still requires the usual
+Opening the journal items behind a figure still requires the usual
 accounting read access.
 
 Building the structure
@@ -101,7 +103,7 @@ Building the structure
 Go to *Dashboards > Configuration > Management P&L*: it opens the
 structure of the current company directly, like a company setting (one
 structure per company, created on first use). It has three sections:
-Sales, Direct costs and Indirect costs. They can be renamed but not
+Income, Direct costs and Indirect costs. They can be renamed but not
 deleted or moved.
 
 Add the lines in the *Lines* tab, which shows the tree indented:
@@ -119,7 +121,7 @@ Add the lines in the *Lines* tab, which shows the tree indented:
 - A line with sub-lines is a **group**: its amount is the sum of its
   sub-lines, and it can't have accounts.
 - A line without sub-lines is a **leaf**: it gets **accounts** (income
-  accounts for Sales, expense accounts for costs) and shows their
+  accounts for Income, expense accounts for costs) and shows their
   balance. A leaf with accounts can't receive sub-lines.
 - A leaf without accounts is flagged *Without accounts* and shows 0 in
   the dashboard.
@@ -175,6 +177,13 @@ Toolbar
   journal item is split at 100% on each plan.
 - **Budget**: the accounting budget to compare with, among the company's
   (*No budget*: no comparison).
+- **Grid / Chart**: shows either the grid or a chart (one at a time).
+  The chart has one stacked bar per month of the grid, adding up to 100%
+  (income + direct costs + indirect costs of the month), split into
+  **Income** (blue), **Direct costs** (red) and **Indirect costs**
+  (orange); hovering a segment shows its share and its amount. A negative
+  section amount counts as 0 in the shares. It follows the same period,
+  currency and analytic filter as the grid.
 - **Export**: downloads the grid as shown (same period, currency,
   analytic filter and budget, every row expanded) as an Excel file.
 - **Expand all**, **Collapse all** and **Refresh**. Sections and groups
@@ -200,30 +209,23 @@ behind it** for the clicked column, in the currency being displayed. The
 accounts always add up to the figure clicked. Profit rows (amounts and
 percentages) have no drill-down.
 
-- Clicking an account opens Odoo's **General Ledger** for that account and
-  the period of the clicked column (the whole period in the Total column),
-  without the structure's excluded journals; from the ledger, each line
-  opens its journal entry. As usual in Odoo, the ledger starts with the
-  account's balance since the beginning of the fiscal year (*Initial
-  balance*), followed by the period's movements, which are the ones
-  matching the popup.
+- Clicking an account opens **its journal items** for the month of the
+  clicked cell (the whole period in the Total column): posted entries
+  only, without the structure's excluded journals, so they add up to the
+  account's amount in the popup. Each journal item opens its journal
+  entry.
 - **View all journal items** lists every journal item of those accounts
   for the same period.
 
-The General Ledger and the journal item lists are in **company currency**:
-they can't total in the secondary currency. In the secondary currency
-view the popup says so.
+The journal item lists are in **company currency**: they can't total in
+the secondary currency. In the secondary currency view the popup says
+so.
 
 With the analytic filter, the popup's balances are the period's
-movements distributed to the selected analytic accounts (no opening
-balance), and an account opens the General Ledger with the same analytic
-filter. Odoo's ledger lists the journal items carrying those analytic
-accounts at their **full** amount: it matches the popup for items fully
-distributed to them, not for items split with other analytic accounts.
-**View all journal items** then lists the analytic lines, with the exact
-shares. Users without analytic accounting rights get the analytic lines
-instead of the ledger. Opening ledgers and journal items requires the
-usual accounting read access.
+movements distributed to the selected analytic accounts, and an account
+opens its **analytic lines** (the exact share distributed to them)
+instead of the journal items. Opening journal items or analytic lines
+requires the usual accounting read access.
 
 Budget
 ------

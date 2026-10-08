@@ -29,7 +29,7 @@ class TestPlAnalyticFilter(PlDashboardAnalyticMixin, PlDashboardCommon):
         self.assertAlmostEqual(self._line_row(data, self.leaf_salaries)["values"]["2026-02"], 100.0)
         self.assertAlmostEqual(self._line_row(data, self.leaf_commissions)["values"]["2026-02"], 20.0)
         self.assertAlmostEqual(self._line_row(data, self.leaf_rent)["values"]["2026-02"], 0.0)
-        # Only unit 1's share of the Sales line's accounts.
+        # Only unit 1's share of the Income line's accounts.
         self.assertAlmostEqual(self._line_row(data, self.leaf_sales)["values"]["2026-02"], 400.0)
         self.assertAlmostEqual(self._row(data, "net_profit")["values"]["2026-02"], 280.0)
         # Without the filter, everything counts.

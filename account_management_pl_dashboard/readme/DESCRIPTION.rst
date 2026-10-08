@@ -9,19 +9,21 @@ organized in a structure defined by the administrator, in rows that make
 sense for the business (Salaries, IT infrastructure, Sales commissions,
 ...) rather than in the chart of accounts' order.
 
-- Three fixed sections: **Sales**, **Direct costs** and **Indirect costs**.
+- Three fixed sections: **Income** (called *Sales* before version
+  19.0.1.0.9; existing structures are renamed on update unless the section
+  had been renamed by hand), **Direct costs** and **Indirect costs**.
   Below each one, groups and leaves are freely defined. Every leaf groups
   one or more accounts and shows their balance: income accounts for
-  Sales, expense accounts for costs.
+  Income, expense accounts for costs.
 - Rows computed from the sections, defined in a single place of the code
   (``COMPUTED_ROWS``) so that more can be added later:
 
-  - Gross profit = Sales - Direct costs
-  - Gross profit % = Gross profit / Sales
-  - Net profit = Sales - (Direct costs + Indirect costs)
-  - Net profit % = Net profit / Sales
+  - Gross profit = Income - Direct costs
+  - Gross profit % = Gross profit / Income
+  - Net profit = Income - (Direct costs + Indirect costs)
+  - Net profit % = Net profit / Income
 
-  When Sales are 0, percentages are left empty (never a division by
+  When Income is 0, percentages are left empty (never a division by
   zero).
 - An informative **Unassigned** row (see *Usage*).
 - Columns by month for the current month, the current or previous fiscal
@@ -55,7 +57,7 @@ c. **Exchange difference journal items** (in the secondary currency, with
    in the secondary currency view: no dollar was gained or lost, only
    pesos. They show their normal amount in the company currency view.
 d. Signs and formulas are the same as in the company currency (costs:
-   debit - credit; Sales: credit - debit, so credit notes subtract on
+   debit - credit; Income: credit - debit, so credit notes subtract on
    their own), applied to the amounts already expressed in the secondary
    currency.
 

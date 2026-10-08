@@ -1,4 +1,3 @@
-import ast
 import base64
 import io
 from collections import defaultdict
@@ -287,7 +286,7 @@ class AccountPlDashboard(models.AbstractModel):
         structure leaf.
 
         Every leaf adds up the balance of its accounts, with its section's
-        sign (Sales: credit - debit, costs: debit - credit).
+        sign (Income: credit - debit, costs: debit - credit).
 
         :param list analytic_ids: toolbar analytic/project filter. When set,
             amounts are read from the analytic lines of those analytic
@@ -507,7 +506,7 @@ class AccountPlDashboard(models.AbstractModel):
     def _build_budget_values(self, request, budget):
         """Budget of every structure line and column, in the section's sign.
 
-        Leaves add up the budget of their accounts (Sales: income budgets are
+        Leaves add up the budget of their accounts (Income: income budgets are
         stored negative, like their balance); groups and sections add up their
         sub-lines.
 
@@ -785,11 +784,6 @@ class AccountPlDashboard(models.AbstractModel):
         )
         return {"account-%d" % account.id: {"label": account.name, "code": account.code} for account in accounts}
 
-    def _can_open_ledger(self):
-        return self.env["account.report"].has_access("read") and self.env["account.move.line"].has_access("read")
-
-    def _can_filter_ledger_by_analytic(self):
-        return self._can_open_ledger() and self.env.user.has_group("analytic.group_analytic_accounting")
 
     @api.model
     def get_cell_detail(self, row_key, column_key, period="fiscal_year", display_currency=None,
@@ -801,7 +795,7 @@ class AccountPlDashboard(models.AbstractModel):
         Amounts are in the display currency and add up exactly to the cell's
         value (same computation as the grid); so do the accounts' budgets
         (budgeted accounts without movements are listed too). Each account
-        opens its general ledger for the column's period.
+        opens its journal items for the column's period.
         """
         request = self._prepare_request(period, display_currency, analytic_ids, budget_id)
         if not request:
@@ -839,9 +833,9 @@ class AccountPlDashboard(models.AbstractModel):
                             # too, so that the budgets add up to the cell's.
                             totals.setdefault(detail_key, 0.0)
 
-        can_open = self._can_open_ledger() or (
-            request["analytic_ids"] is not None and self.env["account.analytic.line"].has_access("read")
-        )
+        can_open = self.env[
+            "account.analytic.line" if request["analytic_ids"] is not None else "account.move.line"
+        ].has_access("read")
         descriptions = self._describe_accounts(request, totals)
         entries = []
         for detail_key, amount in totals.items():
@@ -901,63 +895,16 @@ class AccountPlDashboard(models.AbstractModel):
         domain.append(("account_id", "in", accounts.ids))
         return "account.move.line", domain
 
-    def _get_general_ledger_action(self, request, account):
-        """Odoo's General Ledger, unfolded on ``account``, for the request's
-        detail period and without the structure's excluded journals, so that
-        its total matches the dashboard (from there, each entry opens its
-        journal entry).
-
-        With the toolbar's analytic filter, the ledger gets the same analytic
-        filter. Odoo's ledger then lists the journal items carrying those
-        analytic accounts at their full amount, whereas the dashboard counts
-        the share distributed to them: both match for items fully
-        distributed to the filter's analytic accounts.
-        """
-        structure = request["structure"]
-        general_ledger = self.env.ref("account_reports.general_ledger_report")
-        journals = self.env["account.journal"].search([
-            ("company_id", "in", structure.company_id.parent_ids.ids),
-            ("id", "not in", structure.excluded_journal_ids.ids),
-        ])
-        previous_options = {
-            "date": {
-                "date_from": fields.Date.to_string(request["detail_from"]),
-                "date_to": fields.Date.to_string(request["detail_to"]),
-                "mode": "range",
-                "filter": "custom",
-            },
-            "not_reset_journals_filter": True,
-            "analytic_accounts": request["analytic_ids"] or [],
-            "journals": [
-                {"id": journal.id, "model": "account.journal", "selected": True} for journal in journals
-            ] if structure.excluded_journal_ids else [],
-        }
-        # Same as Odoo's own "General Ledger" caret option: the report's
-        # search bar (read by the web client from the action's context)
-        # narrows it down to the account, and everything left is unfolded.
-        # The ledger shows accounts by their display name, which only
-        # includes the code for users with accounting read access: search
-        # what this user actually sees.
-        code = account.with_company(structure.company_id).display_name
-        options = general_ledger.get_options(previous_options)
-        options["unfold_all"] = True
-        options["filter_search_bar"] = code
-        action = self.env["ir.actions.actions"]._for_xml_id("account_reports.action_account_report_general_ledger")
-        action["params"] = {"options": options, "ignore_session": True}
-        action["context"] = dict(ast.literal_eval(action.get("context") or "{}"), default_filter_accounts=code)
-        return action
-
     @api.model
     def get_detail_action(self, row_key, column_key, detail_key, period="fiscal_year", display_currency=None,
                           analytic_ids=None, budget_id=None):
         """What a popup entry opens, for the period of the clicked column:
 
-        - "account-<id>": the account's general ledger (or, with the analytic
+        - "account-<id>": the account's journal items (or, with the analytic
           filter, its analytic lines);
         - "all": every journal item of the row's accounts.
 
-        Ledgers and lists are in company currency (they can't total in another
-        currency). Takes the same parameters as the other dashboard RPCs (the
+        Lists are in company currency (they can't total in another currency). Takes the same parameters as the other dashboard RPCs (the
         popup sends them all); ``budget_id`` doesn't change what matches.
         """
         request = self._prepare_request(period, display_currency, analytic_ids, budget_id)
@@ -977,13 +924,9 @@ class AccountPlDashboard(models.AbstractModel):
             account = self.env["account.account"].browse(int(detail_key.removeprefix("account-")))
         except ValueError:
             raise UserError(self.env._("This row has no detail.")) from None
-        if request["analytic_ids"] is not None and not self._can_filter_ledger_by_analytic():
-            # Odoo's ledger only offers its analytic filter to analytic
-            # accounting users: list the analytic lines instead.
-            model, domain = self._get_items_target(request, account)
-            name = " ".join(filter(None, [account.with_company(request["company"]).code, account.name]))
-            return self._get_drilldown_action(model, domain=domain, name=name)
-        return self._get_general_ledger_action(request, account)
+        model, domain = self._get_items_target(request, account)
+        name = " ".join(filter(None, [account.with_company(request["company"]).code, account.name]))
+        return self._get_drilldown_action(model, domain=domain, name=name)
 
     # -------------------------------------------------------------------------
     # Export

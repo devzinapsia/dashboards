@@ -1,6 +1,6 @@
 /**
  * Whether a budget deviation is good or bad news: spending more than
- * budgeted is bad for costs, selling less than budgeted is bad for Sales.
+ * budgeted is bad for costs, earning less than budgeted is bad for Income.
  * Shared by the grid and the drill-down popup.
  *
  * @param {string} section "income", "direct_cost" or "indirect_cost"

@@ -6,12 +6,56 @@ import { useSetupAction } from "@web/search/action_hook";
 import { formatMonetary, formatFloat } from "@web/views/fields/formatters";
 import { _t } from "@web/core/l10n/translation";
 import { deserializeDate, formatDate } from "@web/core/l10n/dates";
-import { isDarkMode } from "@dashboards_base/js/dashboards_theme";
+import { isDarkMode, CHART_AXIS_TICK_COLOR, CHART_AXIS_GRID_COLOR } from "@dashboards_base/js/dashboards_theme";
+import { DashboardsChart } from "@dashboards_base/components/dashboard_chart/dashboard_chart";
 import { PlDetailDialog } from "../pl_detail_dialog/pl_detail_dialog";
 import { deviationClass } from "../pl_utils";
+import { loadBundle } from "@web/core/assets";
 import { Component, onWillStart, useState } from "@odoo/owl";
 
 const { DateTime } = luxon;
+
+const SEGMENT_LABELS_PLUGIN_ID = "accountManagementPlSegmentLabels";
+
+/**
+ * Chart.js plugin writing each stacked bar segment's percentage inside it
+ * (when the segment is tall enough to hold the text). Registered once, and
+ * only active on charts that enable it in options.plugins.
+ */
+function registerSegmentLabelsPlugin() {
+    if (Chart.registry.plugins.get(SEGMENT_LABELS_PLUGIN_ID)) {
+        return;
+    }
+    Chart.register({
+        id: SEGMENT_LABELS_PLUGIN_ID,
+        afterDatasetsDraw(chart) {
+            const config = chart.options.plugins?.[SEGMENT_LABELS_PLUGIN_ID];
+            if (!config?.enabled) {
+                return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = "bold 12px sans-serif";
+            ctx.fillStyle = "#fff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (meta.hidden) {
+                    return;
+                }
+                meta.data.forEach((bar, index) => {
+                    const label = config.labels?.[datasetIndex]?.[index];
+                    const height = Math.abs(bar.base - bar.y);
+                    if (label && height >= 16) {
+                        ctx.fillText(label, bar.x, (bar.y + bar.base) / 2);
+                    }
+                });
+            });
+            ctx.restore();
+        },
+    });
+}
 
 const PERIOD_OPTIONS = [
     { value: "month", label: _t("Current month") },
@@ -30,7 +74,7 @@ const PERIOD_OPTIONS = [
  */
 export class PlDashboard extends Component {
     static template = "account_management_pl_dashboard.PlDashboard";
-    static components = { Layout, SelectMenu };
+    static components = { Layout, SelectMenu, DashboardsChart };
     static props = ["*"];
 
     isDarkMode = isDarkMode;
@@ -41,6 +85,12 @@ export class PlDashboard extends Component {
         this.action = useService("action");
         this.dialog = useService("dialog");
         this.labels = {
+            grid: _t("Grid"),
+            chart: _t("Chart"),
+            chartAxis: _t("% of the month's total"),
+            chartHelp: _t(
+                "Each month's bar is its income + direct costs + indirect costs (100%), split by section."
+            ),
             exportXlsx: _t("Export"),
             exportXlsxHelp: _t("Export the dashboard, as shown, to an Excel file"),
             expandAll: _t("Expand all"),
@@ -64,7 +114,7 @@ export class PlDashboard extends Component {
                 "Amounts in the company currency converted at the latest %(currency)s rate: %(rate)s (%(date)s), the same for every month; journal items made in %(currency)s keep their original amount."
             ),
             unassignedHelp: _t(
-                "Control row: movements of P&L accounts, customers or analytic accounts not included in any line. " +
+                "Control row: movements of P&L accounts not included in any line. " +
                 "Not included in the totals. Net profit + Unassigned = accounting result of the period."
             ),
         };
@@ -80,6 +130,7 @@ export class PlDashboard extends Component {
             analyticAccounts: [],
             analyticIds: savedState.analyticIds || [],
             budgetId: savedState.budgetId || false,
+            view: savedState.view || "grid",
             data: null,
             error: null,
             collapsed: savedState.collapsed || {},
@@ -92,12 +143,17 @@ export class PlDashboard extends Component {
                     analyticPlanId: this.state.analyticPlanId,
                     analyticIds: this.state.analyticIds,
                     budgetId: this.state.budgetId,
+                    view: this.state.view,
                     collapsed: this.state.collapsed,
                 },
             }),
         });
 
-        onWillStart(() => this.load());
+        onWillStart(async () => {
+            await loadBundle("web.chartjs_lib");
+            registerSegmentLabelsPlugin();
+            await this.load();
+        });
     }
 
     get display() {
@@ -144,6 +200,98 @@ export class PlDashboard extends Component {
             display_currency: this.state.displayCurrency,
             analytic_ids: this.state.analyticIds,
             budget_id: this.state.budgetId,
+        };
+    }
+
+    // ---------------------------------------------------------------------
+    // Chart
+    // ---------------------------------------------------------------------
+
+    setView(view) {
+        this.state.view = view;
+    }
+
+    /**
+     * Per month (the grid's columns, without the Total), the share of each
+     * section in income + direct costs + indirect costs, as stacked bars
+     * adding up to 100%. Negative section amounts (e.g. a month of credit
+     * notes) count as 0 in the shares; the tooltip shows the real amount.
+     */
+    get chartSeries() {
+        const data = this.state.data;
+        const columns = data.columns.filter((column) => !column.is_total);
+        const sections = [
+            { key: "income", color: "#1f6fd1" },
+            { key: "direct_cost", color: "#d93838" },
+            { key: "indirect_cost", color: "#f28c28" },
+        ].map((section) => ({
+            ...section,
+            row: data.rows.find((row) => row.kind === "section" && row.section === section.key),
+        }));
+        const totals = columns.map((column) =>
+            sections.reduce((sum, section) => sum + Math.max(section.row?.values[column.key] || 0, 0), 0)
+        );
+        return { columns, sections, totals };
+    }
+
+    get chartData() {
+        const { columns, sections, totals } = this.chartSeries;
+        return {
+            labels: columns.map((column) => this.columnLabel(column)),
+            datasets: sections.map((section) => ({
+                label: section.row?.name || section.key,
+                backgroundColor: section.color,
+                // Wide bars, like the grid's columns.
+                barPercentage: 0.9,
+                categoryPercentage: 0.8,
+                data: columns.map((column, index) => {
+                    const value = section.row?.values[column.key];
+                    if (value === null || value === undefined || !totals[index]) {
+                        return null;
+                    }
+                    return (Math.max(value, 0) / totals[index]) * 100;
+                }),
+                amounts: columns.map((column) => section.row?.values[column.key]),
+            })),
+        };
+    }
+
+    get chartOptions() {
+        const currencyId = this.state.data.currency_id;
+        return {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const amount = ctx.dataset.amounts[ctx.dataIndex];
+                            return `${ctx.dataset.label}: ${formatFloat(ctx.parsed.y, { digits: [16, 1] })} % (${formatMonetary(amount, { currencyId })})`;
+                        },
+                    },
+                },
+                legend: { position: "top", align: "end", labels: { color: CHART_AXIS_TICK_COLOR } },
+                [SEGMENT_LABELS_PLUGIN_ID]: {
+                    enabled: true,
+                    // Pre-formatted: Chart.js would call a function option itself.
+                    labels: this.chartData.datasets.map((dataset) =>
+                        dataset.data.map((value) => (value ? `${formatFloat(value, { digits: [16, 1] })} %` : ""))
+                    ),
+                },
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    ticks: { color: CHART_AXIS_TICK_COLOR },
+                    grid: { display: false },
+                },
+                y: {
+                    stacked: true,
+                    min: 0,
+                    max: 100,
+                    ticks: { color: CHART_AXIS_TICK_COLOR, callback: (value) => `${value} %` },
+                    grid: { color: CHART_AXIS_GRID_COLOR },
+                    title: { display: true, text: this.labels.chartAxis, color: CHART_AXIS_TICK_COLOR },
+                },
+            },
         };
     }
 

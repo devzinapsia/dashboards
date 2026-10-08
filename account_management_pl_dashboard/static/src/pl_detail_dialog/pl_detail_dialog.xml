@@ -42,7 +42,7 @@
                                     </t>
                                     <td class="o_pl_detail_open_col text-end">
                                         <i t-if="entry.open === 'line'" class="fa fa-chevron-right"/>
-                                        <i t-elif="entry.open === 'items'" class="fa fa-book" t-att-title="labels.openLedger"/>
+                                        <i t-elif="entry.open === 'items'" class="fa fa-external-link" t-att-title="labels.openItems"/>
                                     </td>
                                 </tr>
                             </t>

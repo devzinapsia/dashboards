@@ -13,7 +13,7 @@ PL_ACCOUNT_TYPES = (
 
 # Fixed root sections, in display order.
 SECTIONS = [
-    ("income", "Sales"),
+    ("income", "Income"),
     ("direct_cost", "Direct costs"),
     ("indirect_cost", "Indirect costs"),
 ]
@@ -121,7 +121,7 @@ class AccountPlStructure(models.Model):
     # -------------------------------------------------------------------------
 
     def _get_sales_accounts(self):
-        """Accounts whose movements make up Sales: those of the Sales lines."""
+        """Accounts whose movements make up Income: those of the Income lines."""
         self.ensure_one()
         return self.line_ids.filtered(lambda line: line.section == "income").account_ids
 
