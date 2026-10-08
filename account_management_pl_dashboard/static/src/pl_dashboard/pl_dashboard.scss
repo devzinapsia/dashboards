@@ -114,18 +114,17 @@ $pl-themes: (
         min-height: 0;
         border-radius: .25rem;
 
+        // An explicit height (the screen's, below the toolbar), so that
+        // Chart.js has a real box to size the canvas to.
         .o_pl_chart_canvas {
-            flex: 1 1 auto;
-            min-height: 320px;
-            position: relative;
+            height: calc(100vh - 260px);
+            min-height: 440px;
         }
 
         // dashboards_base's chart has a fixed height for cards: here it
-        // fills the dashboard's height instead.
+        // fills the box above instead.
         .o_dashboards_chart {
-            position: absolute;
-            inset: 0;
-            height: auto;
+            height: 100%;
         }
     }
 
