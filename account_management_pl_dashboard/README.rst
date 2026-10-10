@@ -180,6 +180,10 @@ Toolbar
   journal item is split at 100% on each plan.
 - **Budget**: the accounting budget to compare with, among the company's
   (*No budget*: no comparison).
+- **Amounts**: *Units* (as booked, e.g. $ 2.500,00), *Thousands (K)*
+  (2,50 K) or *Millions (M)*, with two decimals in K and M. Display only:
+  it applies to the grid, the popups, the chart's tooltips and the Excel
+  export's cell format, never to the calculations.
 - **Grid / Chart**: shows either the grid or a chart (one at a time).
   The chart has one stacked bar per month of the grid, adding up to 100%
   (income + direct costs + indirect costs of the month), split into

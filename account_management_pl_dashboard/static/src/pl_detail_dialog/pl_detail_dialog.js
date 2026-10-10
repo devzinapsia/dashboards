@@ -1,9 +1,9 @@
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
-import { formatFloat, formatMonetary } from "@web/views/fields/formatters";
+import { formatFloat } from "@web/views/fields/formatters";
 import { _t } from "@web/core/l10n/translation";
 import { isDarkMode } from "@dashboards_base/js/dashboards_theme";
-import { deviationClass } from "../pl_utils";
+import { deviationClass, formatAmount } from "../pl_utils";
 import { Component, onWillStart, useState } from "@odoo/owl";
 
 /**
@@ -24,6 +24,7 @@ export class PlDetailDialog extends Component {
         rowName: String,
         columnKey: String,
         columnLabel: String,
+        amountScale: { type: String, optional: true },
         requestParams: Object,
     };
 
@@ -112,7 +113,7 @@ export class PlDetailDialog extends Component {
     }
 
     formatAmount(value) {
-        return formatMonetary(value, { currencyId: this.current.detail.currency_id });
+        return formatAmount(value, this.current.detail.currency_id, this.props.amountScale);
     }
 
     /** Every journal item of the line's accounts, for the clicked column's period. */

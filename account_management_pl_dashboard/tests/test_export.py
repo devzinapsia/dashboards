@@ -63,3 +63,11 @@ class TestPlExport(PlDashboardCommon):
         sheet = self._sheet(period="fiscal_year")
         header = next(row for row in sheet.iter_rows(values_only=True) if row[1] == "2026-01")
         self.assertEqual(header[2], "2026-02")
+
+    def test_export_in_thousands(self):
+        self._entry("2026-01-10", [(self.account_salaries, 2500.0, None)])
+        sheet = self._sheet(period="fiscal_year", amount_scale="k")
+        row = next(row for row in sheet.iter_rows() if (row[0].value or "").strip() == "Salaries")
+        # The exact amount, displayed in thousands by the cell format.
+        self.assertEqual(row[1].value, 2500.0)
+        self.assertEqual(row[1].number_format, '#,##0.00," K"')

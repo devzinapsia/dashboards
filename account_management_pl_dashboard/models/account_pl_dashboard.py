@@ -934,11 +934,15 @@ class AccountPlDashboard(models.AbstractModel):
     # -------------------------------------------------------------------------
 
     @api.model
-    def get_dashboard_xlsx(self, period="fiscal_year", display_currency=None, analytic_ids=None, budget_id=None):
+    def get_dashboard_xlsx(self, period="fiscal_year", display_currency=None, analytic_ids=None, budget_id=None,
+                           amount_scale="units"):
         """The dashboard grid as an XLSX file, with the toolbar's current
         choices (same figures as get_dashboard_data, every row expanded, as
         Excel outline levels). Amounts are written unrounded, formatted with
-        the display currency's decimals.
+        the display currency's decimals, or - with ``amount_scale`` "k" or
+        "m", the toolbar's thousands / millions display - with an Excel
+        number format that shows them divided (e.g. "2,50 K") while the cell
+        keeps the exact amount.
 
         :return: {"filename": str, "content": base64 str}
         """
@@ -955,7 +959,11 @@ class AccountPlDashboard(models.AbstractModel):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
         sheet = workbook.add_worksheet(self.env._("Management P&L")[:31])
-        amount_format = "#,##0.%s" % ("0" * currency.decimal_places) if currency.decimal_places else "#,##0"
+        amount_format = {
+            # In an Excel number format, each trailing comma divides by 1000.
+            "k": '#,##0.00," K"',
+            "m": '#,##0.00,," M"',
+        }.get(amount_scale) or ("#,##0.%s" % ("0" * currency.decimal_places) if currency.decimal_places else "#,##0")
         styles = {
             "title": workbook.add_format({"bold": True, "font_size": 14}),
             "info": workbook.add_format({"italic": True, "font_color": "#666666"}),

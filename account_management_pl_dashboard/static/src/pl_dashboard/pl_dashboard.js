@@ -9,7 +9,7 @@ import { deserializeDate, formatDate } from "@web/core/l10n/dates";
 import { isDarkMode, CHART_AXIS_TICK_COLOR, CHART_AXIS_GRID_COLOR } from "@dashboards_base/js/dashboards_theme";
 import { DashboardsChart } from "@dashboards_base/components/dashboard_chart/dashboard_chart";
 import { PlDetailDialog } from "../pl_detail_dialog/pl_detail_dialog";
-import { deviationClass } from "../pl_utils";
+import { deviationClass, formatAmount } from "../pl_utils";
 import { loadBundle } from "@web/core/assets";
 import { Component, onWillStart, useState } from "@odoo/owl";
 
@@ -85,6 +85,11 @@ export class PlDashboard extends Component {
         this.action = useService("action");
         this.dialog = useService("dialog");
         this.labels = {
+            amountScaleOptions: [
+                { value: "units", label: _t("Units") },
+                { value: "k", label: _t("Thousands (K)") },
+                { value: "m", label: _t("Millions (M)") },
+            ],
             grid: _t("Grid"),
             chart: _t("Chart"),
             chartAxis: _t("% of the month's total"),
@@ -131,6 +136,7 @@ export class PlDashboard extends Component {
             analyticIds: savedState.analyticIds || [],
             budgetId: savedState.budgetId || false,
             view: savedState.view || "grid",
+            amountScale: savedState.amountScale || "units",
             data: null,
             error: null,
             collapsed: savedState.collapsed || {},
@@ -144,6 +150,7 @@ export class PlDashboard extends Component {
                     analyticIds: this.state.analyticIds,
                     budgetId: this.state.budgetId,
                     view: this.state.view,
+                    amountScale: this.state.amountScale,
                     collapsed: this.state.collapsed,
                 },
             }),
@@ -211,6 +218,10 @@ export class PlDashboard extends Component {
         this.state.view = view;
     }
 
+    onAmountScaleChange(ev) {
+        this.state.amountScale = ev.target.value;
+    }
+
     /**
      * Per month (the grid's columns, without the Total), the share of each
      * section in income + direct costs + indirect costs, as stacked bars
@@ -264,7 +275,7 @@ export class PlDashboard extends Component {
                     callbacks: {
                         label: (ctx) => {
                             const amount = ctx.dataset.amounts[ctx.dataIndex];
-                            return `${ctx.dataset.label}: ${formatFloat(ctx.parsed.y, { digits: [16, 1] })} % (${formatMonetary(amount, { currencyId })})`;
+                            return `${ctx.dataset.label}: ${formatFloat(ctx.parsed.y, { digits: [16, 1] })} % (${formatAmount(amount, currencyId, this.state.amountScale)})`;
                         },
                     },
                 },
@@ -298,7 +309,8 @@ export class PlDashboard extends Component {
     /** The grid as shown (same toolbar choices) in an Excel file. */
     async exportXlsx() {
         const { filename, content } = await this.orm.call(
-            "account.pl.dashboard", "get_dashboard_xlsx", [], this.requestParams
+            "account.pl.dashboard", "get_dashboard_xlsx", [],
+            { ...this.requestParams, amount_scale: this.state.amountScale }
         );
         const bytes = Uint8Array.from(atob(content), (char) => char.charCodeAt(0));
         const url = URL.createObjectURL(
@@ -453,7 +465,7 @@ export class PlDashboard extends Component {
             // Profit percentages: two decimals.
             return `${formatFloat(value, { digits: [16, 2] })} %`;
         }
-        return formatMonetary(value, { currencyId: this.state.data.currency_id });
+        return formatAmount(value, this.state.data.currency_id, this.state.amountScale);
     }
 
     isCellClickable(row, column) {
@@ -470,6 +482,7 @@ export class PlDashboard extends Component {
             rowName: row.name,
             columnKey: column.key,
             columnLabel: this.columnLabel(column),
+            amountScale: this.state.amountScale,
             requestParams: this.requestParams,
         });
     }
@@ -496,7 +509,7 @@ export class PlDashboard extends Component {
         if (budget === null || budget === undefined) {
             return column.is_future ? "" : this.labels.noBudget;
         }
-        return formatMonetary(budget, { currencyId: this.state.data.currency_id });
+        return formatAmount(budget, this.state.data.currency_id, this.state.amountScale);
     }
 
     formatDeviation(row, column) {

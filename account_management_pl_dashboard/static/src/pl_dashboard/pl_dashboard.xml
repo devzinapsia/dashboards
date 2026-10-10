@@ -54,6 +54,11 @@
                                 <option t-att-value="budget.id" t-att-selected="state.budgetId === budget.id" t-esc="budget.name"/>
                             </t>
                         </select>
+                        <select class="form-select w-auto" t-on-change="onAmountScaleChange" aria-label="Amounts">
+                            <t t-foreach="labels.amountScaleOptions" t-as="option" t-key="option.value">
+                                <option t-att-value="option.value" t-att-selected="state.amountScale === option.value" t-esc="option.label"/>
+                            </t>
+                        </select>
                         <div class="btn-group" role="group" aria-label="View">
                             <button type="button" class="btn"
                                     t-att-class="state.view === 'grid' ? 'btn-primary' : 'btn-secondary'"

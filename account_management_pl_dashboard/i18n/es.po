@@ -122,6 +122,12 @@ msgstr "Importe"
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.xml:0
+msgid "Amounts"
+msgstr "Importes"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
 msgid ""
 "Amounts in the company currency converted at the latest %(currency)s rate: "
@@ -552,6 +558,12 @@ msgid "Management P&L structure line"
 msgstr "Línea de estructura de estado de resultados de gestión"
 
 #. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Millions (M)"
+msgstr "Millones (M)"
+
+#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__column_label_format
 msgid "Month column format"
 msgstr "Formato de columnas de meses"
@@ -820,6 +832,12 @@ msgstr "Esta fila no tiene detalle."
 
 #. module: account_management_pl_dashboard
 #. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Thousands (K)"
+msgstr "Miles (K)"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 #: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
@@ -832,6 +850,12 @@ msgstr "Total"
 #: code:addons/account_management_pl_dashboard/models/account_pl_dashboard.py:0
 msgid "Unassigned"
 msgstr "Sin asignar"
+
+#. module: account_management_pl_dashboard
+#. odoo-javascript
+#: code:addons/account_management_pl_dashboard/static/src/pl_dashboard/pl_dashboard.js:0
+msgid "Units"
+msgstr "Unidades"
 
 #. module: account_management_pl_dashboard
 #. odoo-python
