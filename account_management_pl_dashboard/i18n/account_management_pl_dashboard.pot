@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 17:25+0000\n"
-"PO-Revision-Date: 2026-10-08 17:25+0000\n"
+"POT-Creation-Date: 2026-10-10 11:02+0000\n"
+"PO-Revision-Date: 2026-10-10 11:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -25,6 +25,21 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure.py:0
 msgid "%s (copy)"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__mm_dash_yyyy
+msgid "01-2026"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__yyyy_dash_mm
+msgid "2026-01"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__yyyy_slash_mm
+msgid "2026/01"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -352,6 +367,12 @@ msgid "Gross profit %"
 msgstr ""
 
 #. module: account_management_pl_dashboard
+#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__column_label_format
+msgid ""
+"How the months are titled in the dashboard's grid, chart and Excel export."
+msgstr ""
+
+#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_dashboard__id
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__id
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__id
@@ -378,6 +399,16 @@ msgstr ""
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__is_root
 msgid "Is a section"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__mmm_yyyy
+msgid "Jan 2026"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__mmmm_yy
+msgid "January 26"
 msgstr ""
 
 #. module: account_management_pl_dashboard
@@ -490,6 +521,11 @@ msgstr ""
 #: model:ir.model,name:account_management_pl_dashboard.model_account_pl_structure_line
 #: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
 msgid "Management P&L structure line"
+msgstr ""
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__column_label_format
+msgid "Month column format"
 msgstr ""
 
 #. module: account_management_pl_dashboard

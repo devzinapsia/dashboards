@@ -10,7 +10,7 @@ from odoo.exceptions import AccessError, UserError
 from odoo.tools import SQL, format_date, formatLang
 from odoo.tools.translate import LazyTranslate
 
-from .account_pl_structure import PL_ACCOUNT_TYPES
+from .account_pl_structure import COLUMN_LABEL_FORMATS, PL_ACCOUNT_TYPES
 from .pl_currency_converter import PlCurrencyConverter
 
 _lt = LazyTranslate(__name__)
@@ -557,6 +557,7 @@ class AccountPlDashboard(models.AbstractModel):
                 structure.default_display_currency if structure.secondary_currency_id else "company"
             ),
             "budgets": self._get_budgets(company),
+            "column_label_pattern": COLUMN_LABEL_FORMATS[structure.column_label_format],
             "analytic_plans": self._get_analytic_plans(company),
             "can_configure": self.env.user.has_group("account_management_pl_dashboard.group_management_pl_manager"),
         }
@@ -946,6 +947,7 @@ class AccountPlDashboard(models.AbstractModel):
         data = self.get_dashboard_data(period, display_currency, analytic_ids, budget_id)
         if not data["has_structure"]:
             raise UserError(self.env._("There is no active management P&L structure."))
+        structure = self._get_structure(self.env.company)
         currency = self.env["res.currency"].browse(data["currency_id"])
         budget_shown = data["budget_shown"]
         columns = data["columns"]
@@ -969,6 +971,8 @@ class AccountPlDashboard(models.AbstractModel):
             styles["name_" + kind] = workbook.add_format(extra)
             styles["amount_" + kind] = workbook.add_format({**extra, "num_format": amount_format})
             styles["percent_" + kind] = workbook.add_format({**extra, "num_format": "0.0%"})
+            # Profit percentages: two decimals, as in the grid.
+            styles["profit_percent_" + kind] = workbook.add_format({**extra, "num_format": "0.00%"})
 
         # Header: what the figures are.
         filters = [self.env._("Currency: %s", currency.name)]
@@ -997,7 +1001,8 @@ class AccountPlDashboard(models.AbstractModel):
         col = 1
         for column in columns:
             label = (self.env._("Total") if column["is_total"]
-                     else format_date(self.env, column["date_from"], date_format="MMM yyyy"))
+                     else format_date(self.env, column["date_from"],
+                                      date_format=COLUMN_LABEL_FORMATS[structure.column_label_format]))
             if budget_shown:
                 sheet.merge_range(header_row - 1, col, header_row - 1, col + 2, label, styles["header"])
                 for offset, sub_label in enumerate((self.env._("Actual"), self.env._("Budget"),
@@ -1022,7 +1027,7 @@ class AccountPlDashboard(models.AbstractModel):
                 value = row["values"].get(column["key"])
                 if value is not None:
                     if is_percent:
-                        sheet.write_number(row_index, col, value / 100.0, styles["percent" + suffix])
+                        sheet.write_number(row_index, col, value / 100.0, styles["profit_percent" + suffix])
                     else:
                         sheet.write_number(row_index, col, value, styles["amount" + suffix])
                 if budget_shown:

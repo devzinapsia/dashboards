@@ -11,6 +11,17 @@ PL_ACCOUNT_TYPES = (
     "expense_direct_cost",
 )
 
+# Month column title formats: selection value -> date pattern, the same
+# pattern for the web client (luxon) and the XLSX export (babel), as both
+# follow the Unicode (LDML) date symbols used here.
+COLUMN_LABEL_FORMATS = {
+    "mmm_yyyy": "LLL yyyy",
+    "mm_dash_yyyy": "MM-yyyy",
+    "mmmm_yy": "LLLL yy",
+    "yyyy_slash_mm": "yyyy/MM",
+    "yyyy_dash_mm": "yyyy-MM",
+}
+
 # Fixed root sections, in display order.
 SECTIONS = [
     ("income", "Income"),
@@ -49,6 +60,19 @@ class AccountPlStructure(models.Model):
         default=lambda self: self._default_secondary_currency(),
         domain="[('active', '=', True)]",
         help="Optional display currency, to reflect operations made in a foreign currency.",
+    )
+    column_label_format = fields.Selection(
+        [
+            ("mmm_yyyy", "Jan 2026"),
+            ("mm_dash_yyyy", "01-2026"),
+            ("mmmm_yy", "January 26"),
+            ("yyyy_slash_mm", "2026/01"),
+            ("yyyy_dash_mm", "2026-01"),
+        ],
+        string="Month column format",
+        required=True,
+        default="mmm_yyyy",
+        help="How the months are titled in the dashboard's grid, chart and Excel export.",
     )
     default_display_currency = fields.Selection(
         [("company", "Company currency"), ("secondary", "Secondary currency")],

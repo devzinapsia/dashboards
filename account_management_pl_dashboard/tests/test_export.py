@@ -39,6 +39,9 @@ class TestPlExport(PlDashboardCommon):
         self.assertTrue(any(row[0] == "        Salaries" for row in sheet.iter_rows(values_only=True)))
         gross_pct = self._row_values(sheet, "Gross profit %")
         self.assertAlmostEqual(gross_pct[2], 1.0)
+        # Profit percentages with two decimals, as in the grid.
+        gross_pct_row = next(row for row in sheet.iter_rows() if row[0].value == "Gross profit %")
+        self.assertEqual(gross_pct_row[2].number_format, "0.00%")
         self.assertIsNone(gross_pct[1])  # no sales in January: empty, as in the grid
 
     def test_export_with_budget(self):
@@ -51,3 +54,12 @@ class TestPlExport(PlDashboardCommon):
         salaries = self._row_values(sheet, "Salaries")
         # Actual, budget and deviation for each month.
         self.assertEqual(salaries[1:4], (100.0, 80.0, 0.25))
+
+    def test_month_column_format(self):
+        self.assertEqual(self.structure.column_label_format, "mmm_yyyy")
+        self.assertEqual(self.Dashboard.get_dashboard_config()["column_label_pattern"], "LLL yyyy")
+        self.structure.column_label_format = "yyyy_dash_mm"
+        self.assertEqual(self.Dashboard.get_dashboard_config()["column_label_pattern"], "yyyy-MM")
+        sheet = self._sheet(period="fiscal_year")
+        header = next(row for row in sheet.iter_rows(values_only=True) if row[1] == "2026-01")
+        self.assertEqual(header[2], "2026-02")

@@ -139,6 +139,9 @@ Parameters
 - **Excluded journals**: their entries are ignored, typically the
   year-end closing entries, which would otherwise empty the previous
   fiscal year's columns.
+- **Month column format**: how months are titled in the grid, the chart
+  and the Excel export: *ene 2026* (default), *01-2026*, *enero 26*,
+  *2026/01* or *2026-01*.
 - **Secondary currency**: optional display currency (USD by default when
   active). It must be active and different from the company currency.
 - **Open dashboard in**: currency the dashboard opens in.

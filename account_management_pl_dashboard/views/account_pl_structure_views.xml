@@ -16,6 +16,7 @@
                             <field name="name"/>
                             <field name="company_id" groups="base.group_multi_company" readonly="1"/>
                             <field name="excluded_journal_ids" widget="many2many_tags"/>
+                            <field name="column_label_format" widget="radio"/>
                         </group>
                         <group string="Currency">
                             <field name="secondary_currency_id" options="{'no_create': True}"/>

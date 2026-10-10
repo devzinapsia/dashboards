@@ -27,6 +27,21 @@ msgid "%s (copy)"
 msgstr "%s (copia)"
 
 #. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__mm_dash_yyyy
+msgid "01-2026"
+msgstr "01-2026"
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__yyyy_dash_mm
+msgid "2026-01"
+msgstr "2026-01"
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__yyyy_slash_mm
+msgid "2026/01"
+msgstr "2026/01"
+
+#. module: account_management_pl_dashboard
 #. odoo-python
 #: code:addons/account_management_pl_dashboard/models/account_pl_structure_line.py:0
 msgid "A line can't be its own ancestor."
@@ -369,6 +384,14 @@ msgid "Gross profit %"
 msgstr "Utilidad bruta %"
 
 #. module: account_management_pl_dashboard
+#: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__column_label_format
+msgid ""
+"How the months are titled in the dashboard's grid, chart and Excel export."
+msgstr ""
+"Cómo se titulan los meses en la grilla, el gráfico y la exportación a Excel "
+"del tablero."
+
+#. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_dashboard__id
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__id
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__id
@@ -396,6 +419,16 @@ msgstr "Es un grupo"
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure_line__is_root
 msgid "Is a section"
 msgstr "Es una sección"
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__mmm_yyyy
+msgid "Jan 2026"
+msgstr "ene 2026"
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields.selection,name:account_management_pl_dashboard.selection__account_pl_structure__column_label_format__mmmm_yy
+msgid "January 26"
+msgstr "enero 26"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,help:account_management_pl_dashboard.field_account_pl_structure__excluded_journal_ids
@@ -517,6 +550,11 @@ msgstr "Estructura de estado de resultados de gestión"
 #: model_terms:ir.ui.view,arch_db:account_management_pl_dashboard.view_account_pl_structure_line_form
 msgid "Management P&L structure line"
 msgstr "Línea de estructura de estado de resultados de gestión"
+
+#. module: account_management_pl_dashboard
+#: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__column_label_format
+msgid "Month column format"
+msgstr "Formato de columnas de meses"
 
 #. module: account_management_pl_dashboard
 #: model:ir.model.fields,field_description:account_management_pl_dashboard.field_account_pl_structure__name

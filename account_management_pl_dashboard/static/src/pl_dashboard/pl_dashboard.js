@@ -429,7 +429,8 @@ export class PlDashboard extends Component {
         if (column.is_total) {
             return this.labels.total;
         }
-        return DateTime.fromISO(column.date_from).toFormat("LLL yyyy");
+        // Format chosen on the structure (same date symbols as the server's).
+        return DateTime.fromISO(column.date_from).toFormat(this.state.config.column_label_pattern || "LLL yyyy");
     }
 
     rowClass(row) {
@@ -449,7 +450,8 @@ export class PlDashboard extends Component {
             return "";
         }
         if (row.kind === "computed_percent") {
-            return `${formatFloat(value, { digits: [16, 1] })} %`;
+            // Profit percentages: two decimals.
+            return `${formatFloat(value, { digits: [16, 2] })} %`;
         }
         return formatMonetary(value, { currencyId: this.state.data.currency_id });
     }
