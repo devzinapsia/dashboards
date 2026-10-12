@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_treasury_config_form" model="ir.ui.view">
+        <field name="name">account.treasury.config.form</field>
+        <field name="model">account.treasury.config</field>
+        <field name="arch" type="xml">
+            <form string="Treasury dashboard settings">
+                <header>
+                    <button name="action_load_suggested" type="object" string="Load suggested"
+                            class="btn-secondary"
+                            help="Add a bank or cash payment mean for every bank and cash journal not configured yet. Existing ones are not changed."/>
+                </header>
+                <sheet>
+                    <!-- "active" is left out on purpose: without it the form has no
+                         Archive action, so (with create/delete disabled by
+                         action_open_config) no gear menu at all. -->
+                    <field name="company_id" invisible="1"/>
+                    <field name="company_currency_id" invisible="1"/>
+                    <field name="has_balance_commitments" invisible="1"/>
+                    <notebook>
+                        <page string="General" name="general">
+                            <group>
+                                <group string="Parameters">
+                                    <field name="statement_stale_days"/>
+                                    <field name="projection_weeks"/>
+                                    <field name="include_overdue_receivables"/>
+                                </group>
+                                <group string="Sections">
+                                    <field name="show_cash_position"/>
+                                    <field name="show_reconciliation"/>
+                                    <field name="show_investments"/>
+                                    <field name="show_projection"/>
+                                    <field name="show_movements"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Banks and cash" name="banks_cash">
+                            <field name="bank_cash_medium_ids" context="{'default_kind': 'bank'}">
+                                <list editable="bottom" decoration-muted="not active">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="journal_domain" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="kind" widget="selection"/>
+                                    <field name="journal_id" required="1" options="{'no_create': True}"/>
+                                    <field name="currency_id"/>
+                                    <field name="in_available_total"/>
+                                    <field name="stale_days" invisible="kind != 'bank'"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Petty cash funds and prepaid cards" name="funds">
+                            <field name="fund_medium_ids" context="{'default_kind': 'petty_cash'}">
+                                <list editable="bottom" decoration-muted="not active">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="journal_domain" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="kind" widget="selection"/>
+                                    <field name="journal_id" required="kind == 'petty_cash'" options="{'no_create': True}"/>
+                                    <field name="account_ids" widget="many2many_tags" readonly="kind == 'petty_cash'"
+                                           options="{'no_create': True}"/>
+                                    <field name="currency_id"/>
+                                    <field name="in_available_total"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Credit cards" name="credit_cards">
+                            <field name="credit_card_medium_ids" context="{'default_kind': 'credit_card'}">
+                                <list editable="bottom" decoration-muted="not active">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="journal_domain" column_invisible="1"/>
+                                    <field name="kind" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="journal_id" options="{'no_create': True}"/>
+                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="closing_day" required="1"/>
+                                    <field name="due_day" required="1"/>
+                                    <field name="currency_id"/>
+                                    <field name="credit_limit"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Investments" name="investments">
+                            <field name="investment_medium_ids" context="{'default_kind': 'investment'}">
+                                <list editable="bottom" decoration-muted="not active">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="journal_domain" column_invisible="1"/>
+                                    <field name="kind" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="journal_id" required="1" options="{'no_create': True}"/>
+                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="currency_id"/>
+                                    <field name="in_available_total"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Projection commitments" name="commitments">
+                            <div class="alert alert-info" role="status">
+                                Liabilities the cash projection pays out (salaries, social charges, taxes, ...). When every account allows reconciliation, each open item is projected on its due date; otherwise the account balance is projected on the payment day.
+                            </div>
+                            <field name="commitment_ids">
+                                <list editable="bottom" decoration-muted="not active">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="kind"/>
+                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="mode" widget="badge" decoration-info="mode == 'open_items'"
+                                           decoration-warning="mode == 'balance'"/>
+                                    <field name="payment_day" required="mode == 'balance'"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                            <div class="alert alert-warning" role="status"
+                                 invisible="not has_balance_commitments">
+                                Commitments in "Account balance" mode have accounts that don't allow reconciliation: their journal items can't be followed one by one, so the projection takes the account's current balance on the next payment day.
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Configuration menu: opens the current company's settings directly. -->
+    <record id="action_account_treasury_config" model="ir.actions.server">
+        <field name="name">Treasury dashboard settings</field>
+        <field name="model_id" ref="model_account_treasury_config"/>
+        <field name="group_ids" eval="[(4, ref('group_treasury_dashboard_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_config()</field>
+    </record>
+
+</odoo>

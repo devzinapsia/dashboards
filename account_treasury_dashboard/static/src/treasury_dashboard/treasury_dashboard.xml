@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_treasury_dashboard.TreasuryDashboard">
+      <!-- "o_action" makes the web client size the action to the viewport,
+           so that the content scrolls inside it. -->
+      <div class="o_action">
+        <Layout display="display">
+            <div class="o_treasury_dashboard h-100 overflow-auto" t-att-class="{ 'o_treasury_dashboard_dark': isDarkMode }">
+                <t t-set="frame" t-value="state.frame"/>
+                <div class="o_treasury_toolbar d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+                    <span class="fw-bold" t-esc="frame.company_name"/>
+                    <span class="o_treasury_muted" t-esc="asOfLabel"/>
+                    <div class="ms-auto d-flex gap-2">
+                        <button t-if="visibleSections.length" type="button" class="btn btn-secondary btn-sm"
+                                t-on-click="() => this.setAllCollapsed(false)" t-esc="labels.expandAll"/>
+                        <button t-if="visibleSections.length" type="button" class="btn btn-secondary btn-sm"
+                                t-on-click="() => this.setAllCollapsed(true)" t-esc="labels.collapseAll"/>
+                        <button type="button" class="btn btn-secondary btn-sm" t-on-click="refresh">
+                            <i class="fa fa-refresh me-1"/><t t-esc="labels.refresh"/>
+                        </button>
+                        <button t-if="frame.can_configure" type="button" class="btn btn-secondary btn-sm" t-on-click="openConfiguration">
+                            <i class="fa fa-cog me-1"/><t t-esc="labels.configure"/>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-3 pb-3">
+                    <div t-if="frame.message" class="o_treasury_alert o_treasury_alert_info d-flex align-items-center gap-3 mt-2" role="status">
+                        <span class="flex-grow-1" t-esc="frame.message"/>
+                        <button t-if="frame.can_configure" class="btn btn-primary btn-sm" t-on-click="openConfiguration" t-esc="labels.configure"/>
+                    </div>
+                    <TreasurySection t-foreach="visibleSections" t-as="section" t-key="section.id"
+                                     section="section"
+                                     content="state.contents[section.id] or { loading: true }"
+                                     collapsed="!!state.collapsed[section.id]"
+                                     onToggle="() => this.toggleSection(section.id)"
+                                     onDrilldown.bind="openDrilldown"
+                                     onRetry="() => this.loadSection(section.id)"/>
+                </div>
+            </div>
+        </Layout>
+      </div>
+    </t>
+
+</templates>

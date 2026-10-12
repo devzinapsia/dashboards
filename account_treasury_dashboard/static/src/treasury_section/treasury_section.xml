@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_treasury_dashboard.TreasurySection">
+        <section class="o_treasury_section mb-3" t-att-data-section="props.section.id">
+            <button type="button" class="o_treasury_section_header btn w-100 d-flex align-items-center gap-2 text-start"
+                    t-att-aria-expanded="props.collapsed ? 'false' : 'true'" t-on-click="props.onToggle">
+                <i class="fa" t-att-class="props.collapsed ? 'fa-caret-right' : 'fa-caret-down'"/>
+                <span class="fw-bold fs-5" t-esc="props.section.title"/>
+                <t t-set="sectionAlerts" t-value="props.content.alerts or []"/>
+                <span t-if="props.collapsed and sectionAlerts.length" class="o_treasury_badge o_treasury_alert_warning ms-2">
+                    <i class="fa fa-exclamation-triangle me-1"/><t t-esc="sectionAlerts.length"/>
+                </span>
+            </button>
+            <div t-if="!props.collapsed" class="o_treasury_section_body pt-2">
+                <div t-if="props.content.loading" class="o_treasury_muted p-2">
+                    <i class="fa fa-spinner fa-spin me-1"/><t t-esc="labels.loading"/>
+                </div>
+                <div t-elif="props.content.error" class="o_treasury_error d-flex align-items-center gap-2" role="alert">
+                    <i class="fa fa-exclamation-triangle"/>
+                    <span class="flex-grow-1" t-esc="props.content.error"/>
+                    <button type="button" class="btn btn-sm btn-secondary" t-on-click="props.onRetry" t-esc="labels.retry"/>
+                </div>
+                <t t-else="">
+                    <div t-foreach="props.content.alerts or []" t-as="sectionAlert" t-key="sectionAlert_index"
+                         class="o_treasury_alert mb-2" t-attf-class="o_treasury_alert_{{ sectionAlert.level }}" role="status">
+                        <i class="fa me-1" t-att-class="alertIcon(sectionAlert.level)"/>
+                        <t t-esc="sectionAlert.message"/>
+                    </div>
+                    <p t-if="!(props.content.blocks or []).length" class="o_treasury_muted" t-esc="labels.empty"/>
+                    <t t-foreach="props.content.blocks or []" t-as="block" t-key="block_index">
+                        <h6 t-if="block.title" class="o_treasury_block_title mt-3 mb-2" t-esc="block.title"/>
+                        <t t-if="block.type === 'cards'" t-call="account_treasury_dashboard.TreasuryCards"/>
+                        <t t-elif="block.type === 'table'" t-call="account_treasury_dashboard.TreasuryTable"/>
+                        <t t-elif="block.type === 'chart'">
+                            <div class="o_treasury_chart_wrapper p-2 mb-3">
+                                <DashboardsChart t-props="chartConfig(block)"/>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+            </div>
+        </section>
+    </t>
+
+    <t t-name="account_treasury_dashboard.TreasuryCards">
+        <div class="row g-3 mb-3">
+            <div t-foreach="block.items" t-as="item" t-key="item_index" class="col-12 col-sm-6 col-lg-4 col-xxl-3">
+                <DashboardsKpiCard title="item.title" value="formatValue(item.main)"
+                                   secondaryValue="item.secondary ? formatValue(item.secondary) : undefined"
+                                   onClick="cardClickHandler(item)">
+                    <div t-if="item.alert" class="o_treasury_badge mt-2" t-attf-class="o_treasury_alert_{{ item.alert.level }}">
+                        <i class="fa me-1" t-att-class="alertIcon(item.alert.level)"/><t t-esc="item.alert.message"/>
+                    </div>
+                    <div t-if="item.main.note" class="o_treasury_muted small mt-1" t-esc="item.main.note"/>
+                </DashboardsKpiCard>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="account_treasury_dashboard.TreasuryTable">
+        <p t-if="!block.rows.length and block.empty_message" class="o_treasury_muted" t-esc="block.empty_message"/>
+        <div t-elif="block.rows.length" class="o_treasury_table_wrapper mb-3">
+            <table class="o_treasury_table w-100">
+                <thead>
+                    <tr>
+                        <th t-foreach="block.columns" t-as="column" t-key="column.key"
+                            t-att-class="{ 'text-end': column.type !== 'text' }" t-esc="column.label"/>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="block.rows" t-as="tableRow" t-key="tableRow.key"
+                        t-att-class="{ o_treasury_row_total: tableRow.style === 'total', o_treasury_row_subtotal: tableRow.style === 'subtotal', o_treasury_muted: tableRow.style === 'muted' }">
+                        <t t-foreach="block.columns" t-as="column" t-key="column.key">
+                            <t t-set="cell" t-value="tableRow.cells[column.key]"/>
+                            <td t-att-class="cellClass(column, cell)"
+                                t-att-title="cell?.note or undefined" t-on-click="() => this.onCellClick(cell)">
+                                <i t-if="cell?.alert" class="fa fa-exclamation-triangle me-1"/>
+                                <t t-esc="formatValue(cell)"/>
+                                <span t-if="hasCount(cell)" class="o_treasury_count ms-1">(<t t-esc="cell.count"/>)</span>
+                            </td>
+                        </t>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p t-if="block.note" class="o_treasury_muted small" t-esc="block.note"/>
+    </t>
+
+</templates>

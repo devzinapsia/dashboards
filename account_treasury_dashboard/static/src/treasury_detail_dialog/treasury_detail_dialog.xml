@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_treasury_dashboard.TreasuryDetailDialog">
+        <Dialog title="title" size="'lg'">
+            <div class="o_treasury_detail" t-att-class="{ 'o_treasury_dashboard_dark': isDarkMode }">
+                <p t-if="state.loading" class="o_treasury_muted"><i class="fa fa-spinner fa-spin me-1"/><t t-esc="labels.loading"/></p>
+                <div t-elif="state.error" class="o_treasury_error" role="alert">
+                    <i class="fa fa-exclamation-triangle me-1"/><t t-esc="state.error"/>
+                </div>
+                <t t-else="">
+                    <t t-set="detail" t-value="state.detail"/>
+                    <div t-if="detail.list_action" class="d-flex mb-2">
+                        <button class="btn btn-link px-0 ms-auto" t-on-click="openList">
+                            <i class="fa fa-external-link me-1"/><t t-esc="labels.viewAll"/>
+                        </button>
+                    </div>
+                    <p t-if="!detail.rows.length" class="o_treasury_muted" t-esc="labels.empty"/>
+                    <div t-else="" class="o_treasury_table_wrapper">
+                        <table class="o_treasury_table w-100">
+                            <thead>
+                                <tr>
+                                    <th t-foreach="detail.columns" t-as="column" t-key="column.key"
+                                        t-att-class="{ 'text-end': column.type !== 'text' }" t-esc="column.label"/>
+                                    <th class="o_treasury_open_col"/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="detail.rows" t-as="detailRow" t-key="detailRow.key"
+                                    t-att-class="{ o_treasury_clickable: detailRow.record }" t-on-click="() => this.openRecord(detailRow)">
+                                    <td t-foreach="detail.columns" t-as="column" t-key="column.key"
+                                        t-att-class="cellClass(column, detailRow.cells[column.key])"
+                                        t-esc="formatValue(detailRow.cells[column.key])"/>
+                                    <td class="o_treasury_open_col text-end">
+                                        <i t-if="detailRow.record" class="fa fa-external-link" t-att-title="labels.open"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot t-if="detail.total">
+                                <tr class="o_treasury_row_total">
+                                    <td t-att-colspan="detail.columns.length - 1" t-esc="labels.total"/>
+                                    <td class="text-end" t-att-class="{ o_treasury_negative: isNegative(detail.total) }"
+                                        t-esc="formatValue(detail.total)"/>
+                                    <td/>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

@@ -1,0 +1,155 @@
+// Theme-aware colors. Odoo 19's dark theme is a separately compiled bundle
+// (not live CSS variables), and it isn't reliably loaded for a plain client
+// action, so both variants are plain classes driven by `isDarkMode` from
+// dashboards_base (see dashboards_base/static/src/js/dashboards_theme.js).
+$treasury-themes: (
+    light: (
+        surface: #fff,
+        header-bg: #eef1f5,
+        total-bg: #e8f1fb,
+        border: rgba(0, 0, 0, .08),
+        muted: #6c757d,
+        negative: #c0392b,
+        info-bg: #e8f1fb,
+        info-fg: #1f4e79,
+        warning-bg: #fff3cd,
+        warning-fg: #8a6d1d,
+        danger-bg: #f8d7da,
+        danger-fg: #842029,
+        hover: rgba(0, 0, 0, .04),
+    ),
+    dark: (
+        surface: #242631,
+        header-bg: #2f3241,
+        total-bg: #22334a,
+        border: rgba(255, 255, 255, .08),
+        muted: #9095a6,
+        negative: #ff7b72,
+        info-bg: #22334a,
+        info-fg: #9cc7f5,
+        warning-bg: #4a3f1c,
+        warning-fg: #f2d68a,
+        danger-bg: #4a2226,
+        danger-fg: #ffb3ad,
+        hover: rgba(255, 255, 255, .05),
+    ),
+);
+
+@mixin treasury-theme($colors) {
+    .o_treasury_section_header {
+        background-color: map-get($colors, header-bg);
+        border: 1px solid map-get($colors, border);
+    }
+
+    .o_treasury_table_wrapper, .o_treasury_chart_wrapper {
+        background-color: map-get($colors, surface);
+        border: 1px solid map-get($colors, border);
+    }
+
+    .o_treasury_table {
+        th, td {
+            border-bottom: 1px solid map-get($colors, border);
+        }
+
+        th {
+            color: map-get($colors, muted);
+        }
+
+        .o_treasury_row_total td, .o_treasury_row_subtotal td {
+            background-color: map-get($colors, total-bg);
+        }
+
+        tr.o_treasury_clickable:hover td, td.o_treasury_clickable:hover {
+            background-color: map-get($colors, hover);
+        }
+    }
+
+    .o_treasury_muted, .o_treasury_block_title, .o_treasury_count {
+        color: map-get($colors, muted);
+    }
+
+    .o_treasury_negative {
+        color: map-get($colors, negative);
+    }
+
+    @each $level in (info, warning, danger) {
+        .o_treasury_alert_#{$level} {
+            background-color: map-get($colors, #{$level}-bg);
+            color: map-get($colors, #{$level}-fg);
+        }
+    }
+
+    // Alerts on a table cell: colored text only, the cell keeps its background.
+    .o_treasury_table td {
+        &.o_treasury_alert_warning, &.o_treasury_alert_danger, &.o_treasury_alert_info {
+            background-color: transparent;
+        }
+    }
+
+    .o_treasury_error {
+        background-color: map-get($colors, danger-bg);
+        color: map-get($colors, danger-fg);
+    }
+}
+
+.o_treasury_dashboard, .o_treasury_detail {
+    @include treasury-theme(map-get($treasury-themes, light));
+
+    &.o_treasury_dashboard_dark {
+        @include treasury-theme(map-get($treasury-themes, dark));
+    }
+
+    .o_treasury_section_header {
+        border-radius: .25rem;
+        padding: .5rem .75rem;
+    }
+
+    .o_treasury_alert, .o_treasury_error {
+        padding: .5rem .75rem;
+        border-radius: .25rem;
+    }
+
+    .o_treasury_badge {
+        display: inline-block;
+        padding: .1rem .5rem;
+        border-radius: 1rem;
+        font-size: .8em;
+    }
+
+    .o_treasury_table_wrapper, .o_treasury_chart_wrapper {
+        border-radius: .25rem;
+        overflow-x: auto;
+    }
+
+    .o_treasury_table {
+        th, td {
+            padding: .4rem .6rem;
+            white-space: nowrap;
+        }
+
+        th {
+            font-weight: 500;
+            font-size: .85em;
+        }
+
+        .o_treasury_row_total td {
+            font-weight: 700;
+        }
+
+        .o_treasury_row_subtotal td {
+            font-weight: 600;
+        }
+
+        .o_treasury_clickable {
+            cursor: pointer;
+        }
+
+        .o_treasury_open_col {
+            width: 2rem;
+        }
+    }
+
+    .o_treasury_chart_wrapper .o_dashboards_chart {
+        height: 320px;
+    }
+}

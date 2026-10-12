@@ -1,0 +1,1656 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_treasury_dashboard
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-12 17:08+0000\n"
+"PO-Revision-Date: 2026-10-12 17:08+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid ""
+"%(bank)s: no new statement for %(days)s days (alert after %(threshold)s)."
+msgstr ""
+"%(bank)s: sin extracto nuevo hace %(days)s días (alerta a partir de "
+"%(threshold)s)."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%(bank)s: statement %(statement)s"
+msgstr "%(bank)s: extracto %(statement)s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "%(card)s: current cycle (closing on %(date)s)"
+msgstr "%(card)s: ciclo actual (cierre el %(date)s)"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "%(card)s: statement closed on %(date)s"
+msgstr "%(card)s: resumen cerrado el %(date)s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%(currency)s valued at the rate of %(date)s, the latest one loaded."
+msgstr "%(currency)s valuado a la cotización del %(date)s, la última cargada."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid ""
+"%(name)s: a payment mean of type %(kind)s needs a journal, accounts, or "
+"both."
+msgstr ""
+"%(name)s: un medio de pago de tipo %(kind)s necesita un diario, cuentas, o "
+"ambos."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid "%(name)s: a payment mean of type %(kind)s needs a journal."
+msgstr "%(name)s: un medio de pago de tipo %(kind)s necesita un diario."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid ""
+"%(name)s: journal %(journal)s is of type %(journal_type)s, but a payment "
+"mean of type %(kind)s needs a journal of type %(allowed)s."
+msgstr ""
+"%(name)s: el diario %(journal)s es de tipo %(journal_type)s, pero un medio "
+"de pago de tipo %(kind)s necesita un diario de tipo %(allowed)s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid "%(name)s: the %(day)s must be between 1 and 31."
+msgstr "%(name)s: el %(day)s debe estar entre 1 y 31."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "%(sign)s%(variation).1f%% vs the previous month to date"
+msgstr "%(sign)s%(variation).1f%% contra el mes anterior al mismo día"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_utils.js:0
+msgid "%s days"
+msgstr "%s días"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "%s has no bank statement yet."
+msgstr "%s todavía no tiene extractos bancarios."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "%s investments"
+msgstr "%s inversiones"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s is over its credit limit."
+msgstr "%s superó su límite de crédito."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s payment means"
+msgstr "%s medios de pago"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "%s transfers"
+msgstr "%s transferencias"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "%s: account balance"
+msgstr "%s: saldo de la cuenta"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s: book balance vs last statement"
+msgstr "%s: saldo contable contra el último extracto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s: current cycle"
+msgstr "%s: ciclo actual"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s: in transit"
+msgstr "%s: en tránsito"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_commitment.py:0
+msgid ""
+"%s: its accounts don't allow reconciliation, so it needs a payment day "
+"between 1 and 31."
+msgstr ""
+"%s: sus cuentas no permiten conciliación, por lo que necesita un día de pago"
+" entre 1 y 31."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "%s: last movement"
+msgstr "%s: último movimiento"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s: last refill"
+msgstr "%s: última reposición"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "%s: statement lines to reconcile"
+msgstr "%s: líneas de extracto a conciliar"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid "%s: the credit limit can't be negative."
+msgstr "%s: el límite de crédito no puede ser negativo."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid "%s: the days without a new statement can't be negative."
+msgstr "%s: los días sin extracto nuevo no pueden ser negativos."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_commitment.py:0
+msgid "%s: the payment day must be between 1 and 31."
+msgstr "%s: el día de pago debe estar entre 1 y 31."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "%s: total debt"
+msgstr "%s: saldo adeudado"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "(+) Outstanding receipts"
+msgstr "(+) Cobros pendientes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "(-) Outstanding payments"
+msgstr "(-) Pagos pendientes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "0-7 days"
+msgstr "0-7 días"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_utils.js:0
+msgid "1 day"
+msgstr "1 día"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "1 investment"
+msgstr "1 inversión"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "1 payment mean"
+msgstr "1 medio de pago"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "1 transfer"
+msgstr "1 transferencia"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "31-60 days"
+msgstr "31-60 días"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "8-30 days"
+msgstr "8-30 días"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_config__statement_stale_days
+msgid ""
+"A bank whose latest statement line is older than this many days is flagged "
+"on the dashboard. Each bank can override it."
+msgstr ""
+"Un banco cuya última línea de extracto tiene más días que estos se marca con"
+" una alerta en el tablero. Cada banco puede tener su propio valor."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_commitment.py:0
+msgid ""
+"Account %(account)s is already used by payment mean %(medium)s (%(kind)s)."
+msgstr ""
+"La cuenta %(account)s ya está usada en el medio de pago %(medium)s "
+"(%(kind)s)."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid ""
+"Account %(account)s is already used by payment mean %(other)s (%(kind)s)."
+msgstr ""
+"La cuenta %(account)s ya está usada en el medio de pago %(other)s "
+"(%(kind)s)."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid ""
+"Account %(account)s is already used by projection commitment %(commitment)s."
+msgstr ""
+"La cuenta %(account)s ya está usada en el compromiso de la proyección "
+"%(commitment)s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_commitment.py:0
+msgid ""
+"Account %(account)s is already used by projection commitment %(other)s."
+msgstr ""
+"La cuenta %(account)s ya está usada en el compromiso de la proyección "
+"%(other)s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_commitment__mode__balance
+msgid "Account balance"
+msgstr "Saldo de la cuenta"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__account_ids
+msgid ""
+"Accounting accounts of this payment mean, in addition to its journal's "
+"account (or instead of it, for prepaid and credit cards without a journal)."
+msgstr ""
+"Cuentas contables de este medio de pago, además de la cuenta de su diario (o"
+" en su lugar, para tarjetas prepagas y de crédito sin diario)."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__account_ids
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__account_ids
+msgid "Accounts"
+msgstr "Cuentas"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__active
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__active
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid ""
+"Add a bank or cash payment mean for every bank and cash journal not "
+"configured yet. Existing ones are not changed."
+msgstr ""
+"Agrega un medio de pago de banco o efectivo por cada diario de banco o "
+"efectivo que todavía no esté configurado. Los existentes no se modifican."
+
+#. module: account_treasury_dashboard
+#: model:res.groups,name:account_treasury_dashboard.group_treasury_dashboard_manager
+msgid "Administrator"
+msgstr "Administrador"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Age"
+msgstr "Antigüedad"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Amount"
+msgstr "Importe"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
+msgid "As of %s"
+msgstr "Al %s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Available"
+msgstr "Disponible"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "Balance"
+msgstr "Saldo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_medium__kind__bank
+msgid "Bank"
+msgstr "Banco"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Bank account balance"
+msgstr "Saldo de la cuenta del banco"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Bank accounts as of today"
+msgstr "Cuentas de los bancos al día de hoy"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Banks"
+msgstr "Bancos"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__bank_cash_medium_ids
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Banks and cash"
+msgstr "Bancos y efectivo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Book balance"
+msgstr "Saldo contable"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "Book value"
+msgstr "Valor contable"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_medium__kind__cash
+msgid "Cash"
+msgstr "Efectivo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "Cash position"
+msgstr "Posición de caja"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "Cash projection"
+msgstr "Proyección de caja"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__closing_day
+msgid "Closing day"
+msgstr "Día de cierre"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
+msgid "Collapse all"
+msgstr "Contraer todo"
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid ""
+"Commitments in \"Account balance\" mode have accounts that don't allow "
+"reconciliation: their journal items can't be followed one by one, so the "
+"projection takes the account's current balance on the next payment day."
+msgstr ""
+"Los compromisos en modo \"Saldo de la cuenta\" tienen cuentas que no "
+"permiten conciliación: sus apuntes no se pueden seguir uno por uno, así que "
+"la proyección toma el saldo actual de la cuenta en el próximo día de pago."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__company_id
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__company_id
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_config.py:0
+msgid ""
+"Company %s already has an active treasury dashboard configuration. Archive "
+"it before activating another one."
+msgstr ""
+"La compañía %s ya tiene una configuración activa del tablero de tesorería. "
+"Archívela antes de activar otra."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__company_currency_id
+msgid "Company currency"
+msgstr "Moneda de la compañía"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__config_id
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__config_id
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__create_uid
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__create_uid
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__create_date
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__create_date
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_medium__kind__credit_card
+msgid "Credit card"
+msgstr "Tarjeta de crédito"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Credit card statements"
+msgstr "Resúmenes de tarjetas de crédito"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__credit_card_medium_ids
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Credit cards"
+msgstr "Tarjetas de crédito"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__credit_limit
+msgid "Credit limit"
+msgstr "Límite de crédito"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__currency_id
+msgid ""
+"Currency of the payment mean: the one of its journal, or of its accounting "
+"account; the company currency when they have none."
+msgstr ""
+"Moneda del medio de pago: la de su diario, o la de su cuenta contable; la "
+"moneda de la compañía cuando no tienen ninguna."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Current cycle"
+msgstr "Ciclo actual"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid ""
+"Current cycle: purchases net of refunds since the last closing (payments of "
+"the card are left out). Available: limit minus total debt."
+msgstr ""
+"Ciclo actual: consumos netos de devoluciones desde el último cierre (sin los"
+" pagos de la tarjeta). Disponible: límite menos saldo adeudado."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Customer receivables"
+msgstr "Cobros de clientes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Date"
+msgstr "Fecha"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__payment_day
+msgid ""
+"Day of the month the balance is paid. Only used in account balance mode."
+msgstr ""
+"Día del mes en que se paga el saldo. Solo se usa en el modo saldo de la "
+"cuenta."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__closing_day
+msgid "Day of the month the credit card statement closes."
+msgstr "Día del mes en que cierra el resumen de la tarjeta."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__due_day
+msgid ""
+"Day of the month the credit card statement is due. If it is lower than or "
+"equal to the closing day, it falls in the following month."
+msgstr ""
+"Día del mes en que vence el resumen de la tarjeta. Si es menor o igual al "
+"día de cierre, cae el mes siguiente."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Days since"
+msgstr "Días desde entonces"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Days to due date"
+msgstr "Días al vencimiento"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__statement_stale_days
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__stale_days
+msgid "Days without a new statement"
+msgstr "Días sin extracto nuevo"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_detail_dialog/treasury_detail_dialog.js:0
+msgid "Detail"
+msgstr "Detalle"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Difference"
+msgstr "Diferencia"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__display_name
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__display_name
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_dashboard__display_name
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Document"
+msgstr "Documento"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__due_day
+msgid "Due day"
+msgstr "Día de vencimiento"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid ""
+"Each investment in the currency of its account, valued in %s at the rate of "
+"the day."
+msgstr ""
+"Cada inversión en la moneda de su cuenta, valuada en %s a la cotización del "
+"día."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "Equivalent in %s"
+msgstr "Equivalente en %s"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
+msgid "Expand all"
+msgstr "Expandir todo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Expected date"
+msgstr "Fecha esperada"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Foreign currency"
+msgstr "Moneda extranjera"
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "General"
+msgstr "General"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__has_balance_commitments
+msgid "Has Balance Commitments"
+msgstr "Tiene compromisos por saldo"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__id
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__id
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_dashboard__id
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_config__include_overdue_receivables
+msgid ""
+"If checked, overdue customer receivables add to week 1 of the cash "
+"projection. Otherwise they are shown in a separate row and don't change the "
+"projected balance."
+msgstr ""
+"Si está marcado, los cobros vencidos de clientes suman a la semana 1 de la "
+"proyección. Si no, se muestran en una fila aparte y no cambian el saldo "
+"proyectado."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "In %s"
+msgstr "En %s"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__in_available_total
+msgid "In available total"
+msgstr "En total disponible"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "In transit"
+msgstr "En tránsito"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__include_overdue_receivables
+msgid "Include overdue receivables in week 1"
+msgstr "Incluir cobros vencidos en la semana 1"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Inflows"
+msgstr "Ingresos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Inflows this month"
+msgstr "Ingresos del mes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Internal transfers"
+msgstr "Transferencias internas"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Internal transfers this month"
+msgstr "Transferencias internas del mes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_medium__kind__investment
+msgid "Investment"
+msgstr "Inversión"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__investment_medium_ids
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Investments"
+msgstr "Inversiones"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Item"
+msgstr "Concepto"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__journal_id
+msgid "Journal"
+msgstr "Diario"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid ""
+"Journal %(journal)s is already used by payment mean %(other)s (%(kind)s)."
+msgstr ""
+"El diario %(journal)s ya está usado en el medio de pago %(other)s "
+"(%(kind)s)."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__journal_domain
+msgid "Journal Domain"
+msgstr "Dominio del diario"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Label"
+msgstr "Etiqueta"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__write_uid
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__write_uid
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__write_date
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__write_date
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Last closing"
+msgstr "Último cierre"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "Last movement"
+msgstr "Último movimiento"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Last refill"
+msgstr "Última reposición"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Last statement balance"
+msgstr "Saldo del último extracto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Latest statement"
+msgstr "Último extracto"
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid ""
+"Liabilities the cash projection pays out (salaries, social charges, taxes, "
+"...). When every account allows reconciliation, each open item is projected "
+"on its due date; otherwise the account balance is projected on the payment "
+"day."
+msgstr ""
+"Pasivos que la proyección de caja paga (sueldos, cargas sociales, impuestos,"
+" ...). Cuando todas las cuentas permiten conciliación, cada partida abierta "
+"se proyecta en su vencimiento; si no, el saldo de la cuenta se proyecta en "
+"el día de pago."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Limit"
+msgstr "Límite"
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Load suggested"
+msgstr "Cargar sugeridos"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_detail_dialog/treasury_detail_dialog.js:0
+#: code:addons/account_treasury_dashboard/static/src/treasury_section/treasury_section.js:0
+msgid "Loading…"
+msgstr "Cargando…"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Minimum projected balance"
+msgstr "Saldo mínimo proyectado"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Miscellaneous operations on the bank account"
+msgstr "Operaciones varias en la cuenta del banco"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__mode
+msgid "Mode"
+msgstr "Modo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Month"
+msgstr "Mes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Movements"
+msgstr "Movimientos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid ""
+"Movements of the payment means in the available total, in %s (accounting "
+"amounts). Internal transfers between payment means are left out of inflows "
+"and outflows."
+msgstr ""
+"Movimientos de los medios de pago del total disponible, en %s (importes "
+"contables). Las transferencias internas entre medios de pago no se cuentan "
+"como ingresos ni egresos."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__name
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Negative balance"
+msgstr "Saldo negativo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Negative projected balance in %(week)s: %(amount)s."
+msgstr "Saldo proyectado negativo en %(week)s: %(amount)s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Net"
+msgstr "Neto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Net this month"
+msgstr "Neto del mes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Next closing"
+msgstr "Próximo cierre"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Next due date"
+msgstr "Próximo vencimiento"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "No"
+msgstr "No"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "No movements the previous month to date"
+msgstr "Sin movimientos el mes anterior a la misma fecha"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "No refills"
+msgstr "Sin reposiciones"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "No statement"
+msgstr "Sin extracto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Not included in the projected balance"
+msgstr "No incluidos en el saldo proyectado"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_detail_dialog/treasury_detail_dialog.js:0
+#: code:addons/account_treasury_dashboard/static/src/treasury_section/treasury_section.js:0
+msgid "Nothing to show."
+msgstr "Nada para mostrar."
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_config__projection_weeks
+msgid ""
+"Number of weeks of the cash projection (between 4 and 8). Week 1 runs from "
+"today to the next Sunday."
+msgstr ""
+"Cantidad de semanas de la proyección de caja (entre 4 y 8). La semana 1 va "
+"desde hoy hasta el próximo domingo."
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_detail_dialog/treasury_detail_dialog.js:0
+msgid "Open"
+msgstr "Abrir"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_commitment__mode__open_items
+msgid "Open items"
+msgstr "Partidas abiertas"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__mode
+msgid ""
+"Open items when every account allows reconciliation (each open item on its "
+"due date), account balance otherwise (the current balance on the payment "
+"day)."
+msgstr ""
+"Partidas abiertas cuando todas las cuentas permiten conciliación (cada "
+"partida en su vencimiento); saldo de la cuenta si no (el saldo actual en el "
+"día de pago)."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Opening balance"
+msgstr "Saldo inicial"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Opening balance: bank accounts"
+msgstr "Saldo inicial: cuentas de los bancos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Original amount"
+msgstr "Importe original"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_commitment__kind__other
+msgid "Other"
+msgstr "Otro"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Outflows"
+msgstr "Egresos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Outflows this month"
+msgstr "Egresos del mes"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Over 60 days"
+msgstr "Más de 60 días"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Overdue receivables"
+msgstr "Cobros vencidos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Overdue receivables (not included)"
+msgstr "Cobros vencidos (no incluidos)"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__stale_days
+msgid ""
+"Overrides the general setting for this bank. Leave it at 0 to use the "
+"general setting."
+msgstr ""
+"Reemplaza el valor general para este banco. Déjelo en 0 para usar el valor "
+"general."
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Parameters"
+msgstr "Parámetros"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Payment"
+msgstr "Pago"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__payment_day
+msgid "Payment day"
+msgstr "Día de pago"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Payment mean"
+msgstr "Medio de pago"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__medium_ids
+msgid "Payment means"
+msgstr "Medios de pago"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Payment means in %s"
+msgstr "Medios de pago en %s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid ""
+"Payment means in the available total whose account is in a foreign currency."
+" The difference between the equivalent at the rate of the day and the book "
+"value is the exchange difference not booked yet."
+msgstr ""
+"Medios de pago del total disponible cuya cuenta está en moneda extranjera. "
+"La diferencia entre el equivalente a la cotización del día y el valor "
+"contable es la diferencia de cambio todavía no registrada."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Payments in transit"
+msgstr "Pagos en tránsito"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_commitment__kind__payroll
+msgid "Payroll"
+msgstr "Sueldos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "Period movements"
+msgstr "Movimientos del período"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_medium__kind__petty_cash
+msgid "Petty cash fund"
+msgstr "Fondo fijo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__fund_medium_ids
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Petty cash funds and prepaid cards"
+msgstr "Fondos fijos y tarjetas prepagas"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_medium__kind__prepaid
+msgid "Prepaid card"
+msgstr "Tarjeta prepaga"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Previous month up to day %s"
+msgstr "Mes anterior hasta el día %s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Projected balance"
+msgstr "Saldo proyectado"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Projected balance at the end"
+msgstr "Saldo proyectado al final"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__commitment_ids
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Projection commitments"
+msgstr "Compromisos de la proyección"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__projection_weeks
+msgid "Projection weeks"
+msgstr "Semanas de proyección"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Rate of %s"
+msgstr "Cotización del %s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Rate of the day"
+msgstr "Cotización del día"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Receipt"
+msgstr "Cobro"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Receipts in transit"
+msgstr "Cobros en tránsito"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Reconciled"
+msgstr "Conciliada"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "Reconciliation"
+msgstr "Conciliación"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Refill amount"
+msgstr "Importe repuesto"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
+msgid "Refresh"
+msgstr "Actualizar"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_section/treasury_section.js:0
+msgid "Retry"
+msgstr "Reintentar"
+
+#. module: account_treasury_dashboard
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Sections"
+msgstr "Secciones"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__sequence
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
+msgid "Settings"
+msgstr "Ajustes"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__show_cash_position
+msgid "Show cash position"
+msgstr "Mostrar posición de caja"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__show_projection
+msgid "Show cash projection"
+msgstr "Mostrar proyección de caja"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__show_investments
+msgid "Show investments"
+msgstr "Mostrar inversiones"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__show_movements
+msgid "Show period movements"
+msgstr "Mostrar movimientos del período"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__show_reconciliation
+msgid "Show reconciliation"
+msgstr "Mostrar conciliación"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Starting balance"
+msgstr "Saldo inicial"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid ""
+"Starts from the bank accounts' balance: recorded receipts and payments not "
+"in the bank yet come in as in-transit flows in week 1. Overdue vendor "
+"payables fall in week 1. Foreign currency residuals valued at the rate of "
+"the day; credit card statements estimated from the purchases up to today. "
+"Flows after the last week are left out."
+msgstr ""
+"Parte del saldo de las cuentas de los bancos: los cobros y pagos registrados"
+" que todavía no están en el banco entran como flujos en tránsito en la "
+"semana 1. Los pagos vencidos a proveedores caen en la semana 1. Los saldos "
+"en moneda extranjera se valúan a la cotización del día; los resúmenes de "
+"tarjeta se estiman con los consumos hasta hoy. Los flujos posteriores a la "
+"última semana no se incluyen."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Statement date"
+msgstr "Fecha del extracto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Statement lines to reconcile"
+msgstr "Líneas de extracto a conciliar"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields.selection,name:account_treasury_dashboard.selection__account_treasury_commitment__kind__tax
+msgid "Tax"
+msgstr "Impuesto"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_config.py:0
+msgid "The cash projection must have between %(min)s and %(max)s weeks."
+msgstr "La proyección de caja debe tener entre %(min)s y %(max)s semanas."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_config.py:0
+msgid "The days without a new statement must be at least 1."
+msgstr "Los días sin extracto nuevo deben ser al menos 1."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid ""
+"The last refill is the latest internal transfer into the fund or card. For a"
+" prepaid card without a journal, the latest entry debiting its accounts."
+msgstr ""
+"La última reposición es la última transferencia interna hacia el fondo o la "
+"tarjeta. Para una tarjeta prepaga sin diario, el último asiento que debita "
+"sus cuentas."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "The treasury dashboard is not configured yet for %s."
+msgstr "El tablero de tesorería todavía no está configurado para %s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/treasury_currency.py:0
+msgid ""
+"There is no %(currency)s exchange rate loaded up to %(date)s: amounts in "
+"%(currency)s can't be valued. Load the rate and refresh the dashboard."
+msgstr ""
+"No hay cotización de %(currency)s cargada hasta el %(date)s: los importes en"
+" %(currency)s no se pueden valuar. Cargue la cotización y actualice el "
+"tablero."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid ""
+"There is nothing to show yet: configure the banks, cash and other payment "
+"means of %s."
+msgstr ""
+"Todavía no hay nada para mostrar: configure los bancos, el efectivo y los "
+"demás medios de pago de %s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "This figure has no detail."
+msgstr "Esta cifra no tiene detalle."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "This month to date"
+msgstr "Mes actual a la fecha"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "This payment mean is no longer configured. Refresh the dashboard."
+msgstr "Este medio de pago ya no está configurado. Actualice el tablero."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid ""
+"This section couldn't be computed. The details were written to the server "
+"log."
+msgstr ""
+"No se pudo calcular esta sección. El detalle quedó registrado en el log del "
+"servidor."
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
+msgid "This section couldn't be loaded."
+msgstr "No se pudo cargar esta sección."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "This section is not enabled or not configured."
+msgstr "Esta sección no está habilitada o no está configurada."
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+#: code:addons/account_treasury_dashboard/static/src/treasury_detail_dialog/treasury_detail_dialog.js:0
+msgid "Total"
+msgstr "Total"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Total available"
+msgstr "Total disponible"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Total banks"
+msgstr "Total bancos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Total cash"
+msgstr "Total efectivo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Total debt"
+msgstr "Saldo adeudado"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "Total investments"
+msgstr "Total inversiones"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid "Total unreconciled"
+msgstr "Total sin conciliar"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Totals in %s, foreign currencies valued at the rate of the day."
+msgstr "Totales en %s, monedas extranjeras valuadas a la cotización del día."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Transactions without statement"
+msgstr "Movimientos sin extracto"
+
+#. module: account_treasury_dashboard
+#: model:ir.actions.client,name:account_treasury_dashboard.action_account_treasury_dashboard
+#: model:ir.ui.menu,name:account_treasury_dashboard.menu_account_treasury_dashboard
+#: model:res.groups.privilege,name:account_treasury_dashboard.res_groups_privilege_treasury
+msgid "Treasury"
+msgstr "Tesorería"
+
+#. module: account_treasury_dashboard
+#: model:ir.model,name:account_treasury_dashboard.model_account_treasury_dashboard
+#: model:ir.ui.menu,name:account_treasury_dashboard.menu_account_treasury_config
+msgid "Treasury dashboard"
+msgstr "Tablero de tesorería"
+
+#. module: account_treasury_dashboard
+#: model:ir.model,name:account_treasury_dashboard.model_account_treasury_config
+msgid "Treasury dashboard configuration"
+msgstr "Configuración del tablero de tesorería"
+
+#. module: account_treasury_dashboard
+#: model:ir.model,name:account_treasury_dashboard.model_account_treasury_medium
+msgid "Treasury dashboard payment mean"
+msgstr "Medio de pago del tablero de tesorería"
+
+#. module: account_treasury_dashboard
+#: model:ir.model,name:account_treasury_dashboard.model_account_treasury_commitment
+msgid "Treasury dashboard projection commitment"
+msgstr "Compromiso de la proyección del tablero de tesorería"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_config.py:0
+#: model:ir.actions.server,name:account_treasury_dashboard.action_account_treasury_config
+#: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
+msgid "Treasury dashboard settings"
+msgstr "Ajustes del tablero de tesorería"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_commitment__kind
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__kind
+msgid "Type"
+msgstr "Tipo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Unexplained difference"
+msgstr "Diferencia sin explicar"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "Unknown dashboard section: %s"
+msgstr "Sección del tablero desconocida: %s"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+msgid "Unrecognized exchange difference"
+msgstr "Diferencia de cambio no registrada"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_reconciliation.py:0
+msgid ""
+"Unreconciled statement lines by age (days since the line's date); the number"
+" of lines is shown in brackets. Totals in %s at the rate of the day."
+msgstr ""
+"Líneas de extracto sin conciliar por antigüedad (días desde la fecha de la "
+"línea); la cantidad de líneas figura entre paréntesis. Totales en %s a la "
+"cotización del día."
+
+#. module: account_treasury_dashboard
+#: model:res.groups,name:account_treasury_dashboard.group_treasury_dashboard_user
+msgid "User"
+msgstr "Usuario"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Variation"
+msgstr "Variación"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Vendor payables"
+msgstr "Pagos a proveedores"
+
+#. module: account_treasury_dashboard
+#. odoo-javascript
+#: code:addons/account_treasury_dashboard/static/src/treasury_detail_dialog/treasury_detail_dialog.js:0
+msgid "View all"
+msgstr "Ver todos"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Week %(number)s (%(start)s - %(end)s)"
+msgstr "Semana %(number)s (%(start)s - %(end)s)"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__in_available_total
+msgid ""
+"Whether this payment mean adds up to the dashboard's available total and to "
+"the cash projection's starting balance."
+msgstr ""
+"Si este medio de pago suma al total disponible del tablero y al saldo "
+"inicial de la proyección de caja."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_movements.py:0
+msgid "Whole previous month"
+msgstr "Mes anterior completo"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
+msgid "Yes"
+msgstr "Sí"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "You are not allowed to access company %s."
+msgstr "No tiene permiso para acceder a la compañía %s."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
+msgid "You are not allowed to see the treasury dashboard."
+msgstr "No tiene permiso para ver el tablero de tesorería."
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid "closing day"
+msgstr "día de cierre"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid "due day"
+msgstr "día de vencimiento"

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_treasury_config_manager,account.treasury.config.manager,model_account_treasury_config,group_treasury_dashboard_manager,1,1,1,1
+access_account_treasury_medium_manager,account.treasury.medium.manager,model_account_treasury_medium,group_treasury_dashboard_manager,1,1,1,1
+access_account_treasury_commitment_manager,account.treasury.commitment.manager,model_account_treasury_commitment,group_treasury_dashboard_manager,1,1,1,1
+access_account_journal_treasury_manager,account.journal.treasury.manager,account.model_account_journal,group_treasury_dashboard_manager,1,0,0,0
+access_account_account_treasury_manager,account.account.treasury.manager,account.model_account_account,group_treasury_dashboard_manager,1,0,0,0
