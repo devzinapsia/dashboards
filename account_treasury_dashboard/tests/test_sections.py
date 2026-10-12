@@ -24,8 +24,13 @@ class TestTreasurySections(TreasuryDashboardCommon):
             company_id=cls.company.id, company_ids=[Command.set(cls.company.ids)],
         )
 
+    # The sections of this module: others (e.g. the checks bridge, installed
+    # automatically) may add their own.
+    OWN_SECTIONS = ("cash_position", "reconciliation", "investments", "projection", "movements")
+
     def _visible(self, frame):
-        return [section["id"] for section in frame["sections"] if section["visible"]]
+        return [section["id"] for section in frame["sections"]
+                if section["visible"] and section["id"] in self.OWN_SECTIONS]
 
     # -------------------------------------------------------------------------
     # Frame
