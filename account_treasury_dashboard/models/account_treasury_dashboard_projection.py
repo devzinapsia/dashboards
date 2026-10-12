@@ -211,17 +211,23 @@ class AccountTreasuryDashboard(models.AbstractModel):
             if commitment.mode == "open_items":
                 flows += self._open_items_flows(ctx, [("account_id", "in", commitment.account_ids.ids)], category)
                 continue
-            balance = self.env["account.move.line"].sudo()._read_group(
-                [
-                    ("company_id", "=", ctx["company"].id),
-                    ("parent_state", "=", "posted"),
-                    ("date", "<=", ctx["today"]),
-                    ("account_id", "in", commitment.account_ids.ids),
-                ],
-                aggregates=["balance:sum"],
-            )[0][0] or 0.0
+            domain = [
+                ("company_id", "=", ctx["company"].id),
+                ("parent_state", "=", "posted"),
+                ("date", "<=", ctx["today"]),
+                ("account_id", "in", commitment.account_ids.ids),
+            ]
+            MoveLine = self.env["account.move.line"].sudo()
+            balance = MoveLine._read_group(domain, aggregates=["balance:sum"])[0][0] or 0.0
             if balance < 0 and not ctx["currency"].is_zero(balance):
-                date = treasury_dates.next_day_of_month(ctx["today"], commitment.payment_day)
+                if commitment.payment_day:
+                    date = treasury_dates.next_day_of_month(ctx["today"], commitment.payment_day)
+                else:
+                    # When the latest entry crediting the accounts (e.g. the
+                    # month's payroll) says it is due: week 1 once past.
+                    last_credit = MoveLine.search_fetch([*domain, ("balance", "<", 0)], ["date", "date_maturity"],
+                                                        order="date desc, id desc", limit=1)
+                    date = max(last_credit.date_maturity or last_credit.date, ctx["today"])
                 flows.append(self._flow(
                     ctx, date, balance, category,
                     self.env._("%s: account balance", commitment.name), document=commitment.name,

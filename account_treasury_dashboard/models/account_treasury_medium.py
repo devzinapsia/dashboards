@@ -127,6 +127,23 @@ class AccountTreasuryMedium(models.Model):
         here.)"""
         return self.journal_id.default_account_id | self.account_ids
 
+    def _get_journals(self):
+        """The journals of this payment mean: its own journal, and every bank,
+        cash or credit card journal of the company whose default account is
+        one of its accounts (e.g. two cardholders' credit card journals
+        booking on the same card account, configured as a single payment
+        mean with that account)."""
+        self.ensure_one()
+        journals = self.journal_id
+        own_accounts = self._get_own_accounts()
+        if own_accounts:
+            journals |= self.env["account.journal"].sudo().with_context(active_test=True).search([
+                ("company_id", "=", self.company_id.id),
+                ("type", "in", ("bank", "cash", "credit")),
+                ("default_account_id", "in", own_accounts.ids),
+            ])
+        return journals
+
     def _kind_label(self):
         self.ensure_one()
         return dict(self._fields["kind"]._description_selection(self.env))[self.kind]

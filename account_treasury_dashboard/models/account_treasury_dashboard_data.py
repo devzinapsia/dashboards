@@ -13,7 +13,8 @@ class AccountTreasuryDashboard(models.AbstractModel):
     A payment mean's journal items ("scope") are:
     - liquidity: the items of its own accounts (its journal's default
       account and its extra accounts), whatever their journal;
-    - in transit: the items of its journal on the journal's outstanding
+    - in transit: the items of its journals (its own journal, and the other
+      journals booking on its accounts) on each journal's outstanding
       receipts/payments accounts (the payment method lines' accounts).
       Those accounts are usually shared by several journals, so they are
       always filtered by journal, as Odoo's bank reconciliation report does.
@@ -28,10 +29,7 @@ class AccountTreasuryDashboard(models.AbstractModel):
     # Scope
     # -------------------------------------------------------------------------
 
-    def _get_outstanding_accounts(self, medium, own_accounts):
-        journal = medium.journal_id
-        if not journal:
-            return self.env["account.account"]
+    def _get_outstanding_accounts(self, journal, own_accounts):
         accounts = (journal._get_journal_inbound_outstanding_payment_accounts()
                     | journal._get_journal_outbound_outstanding_payment_accounts())
         # A cash journal may use its own cash account as payment account:
@@ -39,17 +37,21 @@ class AccountTreasuryDashboard(models.AbstractModel):
         return accounts - own_accounts
 
     def _get_scope(self, mediums):
-        """{medium_id: {"own": account ids, "journal": journal id, "outstanding": account ids}}"""
+        """{medium_id: {"own": account ids, "outstanding": [(journal id,
+        account ids)]}}: the in-transit accounts of each of the payment
+        mean's journals (see account.treasury.medium._get_journals()),
+        filtered by that journal."""
         mediums = mediums.sudo()
         all_own = mediums.journal_id.default_account_id | mediums.account_ids
-        return {
-            medium.id: {
-                "own": medium._get_own_accounts().ids,
-                "journal": medium.journal_id.id,
-                "outstanding": self._get_outstanding_accounts(medium, all_own).ids,
-            }
-            for medium in mediums
-        }
+        scope = {}
+        for medium in mediums:
+            outstanding = []
+            for journal in medium._get_journals():
+                accounts = self._get_outstanding_accounts(journal, all_own)
+                if accounts:
+                    outstanding.append((journal.id, accounts.ids))
+            scope[medium.id] = {"own": medium._get_own_accounts().ids, "outstanding": outstanding}
+        return scope
 
     def _scope_sql(self, scope, alias="aml", parts=("own", "outstanding")):
         """(condition, medium id CASE expression) selecting the scope's
@@ -61,14 +63,14 @@ class AccountTreasuryDashboard(models.AbstractModel):
                 condition = SQL("%s.account_id = ANY(%s)", SQL.identifier(alias), medium_scope["own"])
                 conditions.append(condition)
                 cases.append(SQL("WHEN %s THEN %s", condition, medium_id))
-            if "outstanding" in parts and medium_scope["outstanding"]:
-                condition = SQL(
-                    "(%s.journal_id = %s AND %s.account_id = ANY(%s))",
-                    SQL.identifier(alias), medium_scope["journal"],
-                    SQL.identifier(alias), medium_scope["outstanding"],
-                )
-                conditions.append(condition)
-                cases.append(SQL("WHEN %s THEN %s", condition, medium_id))
+            if "outstanding" in parts:
+                for journal_id, account_ids in medium_scope["outstanding"]:
+                    condition = SQL(
+                        "(%s.journal_id = %s AND %s.account_id = ANY(%s))",
+                        SQL.identifier(alias), journal_id, SQL.identifier(alias), account_ids,
+                    )
+                    conditions.append(condition)
+                    cases.append(SQL("WHEN %s THEN %s", condition, medium_id))
         if not conditions:
             return SQL("FALSE"), SQL("NULL::int")
         return SQL("(%s)", SQL(" OR ").join(conditions)), SQL("CASE %s END", SQL(" ").join(cases))

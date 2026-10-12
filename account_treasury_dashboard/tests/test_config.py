@@ -151,11 +151,22 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
             "account_ids": [Command.set(reconcilable.ids)],
         })
         self.assertEqual(commitment.mode, "open_items")
-        with self.assertValidationError("needs a payment day"):
-            commitment.account_ids = [Command.link(not_reconcilable.id)]
-        commitment.write({"account_ids": [Command.link(not_reconcilable.id)], "payment_day": 5})
+        # The payment day is optional, in both modes.
+        commitment.account_ids = [Command.link(not_reconcilable.id)]
         self.assertEqual(commitment.mode, "balance")
+        self.assertFalse(commitment.payment_day)
         self.assertTrue(self.config.has_balance_commitments)
+
+    def test_commitment_name_from_accounts(self):
+        account = self._create_account("2.1.3.02.010", "IIBB payable CABA", "liability_current", reconcile=True)
+        commitment = self.Commitment.create({
+            "config_id": self.config.id, "kind": "tax", "account_ids": [Command.set(account.ids)],
+        })
+        self.assertEqual(commitment.name, "IIBB payable CABA")
+        commitment.name = "IIBB CABA"
+        other = self._create_account("2.1.3.02.011", "IIBB payable PBA", "liability_current", reconcile=True)
+        commitment.account_ids = [Command.link(other.id)]
+        self.assertEqual(commitment.name, "IIBB CABA")
 
     def test_commitment_payment_day_bounds(self):
         account = self._create_account("2.1.4.01", "Salaries payable", "liability_current")
@@ -192,9 +203,9 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
         self.config.action_load_suggested()
         mediums = self.config.with_context(active_test=False).medium_ids
         bank_journals = self.env["account.journal"].search([
-            ("company_id", "=", self.company.id), ("type", "in", ("bank", "cash")),
+            ("company_id", "=", self.company.id), ("type", "in", ("bank", "cash", "credit")),
         ])
-        # Every bank/cash journal exactly once; existing ones untouched.
+        # Every bank/cash/credit card journal exactly once; existing ones untouched.
         self.assertEqual(sorted(mediums.journal_id.ids), sorted(bank_journals.ids))
         self.assertEqual(len(mediums), len(bank_journals))
         self.assertEqual(existing.name, "My bank")
@@ -218,6 +229,37 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
         # A second click adds nothing.
         self.config.action_load_suggested()
         self.assertEqual(len(self.config.with_context(active_test=False).medium_ids), len(bank_journals))
+
+    def test_load_suggested_credit_cards(self):
+        self.config.action_load_suggested()
+        card = self.config.credit_card_medium_ids.filtered(lambda medium: medium.journal_id == self.credit_journal)
+        self.assertEqual(card.kind, "credit_card")
+        self.assertEqual((card.closing_day, card.due_day), (30, 8))
+        self.assertFalse(card.in_available_total)
+
+    def test_load_suggested_groups_journals_sharing_an_account(self):
+        """Two cardholders' journals booking on the same card account: a
+        single payment mean with the account, not one per journal (the
+        account's balance would be counted twice)."""
+        card_account = self._create_account("2.1.2.01.011", "Visa card payable", "liability_credit_card")
+        journals = self.env["account.journal"]
+        for name, code in (("Visa - Chelo", "VCH"), ("Visa - Pablo", "VPA")):
+            journal = self._create_journal(name, code, "credit")
+            journal.default_account_id = card_account
+            journals |= journal
+        self.config.action_load_suggested()
+        cards = self.config.credit_card_medium_ids.filtered(lambda medium: card_account in medium.account_ids)
+        self.assertEqual(len(cards), 1)
+        self.assertFalse(cards.journal_id)
+        self.assertEqual(cards.name, "Visa card payable")
+        self.assertEqual(cards._get_journals(), journals)
+        self.assertFalse(self.config.medium_ids.filtered(lambda medium: medium.journal_id in journals))
+
+    def test_load_suggested_skips_archived_journals(self):
+        archived = self._create_journal("Closed bank", "BNKX", "bank")
+        archived.active = False
+        self.config.action_load_suggested()
+        self.assertNotIn(archived, self.config.with_context(active_test=False).medium_ids.journal_id)
 
     # -------------------------------------------------------------------------
     # Security

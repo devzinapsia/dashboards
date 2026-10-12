@@ -105,6 +105,24 @@ class TestProjection(TreasuryDashboardCommon):
                                              {"category": "commitment_%s" % payroll.id, "week": 1})
         self.assertEqual(popup["rows"][0]["cells"]["partner"]["value"], "Employee")
 
+    def test_balance_commitment_without_payment_day(self):
+        """Without a payment day, the balance goes on the due date of the
+        latest entry crediting the accounts (week 1 once past)."""
+        salaries = self._create_account("2.1.4.01", "Salaries payable", "liability_current")
+        expense = self.company_data["default_account_expense"]
+        self._entry(date(2026, 9, 30), [(expense, 400.0), (salaries, -400.0, {"date_maturity": date(2026, 10, 5)})])
+        self._entry(date(2026, 10, 1), [(expense, 600.0), (salaries, -600.0, {"date_maturity": date(2026, 10, 28)})])
+        commitment = self.Commitment.create({
+            "config_id": self.config.id, "name": "Salaries", "kind": "payroll",
+            "account_ids": [Command.set(salaries.ids)],
+        })
+        self.assertEqual(commitment.mode, "balance")
+        cells = self._projection()["cells"]["commitment_%s" % commitment.id]
+        self.assertAlmostEqual(cells[2], -1000.0)  # 28/10: week 3
+        self._entry(date(2026, 10, 2), [(expense, 50.0), (salaries, -50.0, {"date_maturity": date(2026, 10, 2)})])
+        cells = self._projection()["cells"]["commitment_%s" % commitment.id]
+        self.assertAlmostEqual(cells[0], -1050.0)  # latest entry due 2/10, already past: week 1
+
     def test_credit_card_statements(self):
         card = self._create_medium("credit_card", self.credit_journal, closing_day=5, due_day=15)
         card_account = self.credit_journal.default_account_id

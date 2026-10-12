@@ -29,7 +29,10 @@ class AccountTreasuryCommitment(models.Model):
     )
     company_id = fields.Many2one(related="config_id.company_id", store=True, index=True)
     sequence = fields.Integer(string="Sequence", default=10)
-    name = fields.Char(string="Name", required=True)
+    name = fields.Char(
+        string="Name", required=True, compute="_compute_name", store=True, readonly=False, precompute=True,
+        help="Filled with the accounts' names when left empty.",
+    )
     kind = fields.Selection(COMMITMENT_KINDS, string="Type", required=True, default="other")
     account_ids = fields.Many2many(
         "account.account",
@@ -46,13 +49,21 @@ class AccountTreasuryCommitment(models.Model):
         compute="_compute_mode",
         store=True,
         help="Open items when every account allows reconciliation (each open item on its due date), account "
-        "balance otherwise (the current balance on the payment day).",
+        "balance otherwise (the current balance on the due date of the latest entry crediting the accounts, or on "
+        "the payment day if set).",
     )
     payment_day = fields.Integer(
         string="Payment day",
-        help="Day of the month the balance is paid. Only used in account balance mode.",
+        help="Optional, account balance mode only: day of the month the balance is paid. Without it, the balance "
+        "is projected on the due date of the latest entry crediting the accounts.",
     )
     active = fields.Boolean(string="Active", default=True)
+
+    @api.depends("account_ids")
+    def _compute_name(self):
+        for commitment in self:
+            if not commitment.name and commitment.account_ids:
+                commitment.name = ", ".join(commitment.account_ids.mapped("name"))
 
     @api.depends("account_ids.reconcile")
     def _compute_mode(self):
@@ -62,16 +73,9 @@ class AccountTreasuryCommitment(models.Model):
             else:
                 commitment.mode = "balance"
 
-    # account_ids too: a constraint on a computed field (mode) only runs
-    # when the field itself is written, never when it is recomputed.
-    @api.constrains("account_ids", "mode", "payment_day")
+    @api.constrains("payment_day")
     def _check_payment_day(self):
         for commitment in self:
-            if commitment.mode == "balance" and not 1 <= commitment.payment_day <= 31:
-                raise ValidationError(self.env._(
-                    "%s: its accounts don't allow reconciliation, so it needs a payment day between 1 and 31.",
-                    commitment.name,
-                ))
             if commitment.payment_day and not 1 <= commitment.payment_day <= 31:
                 raise ValidationError(self.env._(
                     "%s: the payment day must be between 1 and 31.", commitment.name,

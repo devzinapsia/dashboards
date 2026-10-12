@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 19:13+0000\n"
-"PO-Revision-Date: 2026-10-12 19:13+0000\n"
+"POT-Creation-Date: 2026-10-12 21:41+0000\n"
+"PO-Revision-Date: 2026-10-12 21:41+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -138,14 +138,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
 msgid "%s: in transit"
-msgstr ""
-
-#. module: account_treasury_dashboard
-#. odoo-python
-#: code:addons/account_treasury_dashboard/models/account_treasury_commitment.py:0
-msgid ""
-"%s: its accounts don't allow reconciliation, so it needs a payment day "
-"between 1 and 31."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -430,7 +422,8 @@ msgstr ""
 msgid ""
 "Commitments in \"Account balance\" mode have accounts that don't allow "
 "reconciliation: their journal items can't be followed one by one, so the "
-"projection takes the account's current balance on the next payment day."
+"projection takes the accounts' current balance, on the due date of the "
+"latest entry crediting them, or on the next payment day if one is set."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -542,12 +535,6 @@ msgid "Date"
 msgstr ""
 
 #. module: account_treasury_dashboard
-#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__payment_day
-msgid ""
-"Day of the month the balance is paid. Only used in account balance mode."
-msgstr ""
-
-#. module: account_treasury_dashboard
 #: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__closing_day
 msgid "Day of the month the credit card statement closes."
 msgstr ""
@@ -636,6 +623,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
 msgid "Expected date"
+msgstr ""
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__name
+msgid "Filled with the accounts' names when left empty."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -812,8 +804,9 @@ msgstr ""
 msgid ""
 "Liabilities the cash projection pays out (salaries, social charges, taxes, "
 "...). When every account allows reconciliation, each open item is projected "
-"on its due date; otherwise the account balance is projected on the payment "
-"day."
+"on its due date; otherwise the account balance is projected on the due date "
+"of the latest entry crediting the accounts, or on the payment day if one is "
+"set."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -975,8 +968,8 @@ msgstr ""
 #: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__mode
 msgid ""
 "Open items when every account allows reconciliation (each open item on its "
-"due date), account balance otherwise (the current balance on the payment "
-"day)."
+"due date), account balance otherwise (the current balance on the due date of"
+" the latest entry crediting the accounts, or on the payment day if set)."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -989,6 +982,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
 msgid "Opening balance: bank accounts"
+msgstr ""
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__payment_day
+msgid ""
+"Optional, account balance mode only: day of the month the balance is paid. "
+"Without it, the balance is projected on the due date of the latest entry "
+"crediting the accounts."
 msgstr ""
 
 #. module: account_treasury_dashboard

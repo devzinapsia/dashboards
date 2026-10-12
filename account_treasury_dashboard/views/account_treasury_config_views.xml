@@ -43,7 +43,7 @@
                                     <field name="journal_domain" column_invisible="1"/>
                                     <field name="kind" column_invisible="1"/>
                                     <field name="name"/>
-                                    <field name="journal_id" required="1" options="{'no_create': True}"/>
+                                    <field name="journal_id" context="{'active_test': True}" required="1" options="{'no_create': True}"/>
                                     <field name="currency_id"/>
                                     <field name="in_available_total"/>
                                     <field name="stale_days"/>
@@ -59,8 +59,8 @@
                                     <field name="journal_domain" column_invisible="1"/>
                                     <field name="name"/>
                                     <field name="kind" widget="selection"/>
-                                    <field name="journal_id" required="kind in ('cash', 'petty_cash')" options="{'no_create': True}"/>
-                                    <field name="account_ids" widget="many2many_tags" readonly="kind in ('cash', 'petty_cash')"
+                                    <field name="journal_id" context="{'active_test': True}" required="kind in ('cash', 'petty_cash')" options="{'no_create': True}"/>
+                                    <field name="account_ids" context="{'active_test': True}" widget="many2many_tags" readonly="kind in ('cash', 'petty_cash')"
                                            options="{'no_create': True}"/>
                                     <field name="currency_id"/>
                                     <field name="in_available_total"/>
@@ -76,8 +76,8 @@
                                     <field name="journal_domain" column_invisible="1"/>
                                     <field name="kind" column_invisible="1"/>
                                     <field name="name"/>
-                                    <field name="journal_id" options="{'no_create': True}"/>
-                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="journal_id" context="{'active_test': True}" options="{'no_create': True}"/>
+                                    <field name="account_ids" context="{'active_test': True}" widget="many2many_tags" options="{'no_create': True}"/>
                                     <field name="closing_day" required="1"/>
                                     <field name="due_day" required="1"/>
                                     <field name="currency_id"/>
@@ -94,8 +94,8 @@
                                     <field name="journal_domain" column_invisible="1"/>
                                     <field name="kind" column_invisible="1"/>
                                     <field name="name"/>
-                                    <field name="journal_id" required="1" options="{'no_create': True}"/>
-                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="journal_id" context="{'active_test': True}" required="1" options="{'no_create': True}"/>
+                                    <field name="account_ids" context="{'active_test': True}" widget="many2many_tags" options="{'no_create': True}"/>
                                     <field name="currency_id"/>
                                     <field name="in_available_total"/>
                                     <field name="active" widget="boolean_toggle"/>
@@ -104,7 +104,7 @@
                         </page>
                         <page string="Projection commitments" name="commitments">
                             <div class="alert alert-info" role="status">
-                                Liabilities the cash projection pays out (salaries, social charges, taxes, ...). When every account allows reconciliation, each open item is projected on its due date; otherwise the account balance is projected on the payment day.
+                                Liabilities the cash projection pays out (salaries, social charges, taxes, ...). When every account allows reconciliation, each open item is projected on its due date; otherwise the account balance is projected on the due date of the latest entry crediting the accounts, or on the payment day if one is set.
                             </div>
                             <field name="commitment_ids">
                                 <list editable="bottom" decoration-muted="not active">
@@ -112,16 +112,16 @@
                                     <field name="company_id" column_invisible="1"/>
                                     <field name="name"/>
                                     <field name="kind"/>
-                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="account_ids" context="{'active_test': True}" widget="many2many_tags" options="{'no_create': True}"/>
                                     <field name="mode" widget="badge" decoration-info="mode == 'open_items'"
                                            decoration-warning="mode == 'balance'"/>
-                                    <field name="payment_day" required="mode == 'balance'"/>
+                                    <field name="payment_day" invisible="mode != 'balance'"/>
                                     <field name="active" widget="boolean_toggle"/>
                                 </list>
                             </field>
                             <div class="alert alert-warning" role="status"
                                  invisible="not has_balance_commitments">
-                                Commitments in "Account balance" mode have accounts that don't allow reconciliation: their journal items can't be followed one by one, so the projection takes the account's current balance on the next payment day.
+                                Commitments in "Account balance" mode have accounts that don't allow reconciliation: their journal items can't be followed one by one, so the projection takes the accounts' current balance, on the due date of the latest entry crediting them, or on the next payment day if one is set.
                             </div>
                         </page>
                     </notebook>

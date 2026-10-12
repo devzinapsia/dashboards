@@ -28,12 +28,16 @@ General
 Payment means
 -------------
 
-**Load suggested** adds a payment mean for every bank and cash journal
-not configured yet: bank journals as banks (tab *Banks*), cash journals as
-cash (tab *Petty cash funds and prepaid cards*; change the type of those
-that are petty cash funds). It doesn't change or duplicate existing ones,
-nor bring back an archived one. Prepaid cards, credit cards and
-investments are added by hand.
+**Load suggested** adds a payment mean for every active (not archived)
+bank, cash and credit card journal not configured yet: bank journals as
+banks (tab *Banks*), cash journals as cash (tab *Petty cash funds and
+prepaid cards*; change the type of those that are petty cash funds) and
+credit card journals as credit cards (closing on the 30th, due on the 8th;
+adjust them and set the credit limit). Journals of the same type booking on
+the same default account (e.g. one credit card journal per cardholder of
+the same card) get a single payment mean with that account. It doesn't
+change or duplicate existing ones, nor bring back an archived one. Prepaid
+cards and investments are added by hand.
 
 A journal can only be in one payment mean (its balance would otherwise be
 counted twice): to turn a cash payment mean into a petty cash fund, change
@@ -49,7 +53,9 @@ its type rather than adding the journal again.
   one. Not reconciled.
 - **Credit card** (tab *Credit cards*): a journal and/or accounts, at
   least one, plus the closing day, the due day (1 to 31) and the credit
-  limit. Odoo 19 has a *Credit Card* journal type (its default account is
+  limit. A card whose cardholders have a journal each, all booking on the
+  card's account, is a single payment mean with that account (no journal):
+  its items in transit are taken from every journal booking on it. Odoo 19 has a *Credit Card* journal type (its default account is
   of type *Credit Card*): a card journal must be of that type.
 - **Investment** (tab *Investments*): a journal of type Bank or
   Miscellaneous, and optionally more accounts. Its currency is the one of
@@ -66,15 +72,17 @@ Projection commitments
 ----------------------
 
 Liabilities the projection pays out (salaries, social charges, taxes,
-...): a name, a type (label only) and their accounts. Their mode is
-computed:
+...): their accounts, a type (label only) and a name (the accounts' names
+when left empty). Their mode is computed:
 
 - **Open items**, when every account allows reconciliation: each open
-  item is projected on its due date, with its partner.
+  item is projected on its due date (the due date of its journal item),
+  with its partner.
 - **Account balance**, when an account doesn't (e.g. salaries payable):
   its items can't be followed one by one, so the current credit balance
-  of the accounts is projected on the next **payment day** (required in
-  this mode).
+  of the accounts is projected on the due date of the latest entry
+  crediting them (week 1 once past), or on the next **payment day** if one
+  is set. The payment day is optional.
 
 The accounts of a commitment are left out of the generic customer
 receivables and vendor payables, so they are never counted twice.

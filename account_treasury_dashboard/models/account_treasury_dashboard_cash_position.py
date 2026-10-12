@@ -521,9 +521,9 @@ class AccountTreasuryDashboard(models.AbstractModel):
         domains = []
         if "own" in parts and medium_scope["own"]:
             domains.append(Domain("account_id", "in", medium_scope["own"]))
-        if "outstanding" in parts and medium_scope["outstanding"]:
-            domains.append(Domain("journal_id", "=", medium_scope["journal"])
-                           & Domain("account_id", "in", medium_scope["outstanding"]))
+        if "outstanding" in parts:
+            for journal_id, account_ids in medium_scope["outstanding"]:
+                domains.append(Domain("journal_id", "=", journal_id) & Domain("account_id", "in", account_ids))
         return list(Domain.OR(domains)) if domains else list(Domain.FALSE)
 
     def _monthly_popup(self, ctx, medium, title, parts=("own",), sign=1, date_to=None):

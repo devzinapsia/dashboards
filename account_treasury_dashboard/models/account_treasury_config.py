@@ -1,8 +1,13 @@
-from odoo import api, fields, models
+from odoo import Command, api, fields, models
 from odoo.exceptions import ValidationError
 
 PROJECTION_WEEKS_MIN = 4
 PROJECTION_WEEKS_MAX = 8
+
+# Payment mean type suggested for each journal type by "Load suggested".
+SUGGESTED_KINDS = {"bank": "bank", "cash": "cash", "credit": "credit_card"}
+# Default closing and due days of a suggested credit card.
+SUGGESTED_CARD_DAYS = {"closing_day": 30, "due_day": 8}
 
 
 class AccountTreasuryConfig(models.Model):
@@ -156,34 +161,60 @@ class AccountTreasuryConfig(models.Model):
         return [
             *self.env["account.journal"]._check_company_domain(self.company_id),
             ("company_id", "=", self.company_id.id),
-            ("type", "in", ("bank", "cash")),
+            ("type", "in", ("bank", "cash", "credit")),
         ]
 
+    def _suggested_medium_values(self, journals):
+        """Values of the payment mean suggested for ``journals``, journals of
+        the same type sharing the same default account."""
+        journal = journals[0]
+        kind = SUGGESTED_KINDS[journal.type]
+        values = {"config_id": self.id, "kind": kind}
+        if len(journals) == 1:
+            values.update({"name": journal.name, "journal_id": journal.id})
+        else:
+            # Several journals booking on the same account (e.g. one per
+            # cardholder of the same card): a single payment mean with the
+            # account, so that its balance is counted once.
+            account = journal.default_account_id
+            values.update({"name": account.name, "account_ids": [Command.set(account.ids)]})
+        if kind == "credit_card":
+            values.update(SUGGESTED_CARD_DAYS)
+        return values
+
     def action_load_suggested(self):
-        """Create a bank or cash medium for every bank and cash journal of
-        the company that no medium uses yet (archived mediums included, so
-        that an archived one isn't brought back). Existing mediums are left
-        untouched. Petty cash funds, prepaid cards, credit cards and
-        investments are loaded by hand."""
+        """Create a payment mean for every bank, cash and credit card journal
+        of the company that no payment mean uses yet: banks, cash (petty cash
+        funds are changed to that type by hand) and credit cards (closing on
+        the 30th, due on the 8th by default). Journals of the same type
+        sharing their default account get a single payment mean with that
+        account. Journals, or accounts, already used by a payment mean
+        (archived ones included, so that an archived one isn't brought back)
+        are left out, and existing payment means are left untouched. Prepaid
+        cards and investments are loaded by hand."""
         Medium = self.env["account.treasury.medium"]
         for config in self:
-            used_journals = Medium.with_context(active_test=False).search([
-                ("company_id", "=", config.company_id.id),
-                ("journal_id", "!=", False),
-            ]).journal_id
-            journals = self.env["account.journal"].search(
+            existing = Medium.with_context(active_test=False).search([("company_id", "=", config.company_id.id)])
+            used_journals = existing.journal_id
+            used_accounts = existing.journal_id.default_account_id | existing.account_ids
+            # Only active journals: the settings form's lists show archived
+            # payment means, and their context must not bring back archived
+            # journals.
+            journals = self.env["account.journal"].with_context(active_test=True).search(
                 [*config._get_suggested_journal_domain(), ("id", "not in", used_journals.ids)],
                 order="type, sequence, id",
             )
+            groups = {}
+            for journal in journals:
+                account = journal.default_account_id
+                if account and account in used_accounts:
+                    continue
+                key = (journal.type, account.id or ("journal", journal.id))
+                groups.setdefault(key, self.env["account.journal"])
+                groups[key] |= journal
             last_sequence = max(config.medium_ids.mapped("sequence") or [0])
             Medium.create([
-                {
-                    "config_id": config.id,
-                    "sequence": last_sequence + index,
-                    "name": journal.name,
-                    "kind": journal.type,
-                    "journal_id": journal.id,
-                }
-                for index, journal in enumerate(journals, start=1)
+                {**config._suggested_medium_values(group), "sequence": last_sequence + index}
+                for index, group in enumerate(groups.values(), start=1)
             ])
         return True

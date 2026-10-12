@@ -223,6 +223,30 @@ class TestFundsAndCards(TreasuryDashboardCommon):
         self.assertEqual(figures["days_to_due"], 1)
         self.assertAlmostEqual(figures["available"], 500.0)
 
+    def test_card_with_two_journals_on_the_same_account(self):
+        """One payment mean for the card account, two cardholders' journals:
+        the account's balance counted once, the in-transit items of both
+        journals included."""
+        card_account = self._create_account("2.1.2.01.011", "Visa card payable", "liability_credit_card")
+        journals = self.env["account.journal"]
+        for name, code in (("Visa - Chelo", "VCH"), ("Visa - Pablo", "VPA")):
+            journal = self._create_journal(name, code, "credit")
+            journal.default_account_id = card_account
+            journals |= journal
+        card = self._create_medium("credit_card", accounts=card_account, name="Visa Galicia",
+                                   closing_day=5, due_day=15, credit_limit=1000)
+        self._entry(date(2026, 10, 8), [(self.expense, 250.0), (card_account, -250.0)], journal=journals[0])
+        self._entry(date(2026, 10, 9), [(self.expense, 100.0), (card_account, -100.0)], journal=journals[1])
+        ctx = self.Dashboard._prepare_context()
+        self.assertEqual(card._get_journals(), journals)
+        figures = self.Dashboard._compute_cards(ctx, card)[card.id]
+        self.assertAlmostEqual(figures["debt"], 350.0)
+        self.assertAlmostEqual(figures["consumption"], 350.0)
+        scope = self.Dashboard._get_scope(card)[card.id]
+        self.assertEqual({journal_id for journal_id, _accounts in scope["outstanding"]},
+                         set(journal.id for journal in journals if journal._get_journal_outbound_outstanding_payment_accounts()
+                             | journal._get_journal_inbound_outstanding_payment_accounts()))
+
     def test_credit_card_popups(self):
         card = self._setup_card()
         cycle = self.Dashboard.get_drilldown("cash_position", "card_cycle", {"medium_id": card.id})
