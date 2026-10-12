@@ -13,7 +13,7 @@ show for users who can read them.
 Settings
 ========
 
-*Dashboards > Configuration > Treasury dashboard* opens the current
+*Dashboards > Configuration > Treasury* opens the current
 company's settings (one per company).
 
 General
@@ -28,16 +28,23 @@ General
 Payment means
 -------------
 
-**Load suggested** adds a bank or cash payment mean for every bank and
-cash journal not configured yet (it doesn't change or duplicate existing
-ones, nor bring back an archived one). Petty cash funds, prepaid cards,
-credit cards and investments are added by hand.
+**Load suggested** adds a payment mean for every bank and cash journal
+not configured yet: bank journals as banks (tab *Banks*), cash journals as
+cash (tab *Petty cash funds and prepaid cards*; change the type of those
+that are petty cash funds). It doesn't change or duplicate existing ones,
+nor bring back an archived one. Prepaid cards, credit cards and
+investments are added by hand.
 
-- **Bank** (tab *Banks and cash*): a journal of type Bank. *Days without
-  a new statement* overrides the general setting (0 = general).
-- **Cash**: a journal of type Cash.
-- **Petty cash fund** (tab *Petty cash funds and prepaid cards*): its
-  journal, of type Cash. Petty cash accounts are not reconciled.
+A journal can only be in one payment mean (its balance would otherwise be
+counted twice): to turn a cash payment mean into a petty cash fund, change
+its type rather than adding the journal again.
+
+- **Bank** (tab *Banks*): a journal of type Bank. *Days without a new
+  statement* overrides the general setting (0 = general).
+- **Cash** (tab *Petty cash funds and prepaid cards*): a journal of type
+  Cash.
+- **Petty cash fund** (same tab): its journal, of type Cash. Petty cash
+  accounts are not reconciled.
 - **Prepaid card**: a journal (Bank or Cash) and/or accounts, at least
   one. Not reconciled.
 - **Credit card** (tab *Credit cards*): a journal and/or accounts, at

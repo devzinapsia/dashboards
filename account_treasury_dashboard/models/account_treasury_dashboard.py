@@ -10,7 +10,6 @@ _lt = LazyTranslate(__name__)
 _logger = logging.getLogger(__name__)
 
 USER_GROUP = "account_treasury_dashboard.group_treasury_dashboard_user"
-MANAGER_GROUP = "account_treasury_dashboard.group_treasury_dashboard_manager"
 
 
 class AccountTreasuryDashboard(models.AbstractModel):
@@ -151,11 +150,14 @@ class AccountTreasuryDashboard(models.AbstractModel):
         config = ctx["config"]
         sections = self._describe_sections(config)
         if not config:
-            message = self.env._("The treasury dashboard is not configured yet for %s.", ctx["company"].name)
+            message = self.env._(
+                "The treasury dashboard is not configured yet for %s. An administrator configures it in "
+                "Dashboards > Configuration > Treasury.", ctx["company"].name,
+            )
         elif not any(section["visible"] for section in sections):
             message = self.env._(
-                "There is nothing to show yet: configure the banks, cash and other payment means of %s.",
-                ctx["company"].name,
+                "There is nothing to show yet: configure the banks, cash and other payment means of %s in "
+                "Dashboards > Configuration > Treasury.", ctx["company"].name,
             )
         else:
             message = False
@@ -164,7 +166,6 @@ class AccountTreasuryDashboard(models.AbstractModel):
             "currency_id": ctx["currency"].id,
             "today": fields.Date.to_string(ctx["today"]),
             "has_config": bool(config),
-            "can_configure": self.env.user.has_group(MANAGER_GROUP),
             "sections": sections,
             "message": message,
         }

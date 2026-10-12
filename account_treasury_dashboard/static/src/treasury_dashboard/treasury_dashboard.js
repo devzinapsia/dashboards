@@ -28,13 +28,11 @@ export class TreasuryDashboard extends Component {
 
     setup() {
         this.orm = useService("orm");
-        this.action = useService("action");
         this.dialog = useService("dialog");
         this.labels = {
             refresh: _t("Refresh"),
             expandAll: _t("Expand all"),
             collapseAll: _t("Collapse all"),
-            configure: _t("Settings"),
             asOf: _t("As of %s"),
             sectionFailed: _t("This section couldn't be loaded."),
         };
@@ -107,10 +105,6 @@ export class TreasuryDashboard extends Component {
 
     openDrilldown(sectionId, drilldown) {
         this.dialog.add(TreasuryDetailDialog, { sectionId, drilldown });
-    }
-
-    async openConfiguration() {
-        await this.action.doAction("account_treasury_dashboard.action_account_treasury_config");
     }
 }
 

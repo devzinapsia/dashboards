@@ -19,16 +19,10 @@
                         <button type="button" class="btn btn-secondary btn-sm" t-on-click="refresh">
                             <i class="fa fa-refresh me-1"/><t t-esc="labels.refresh"/>
                         </button>
-                        <button t-if="frame.can_configure" type="button" class="btn btn-secondary btn-sm" t-on-click="openConfiguration">
-                            <i class="fa fa-cog me-1"/><t t-esc="labels.configure"/>
-                        </button>
                     </div>
                 </div>
                 <div class="px-3 pb-3">
-                    <div t-if="frame.message" class="o_treasury_alert o_treasury_alert_info d-flex align-items-center gap-3 mt-2" role="status">
-                        <span class="flex-grow-1" t-esc="frame.message"/>
-                        <button t-if="frame.can_configure" class="btn btn-primary btn-sm" t-on-click="openConfiguration" t-esc="labels.configure"/>
-                    </div>
+                    <div t-if="frame.message" class="o_treasury_alert o_treasury_alert_info mt-2" role="status" t-esc="frame.message"/>
                     <TreasurySection t-foreach="visibleSections" t-as="section" t-key="section.id"
                                      section="section"
                                      content="state.contents[section.id] or { loading: true }"

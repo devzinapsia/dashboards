@@ -16,7 +16,7 @@
 
     <menuitem
         id="menu_account_treasury_config"
-        name="Treasury dashboard"
+        name="Treasury"
         parent="dashboards_base.menu_dashboards_config"
         action="action_account_treasury_config"
         groups="group_treasury_dashboard_manager"

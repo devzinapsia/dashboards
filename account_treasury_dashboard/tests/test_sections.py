@@ -116,7 +116,6 @@ class TestTreasurySections(TreasuryDashboardCommon):
     def test_dashboard_user_sees_the_dashboard(self):
         self._create_medium("bank", self.bank_journal)
         frame = self.Dashboard.with_user(self.dashboard_user).get_dashboard()
-        self.assertFalse(frame["can_configure"])
         self.assertIn("cash_position", self._visible(frame))
         self.assertNotIn("error", self.Dashboard.with_user(self.dashboard_user).get_section_data("cash_position"))
 

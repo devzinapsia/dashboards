@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 17:08+0000\n"
-"PO-Revision-Date: 2026-10-12 17:08+0000\n"
+"POT-Creation-Date: 2026-10-12 19:13+0000\n"
+"PO-Revision-Date: 2026-10-12 19:13+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -262,7 +262,9 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
 msgid ""
-"Account %(account)s is already used by payment mean %(other)s (%(kind)s)."
+"Account %(account)s is already used by payment mean %(other)s (%(kind)s). An"
+" account can only be in one payment mean: change the type of %(other)s, or "
+"archive it, before using the account in another one."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -375,13 +377,9 @@ msgstr ""
 #. module: account_treasury_dashboard
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
-msgid "Banks"
-msgstr ""
-
-#. module: account_treasury_dashboard
-#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__bank_cash_medium_ids
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__bank_medium_ids
 #: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
-msgid "Banks and cash"
+msgid "Banks"
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -748,7 +746,9 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
 msgid ""
-"Journal %(journal)s is already used by payment mean %(other)s (%(kind)s)."
+"Journal %(journal)s is already used by payment mean %(other)s (%(kind)s). A "
+"journal can only be in one payment mean: change the type of %(other)s, or "
+"archive it, before using the journal in another one."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -1226,12 +1226,6 @@ msgid "Sequence"
 msgstr ""
 
 #. module: account_treasury_dashboard
-#. odoo-javascript
-#: code:addons/account_treasury_dashboard/static/src/treasury_dashboard/treasury_dashboard.js:0
-msgid "Settings"
-msgstr ""
-
-#. module: account_treasury_dashboard
 #: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_config__show_cash_position
 msgid "Show cash position"
 msgstr ""
@@ -1313,7 +1307,9 @@ msgstr ""
 #. module: account_treasury_dashboard
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
-msgid "The treasury dashboard is not configured yet for %s."
+msgid ""
+"The treasury dashboard is not configured yet for %s. An administrator "
+"configures it in Dashboards > Configuration > Treasury."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -1329,7 +1325,7 @@ msgstr ""
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard.py:0
 msgid ""
 "There is nothing to show yet: configure the banks, cash and other payment "
-"means of %s."
+"means of %s in Dashboards > Configuration > Treasury."
 msgstr ""
 
 #. module: account_treasury_dashboard
@@ -1433,6 +1429,7 @@ msgstr ""
 
 #. module: account_treasury_dashboard
 #: model:ir.actions.client,name:account_treasury_dashboard.action_account_treasury_dashboard
+#: model:ir.ui.menu,name:account_treasury_dashboard.menu_account_treasury_config
 #: model:ir.ui.menu,name:account_treasury_dashboard.menu_account_treasury_dashboard
 #: model:res.groups.privilege,name:account_treasury_dashboard.res_groups_privilege_treasury
 msgid "Treasury"
@@ -1440,7 +1437,6 @@ msgstr ""
 
 #. module: account_treasury_dashboard
 #: model:ir.model,name:account_treasury_dashboard.model_account_treasury_dashboard
-#: model:ir.ui.menu,name:account_treasury_dashboard.menu_account_treasury_config
 msgid "Treasury dashboard"
 msgstr ""
 

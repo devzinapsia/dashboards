@@ -35,18 +35,18 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="Banks and cash" name="banks_cash">
-                            <field name="bank_cash_medium_ids" context="{'default_kind': 'bank'}">
+                        <page string="Banks" name="banks">
+                            <field name="bank_medium_ids" context="{'default_kind': 'bank'}">
                                 <list editable="bottom" decoration-muted="not active">
                                     <field name="sequence" widget="handle"/>
                                     <field name="company_id" column_invisible="1"/>
                                     <field name="journal_domain" column_invisible="1"/>
+                                    <field name="kind" column_invisible="1"/>
                                     <field name="name"/>
-                                    <field name="kind" widget="selection"/>
                                     <field name="journal_id" required="1" options="{'no_create': True}"/>
                                     <field name="currency_id"/>
                                     <field name="in_available_total"/>
-                                    <field name="stale_days" invisible="kind != 'bank'"/>
+                                    <field name="stale_days"/>
                                     <field name="active" widget="boolean_toggle"/>
                                 </list>
                             </field>
@@ -59,8 +59,8 @@
                                     <field name="journal_domain" column_invisible="1"/>
                                     <field name="name"/>
                                     <field name="kind" widget="selection"/>
-                                    <field name="journal_id" required="kind == 'petty_cash'" options="{'no_create': True}"/>
-                                    <field name="account_ids" widget="many2many_tags" readonly="kind == 'petty_cash'"
+                                    <field name="journal_id" required="kind in ('cash', 'petty_cash')" options="{'no_create': True}"/>
+                                    <field name="account_ids" widget="many2many_tags" readonly="kind in ('cash', 'petty_cash')"
                                            options="{'no_create': True}"/>
                                     <field name="currency_id"/>
                                     <field name="in_available_total"/>

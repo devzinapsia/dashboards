@@ -7,7 +7,7 @@ list behind it (journal items, payments, statement lines) when the user
 can read it.
 
 Every company is different, so everything specific is configured per
-company in *Dashboards > Configuration > Treasury dashboard*: which
+company in *Dashboards > Configuration > Treasury*: which
 journals or accounts are a bank, cash, a petty cash fund, a prepaid card,
 a credit card or an investment, which liabilities the projection pays out,
 and the alert thresholds. A section with nothing configured for it is not

@@ -53,13 +53,13 @@ class AccountTreasuryConfig(models.Model):
         "account.treasury.medium", "config_id", string="Payment means", context={"active_test": False},
     )
     # The same mediums, split by tab of the configuration form.
-    bank_cash_medium_ids = fields.One2many(
-        "account.treasury.medium", "config_id", string="Banks and cash",
-        domain=[("kind", "in", ("bank", "cash"))], context={"active_test": False},
+    bank_medium_ids = fields.One2many(
+        "account.treasury.medium", "config_id", string="Banks",
+        domain=[("kind", "=", "bank")], context={"active_test": False},
     )
     fund_medium_ids = fields.One2many(
         "account.treasury.medium", "config_id", string="Petty cash funds and prepaid cards",
-        domain=[("kind", "in", ("petty_cash", "prepaid"))], context={"active_test": False},
+        domain=[("kind", "in", ("cash", "petty_cash", "prepaid"))], context={"active_test": False},
     )
     credit_card_medium_ids = fields.One2many(
         "account.treasury.medium", "config_id", string="Credit cards",

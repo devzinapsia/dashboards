@@ -179,7 +179,9 @@ class AccountTreasuryMedium(models.Model):
                                     limit=1)
                 if other:
                     raise ValidationError(self.env._(
-                        "Journal %(journal)s is already used by payment mean %(other)s (%(kind)s).",
+                        "Journal %(journal)s is already used by payment mean %(other)s (%(kind)s). A journal can "
+                        "only be in one payment mean: change the type of %(other)s, or archive it, before using "
+                        "the journal in another one.",
                         journal=medium.journal_id.display_name, other=other.name, kind=other._kind_label(),
                     ))
             own_accounts = medium._get_own_accounts()
@@ -190,7 +192,9 @@ class AccountTreasuryMedium(models.Model):
                 shared = own_accounts & other._get_own_accounts()
                 if shared:
                     raise ValidationError(self.env._(
-                        "Account %(account)s is already used by payment mean %(other)s (%(kind)s).",
+                        "Account %(account)s is already used by payment mean %(other)s (%(kind)s). An account can "
+                        "only be in one payment mean: change the type of %(other)s, or archive it, before using "
+                        "the account in another one.",
                         account=shared[0].display_name, other=other.name, kind=other._kind_label(),
                     ))
             commitment = self.env["account.treasury.commitment"].search([

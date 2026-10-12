@@ -204,6 +204,17 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
         self.assertEqual(new_medium.kind, "bank")
         self.assertTrue(new_medium.in_available_total)
 
+        # Banks in the Banks tab, cash journals as cash in the petty cash
+        # funds and prepaid cards tab.
+        self.assertEqual(set(self.config.bank_medium_ids.mapped("kind")), {"bank"})
+        self.assertIn(new_medium, self.config.bank_medium_ids)
+        cash_journal = self._create_journal("Second cash", "CSH9", "cash")
+        self.config.action_load_suggested()
+        cash_medium = self.config.fund_medium_ids.filtered(lambda medium: medium.journal_id == cash_journal)
+        self.assertEqual(cash_medium.kind, "cash")
+        self.assertTrue(cash_medium.in_available_total)
+        bank_journals |= cash_journal
+
         # A second click adds nothing.
         self.config.action_load_suggested()
         self.assertEqual(len(self.config.with_context(active_test=False).medium_ids), len(bank_journals))
