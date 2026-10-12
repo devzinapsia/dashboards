@@ -2,7 +2,7 @@
     "name": "Tablero de tesorería - cheques",
     "summary": "Checks section and cash projection contributions of the treasury dashboard "
     "(third-party checks in portfolio and deposited, own checks pending debit)",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",

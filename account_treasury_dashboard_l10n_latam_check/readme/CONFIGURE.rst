@@ -1,4 +1,4 @@
-In *Dashboards > Configuration > Treasury dashboard*, tab **Checks**:
+In *Dashboards > Configuration > Treasury*, tab **Checks**:
 
 - **Third-party check journals**: the journals holding the third-party
   checks in portfolio.

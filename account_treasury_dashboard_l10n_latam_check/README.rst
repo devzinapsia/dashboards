@@ -51,7 +51,7 @@ report.
 Configuration
 =============
 
-In *Dashboards > Configuration > Treasury dashboard*, tab **Checks**:
+In *Dashboards > Configuration > Treasury*, tab **Checks**:
 
 - **Third-party check journals**: the journals holding the third-party
   checks in portfolio.
@@ -83,8 +83,7 @@ Bug Tracker
 
 Bugs are tracked on `GitHub Issues <https://github.com/devzinapsia/dashboards/issues>`_.
 In case of trouble, please check there if your issue has already been
-reported, mentioning the ``account_treasury_dashboard_l10n_latam_check``
-module in the issue title.
+reported, mentioning the ``account_treasury_dashboard_l10n_latam_check`` module in the issue title.
 
 Credits
 =======
