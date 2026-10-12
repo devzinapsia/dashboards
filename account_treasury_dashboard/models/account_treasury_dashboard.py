@@ -204,13 +204,15 @@ class AccountTreasuryDashboard(models.AbstractModel):
     def _popup(self, title, columns, rows, total=None, list_model=None, list_domain=None, list_name=None):
         """A drill-down popup.
 
-        :param list rows: [{"key", "cells": {column: value()}, "record": (model, id) or None}]
+        :param list rows: [{"key", "cells": {column: value()}, "record": (model, id) or None,
+            "list": (model, domain, name) or None}]: a row opens its record, or
+            the list of records behind it (e.g. a month's journal items).
         :param dict total: value() of the total, or None.
         :param str list_model: model of the standard list offered below the
             popup ("View all"), with ``list_domain``; it is only offered when
             the user can read that model, and each row only links to its
-            record under the same condition. Without the right, the popup is
-            shown on its own.
+            record (or list) under the same condition. Without the right, the
+            popup is shown on its own.
         """
         readable = {}
 
@@ -222,10 +224,13 @@ class AccountTreasuryDashboard(models.AbstractModel):
         popup_rows = []
         for popup_row in rows:
             record = popup_row.get("record")
+            row_list = popup_row.get("list")
             popup_rows.append({
                 "key": popup_row["key"],
                 "cells": popup_row["cells"],
                 "record": {"model": record[0], "id": record[1]} if record and can_read(record[0]) else False,
+                "action": self._get_drilldown_action(row_list[0], domain=row_list[1], name=str(row_list[2]))
+                if row_list and can_read(row_list[0]) else False,
             })
         list_action = False
         if list_model and can_read(list_model):

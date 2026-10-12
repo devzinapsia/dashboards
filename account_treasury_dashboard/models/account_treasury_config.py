@@ -171,11 +171,14 @@ class AccountTreasuryConfig(models.Model):
         kind = SUGGESTED_KINDS[journal.type]
         values = {"config_id": self.id, "kind": kind}
         if kind == "credit_card":
-            # A credit card lists its journals (one per cardholder of the same
-            # card, all booking on the card's account).
+            # A credit card is named after its account, and lists the account
+            # and the journals booking on it (one per cardholder of the same
+            # card).
+            account = journal.default_account_id
             values.update({
-                "name": journal.name if len(journals) == 1 else journal.default_account_id.name,
+                "name": account.name or journal.name,
                 "journal_ids": [Command.set(journals.ids)],
+                "account_ids": [Command.set(account.ids)],
                 **SUGGESTED_CARD_DAYS,
             })
             return values

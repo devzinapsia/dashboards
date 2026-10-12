@@ -8,8 +8,9 @@ switch company in the top bar to see another one.
   left when coming back from a list.
 - Click any figure with a detail: a popup lists what makes it up (journal
   entries, payments, statement lines, flows of a projection week). The sum
-  of a popup is the figure clicked. A row opens its record and *View all*
-  the standard list behind it, when the user can read them.
+  of a popup is the figure clicked. A row opens its record (or, in the
+  popups by month, that month's journal items) and *View all* the standard
+  list behind it, when the user can read them.
 - Amounts in red are negative; a warning sign marks a figure to look at
   (difference with the statement, old statement, negative projected
   balance, card over its limit or close to its due date).

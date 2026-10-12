@@ -72,6 +72,11 @@ class TestCashPosition(TreasuryBankScenario):
         self.assertAlmostEqual(popup["total"]["value"], 980.0)
         items = self.env["account.move.line"].search(popup["list_action"]["domain"])
         self.assertAlmostEqual(sum(items.mapped("balance")), 980.0)
+        # Each month opens that month's journal items.
+        for row in popup["rows"]:
+            month_items = self.env["account.move.line"].search(row["action"]["domain"])
+            self.assertAlmostEqual(sum(month_items.mapped("balance")), row["cells"]["amount"]["value"])
+            self.assertEqual(len(set(month_items.mapped(lambda line: line.date.strftime("%Y-%m")))), 1)
 
     def test_scope_with_in_transit_items(self):
         """Own accounts OR (journal AND outstanding accounts): the popup and

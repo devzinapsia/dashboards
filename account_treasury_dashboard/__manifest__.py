@@ -2,7 +2,7 @@
     "name": "Tablero de tesorería",
     "summary": "Treasury dashboard: cash position, bank reconciliation, investments, cash projection and "
     "period movements, configured per company",
-    "version": "19.0.1.0.4",
+    "version": "19.0.1.0.5",
     "category": "Accounting/Accounting",
     "license": "AGPL-3",
     "author": "Zinapsia",

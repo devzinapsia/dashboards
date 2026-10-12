@@ -1,3 +1,5 @@
+from dateutil.relativedelta import relativedelta
+
 from odoo import models
 from odoo.exceptions import UserError
 from odoo.fields import Domain
@@ -545,10 +547,19 @@ class AccountTreasuryDashboard(models.AbstractModel):
         for month, balance, amount_currency in rows:
             amount = sign * (amount_currency if foreign else balance)
             total += amount
-            popup_rows.append({"key": str(month), "cells": {
-                "month": blocks.value(format_date(self.env, month, date_format="MMMM yyyy")),
-                "amount": blocks.money(amount, medium.currency_id),
-            }})
+            month_label = format_date(self.env, month, date_format="MMMM yyyy")
+            month_end = month + relativedelta(months=1, days=-1)
+            popup_rows.append({
+                "key": str(month),
+                "cells": {
+                    "month": blocks.value(month_label),
+                    "amount": blocks.money(amount, medium.currency_id),
+                },
+                # The month's journal items behind the row.
+                "list": ("account.move.line",
+                         list(Domain.AND([domain, [("date", ">=", month), ("date", "<=", month_end)]])),
+                         "%s - %s" % (title, month_label)),
+            })
         return self._popup(
             title,
             [blocks.column("month", self.env._("Month")),

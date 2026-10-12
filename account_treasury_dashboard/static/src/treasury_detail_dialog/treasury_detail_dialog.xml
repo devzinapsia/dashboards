@@ -27,12 +27,12 @@
                             </thead>
                             <tbody>
                                 <tr t-foreach="detail.rows" t-as="detailRow" t-key="detailRow.key"
-                                    t-att-class="{ o_treasury_clickable: detailRow.record }" t-on-click="() => this.openRecord(detailRow)">
+                                    t-att-class="{ o_treasury_clickable: detailRow.record or detailRow.action }" t-on-click="() => this.openRecord(detailRow)">
                                     <td t-foreach="detail.columns" t-as="column" t-key="column.key"
                                         t-att-class="cellClass(column, detailRow.cells[column.key])"
                                         t-esc="formatValue(detailRow.cells[column.key])"/>
                                     <td class="o_treasury_open_col text-end">
-                                        <i t-if="detailRow.record" class="fa fa-external-link" t-att-title="labels.open"/>
+                                        <i t-if="detailRow.record or detailRow.action" class="fa fa-external-link" t-att-title="labels.open"/>
                                     </td>
                                 </tr>
                             </tbody>

@@ -133,6 +133,14 @@ class AccountTreasuryMedium(models.Model):
         for medium in self:
             medium.in_available_total = medium.kind in AVAILABLE_BY_DEFAULT_KINDS
 
+    @api.onchange("journal_ids")
+    def _onchange_journal_ids(self):
+        """Show the journals' accounts in Accounts as soon as they are chosen."""
+        for medium in self:
+            missing = medium.journal_ids.default_account_id - medium.account_ids
+            if missing:
+                medium.account_ids |= missing
+
     # -------------------------------------------------------------------------
     # Helpers
     # -------------------------------------------------------------------------

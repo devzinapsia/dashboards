@@ -68,6 +68,11 @@ export class TreasuryDetailDialog extends Component {
     }
 
     async openRecord(row) {
+        if (row.action) {
+            await this.action.doAction(row.action);
+            this.props.close();
+            return;
+        }
         if (!row.record) {
             return;
         }

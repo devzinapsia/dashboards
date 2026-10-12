@@ -235,6 +235,8 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
         card = self.config.credit_card_medium_ids.filtered(lambda medium: medium.journal_ids == self.credit_journal)
         self.assertEqual(card.kind, "credit_card")
         self.assertEqual((card.closing_day, card.due_day), (30, 8))
+        self.assertEqual(card.account_ids, self.credit_journal.default_account_id)
+        self.assertEqual(card.name, self.credit_journal.default_account_id.name)
         self.assertFalse(card.in_available_total)
 
     def test_load_suggested_groups_journals_sharing_an_account(self):
@@ -251,6 +253,7 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
         cards = self.config.credit_card_medium_ids.filtered(lambda medium: medium.journal_ids & journals)
         self.assertEqual(len(cards), 1)
         self.assertEqual(cards.journal_ids, journals)
+        self.assertEqual(cards.account_ids, card_account)
         self.assertEqual(cards.name, "Visa card payable")
         self.assertEqual(cards._get_journals(), journals)
 
@@ -265,9 +268,12 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
         with self.assertValidationError("add the journal to the Journals of Card Chelo"):
             self._create_medium("credit_card", name="Card Pablo", closing_day=30, due_day=8,
                                 journal_ids=[Command.set(pablo.ids)])
-        # Both journals in the same credit card.
+        # Both journals in the same credit card; choosing journals shows their
+        # account in Accounts.
         card = self.config.credit_card_medium_ids
         card.journal_ids = [Command.link(pablo.id)]
+        card._onchange_journal_ids()
+        self.assertEqual(card.account_ids, card_account)
         self.assertEqual(card.journal_ids, chelo | pablo)
         self.assertEqual(card._get_own_accounts(), card_account)
         # A journal can't be in two credit cards either.

@@ -208,8 +208,9 @@ banks (tab *Banks*), cash journals as cash (tab *Petty cash funds and
 prepaid cards*; change the type of those that are petty cash funds) and
 credit card journals as credit cards (closing on the 30th, due on the 8th;
 adjust them and set the credit limit). Journals of the same type booking on
-the same default account get a single payment mean: one credit card with
-all its journals (e.g. one per cardholder of the same card). It doesn't
+the same default account get a single payment mean: one credit card
+named after the account, with the account and all the journals booking on
+it (e.g. one per cardholder of the same card). It doesn't
 change or duplicate existing ones, nor bring back an archived one. Prepaid
 cards and investments are added by hand.
 
@@ -226,8 +227,9 @@ its type rather than adding the journal again.
 - **Prepaid card**: a journal (Bank or Cash) and/or accounts, at least
   one. Not reconciled.
 - **Credit card** (tab *Credit cards*): its **journals** (of type Credit
-  Card) and/or accounts, at least one, plus the closing day, the due day
-  (1 to 31) and the credit limit. A card whose cardholders have a journal
+  Card; their account is added to *Accounts* when they are chosen) and/or
+  accounts, at least one, plus the closing day, the due day (1 to 31) and
+  the credit limit. A card whose cardholders have a journal
   each, all booking on the card's account, is a single credit card listing
   all those journals: it is computed once (debt, current cycle, limit),
   with the items in transit of every one of them. Odoo 19 has a *Credit Card* journal type (its default account is
@@ -278,8 +280,9 @@ switch company in the top bar to see another one.
   left when coming back from a list.
 - Click any figure with a detail: a popup lists what makes it up (journal
   entries, payments, statement lines, flows of a projection week). The sum
-  of a popup is the figure clicked. A row opens its record and *View all*
-  the standard list behind it, when the user can read them.
+  of a popup is the figure clicked. A row opens its record (or, in the
+  popups by month, that month's journal items) and *View all* the standard
+  list behind it, when the user can read them.
 - Amounts in red are negative; a warning sign marks a figure to look at
   (difference with the statement, old statement, negative projected
   balance, card over its limit or close to its due date).
