@@ -206,7 +206,7 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
             ("company_id", "=", self.company.id), ("type", "in", ("bank", "cash", "credit")),
         ])
         # Every bank/cash/credit card journal exactly once; existing ones untouched.
-        self.assertEqual(sorted(mediums.journal_id.ids), sorted(bank_journals.ids))
+        self.assertEqual(sorted((mediums.journal_id | mediums.journal_ids).ids), sorted(bank_journals.ids))
         self.assertEqual(len(mediums), len(bank_journals))
         self.assertEqual(existing.name, "My bank")
         self.assertFalse(existing.in_available_total)
@@ -232,14 +232,14 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
 
     def test_load_suggested_credit_cards(self):
         self.config.action_load_suggested()
-        card = self.config.credit_card_medium_ids.filtered(lambda medium: medium.journal_id == self.credit_journal)
+        card = self.config.credit_card_medium_ids.filtered(lambda medium: medium.journal_ids == self.credit_journal)
         self.assertEqual(card.kind, "credit_card")
         self.assertEqual((card.closing_day, card.due_day), (30, 8))
         self.assertFalse(card.in_available_total)
 
     def test_load_suggested_groups_journals_sharing_an_account(self):
         """Two cardholders' journals booking on the same card account: a
-        single payment mean with the account, not one per journal (the
+        single credit card with both journals, not one per journal (the
         account's balance would be counted twice)."""
         card_account = self._create_account("2.1.2.01.011", "Visa card payable", "liability_credit_card")
         journals = self.env["account.journal"]
@@ -248,12 +248,38 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
             journal.default_account_id = card_account
             journals |= journal
         self.config.action_load_suggested()
-        cards = self.config.credit_card_medium_ids.filtered(lambda medium: card_account in medium.account_ids)
+        cards = self.config.credit_card_medium_ids.filtered(lambda medium: medium.journal_ids & journals)
         self.assertEqual(len(cards), 1)
-        self.assertFalse(cards.journal_id)
+        self.assertEqual(cards.journal_ids, journals)
         self.assertEqual(cards.name, "Visa card payable")
         self.assertEqual(cards._get_journals(), journals)
-        self.assertFalse(self.config.medium_ids.filtered(lambda medium: medium.journal_id in journals))
+
+    def test_credit_card_with_several_journals(self):
+        card_account = self._create_account("2.1.2.01.011", "Visa card payable", "liability_credit_card")
+        chelo = self._create_journal("Visa - Chelo", "VCH", "credit")
+        pablo = self._create_journal("Visa - Pablo", "VPA", "credit")
+        (chelo | pablo).default_account_id = card_account
+        # One credit card per journal: the shared account is refused, with a hint.
+        self._create_medium("credit_card", name="Card Chelo", closing_day=30, due_day=8,
+                            journal_ids=[Command.set(chelo.ids)])
+        with self.assertValidationError("add the journal to the Journals of Card Chelo"):
+            self._create_medium("credit_card", name="Card Pablo", closing_day=30, due_day=8,
+                                journal_ids=[Command.set(pablo.ids)])
+        # Both journals in the same credit card.
+        card = self.config.credit_card_medium_ids
+        card.journal_ids = [Command.link(pablo.id)]
+        self.assertEqual(card.journal_ids, chelo | pablo)
+        self.assertEqual(card._get_own_accounts(), card_account)
+        # A journal can't be in two credit cards either.
+        other_account = self._create_account("2.1.2.01.012", "Master card payable", "liability_credit_card")
+        master = self._create_journal("Master", "MST", "credit")
+        master.default_account_id = other_account
+        with self.assertValidationError("Journal Visa - Pablo .*is already used by payment mean"):
+            self._create_medium("credit_card", name="Master", closing_day=30, due_day=8,
+                                journal_ids=[Command.set((master | pablo).ids)])
+        # Only credit card journals.
+        with self.assertValidationError("needs a journal of type"):
+            card.journal_ids = [Command.link(self.bank_journal.id)]
 
     def test_load_suggested_skips_archived_journals(self):
         archived = self._create_journal("Closed bank", "BNKX", "bank")

@@ -52,6 +52,17 @@ class AccountTreasuryMedium(models.Model):
     journal_id = fields.Many2one(
         "account.journal", string="Journal", check_company=True, domain="journal_domain", index="btree_not_null",
     )
+    journal_ids = fields.Many2many(
+        "account.journal",
+        "account_treasury_medium_journal_rel",
+        "medium_id",
+        "journal_id",
+        string="Journals",
+        check_company=True,
+        domain="journal_domain",
+        help="Credit cards: the card's journals, e.g. one per cardholder, all booking on the card's account. The "
+        "card is computed once, with all of them.",
+    )
     journal_domain = fields.Binary(compute="_compute_journal_domain")
     account_ids = fields.Many2many(
         "account.account",
@@ -71,8 +82,13 @@ class AccountTreasuryMedium(models.Model):
     in_available_total = fields.Boolean(
         string="In available total",
         compute="_compute_in_available_total", store=True, readonly=False, precompute=True,
-        help="Whether this payment mean adds up to the dashboard's available total and to the cash projection's "
-        "starting balance.",
+        help="Whether this payment mean adds up to the dashboard's available total (and, for banks and cash, to "
+        "the cash projection's opening balance).",
+    )
+    in_projection = fields.Boolean(
+        string="In cash projection",
+        help="Investments only: whether its balance, valued at the rate of the day, adds up to the cash "
+        "projection's opening balance, as money available for the coming weeks.",
     )
     stale_days = fields.Integer(
         string="Days without a new statement",
@@ -100,12 +116,14 @@ class AccountTreasuryMedium(models.Model):
             ])
 
     @api.depends("journal_id.currency_id", "journal_id.default_account_id.currency_id",
+                 "journal_ids.currency_id", "journal_ids.default_account_id.currency_id",
                  "account_ids.currency_id", "company_id.currency_id")
     def _compute_currency_id(self):
         for medium in self:
-            account_currencies = (medium.journal_id.default_account_id | medium.account_ids).currency_id
+            account_currencies = medium._get_own_accounts().currency_id
+            journal_currencies = (medium.journal_id | medium.journal_ids).currency_id
             medium.currency_id = (
-                medium.journal_id.currency_id
+                (journal_currencies if len(journal_currencies) == 1 else False)
                 or (account_currencies if len(account_currencies) == 1 else False)
                 or medium.company_id.currency_id
             )
@@ -125,7 +143,7 @@ class AccountTreasuryMedium(models.Model):
         receipts/payments accounts are usually shared between journals, so
         they are filtered by journal wherever they are read, not listed
         here.)"""
-        return self.journal_id.default_account_id | self.account_ids
+        return (self.journal_id | self.journal_ids).default_account_id | self.account_ids
 
     def _get_journals(self):
         """The journals of this payment mean: its own journal, and every bank,
@@ -134,7 +152,7 @@ class AccountTreasuryMedium(models.Model):
         booking on the same card account, configured as a single payment
         mean with that account)."""
         self.ensure_one()
-        journals = self.journal_id
+        journals = self.journal_id | self.journal_ids
         own_accounts = self._get_own_accounts()
         if own_accounts:
             journals |= self.env["account.journal"].sudo().with_context(active_test=True).search([
@@ -162,7 +180,7 @@ class AccountTreasuryMedium(models.Model):
     # Constraints
     # -------------------------------------------------------------------------
 
-    @api.constrains("kind", "journal_id", "account_ids")
+    @api.constrains("kind", "journal_id", "journal_ids", "account_ids")
     def _check_journal_and_accounts(self):
         for medium in self:
             if medium.kind in JOURNAL_REQUIRED_KINDS and not medium.journal_id:
@@ -170,36 +188,38 @@ class AccountTreasuryMedium(models.Model):
                     "%(name)s: a payment mean of type %(kind)s needs a journal.",
                     name=medium.name, kind=medium._kind_label(),
                 ))
-            if not medium.journal_id and not medium.account_ids:
+            if not medium.journal_id and not medium.journal_ids and not medium.account_ids:
                 raise ValidationError(self.env._(
                     "%(name)s: a payment mean of type %(kind)s needs a journal, accounts, or both.",
                     name=medium.name, kind=medium._kind_label(),
                 ))
             allowed_types = JOURNAL_TYPES_BY_KIND[medium.kind]
-            if medium.journal_id and medium.journal_id.type not in allowed_types:
+            for journal in medium.journal_id | medium.journal_ids:
+                if journal.type in allowed_types:
+                    continue
                 type_labels = dict(self.env["account.journal"]._fields["type"]._description_selection(self.env))
                 raise ValidationError(self.env._(
                     "%(name)s: journal %(journal)s is of type %(journal_type)s, but a payment mean of type "
                     "%(kind)s needs a journal of type %(allowed)s.",
                     name=medium.name,
-                    journal=medium.journal_id.display_name,
-                    journal_type=type_labels[medium.journal_id.type],
+                    journal=journal.display_name,
+                    journal_type=type_labels[journal.type],
                     kind=medium._kind_label(),
                     allowed=" / ".join(type_labels[journal_type] for journal_type in allowed_types),
                 ))
 
-    @api.constrains("journal_id", "account_ids", "active", "config_id")
+    @api.constrains("journal_id", "journal_ids", "account_ids", "active", "config_id")
     def _check_unique_journal_and_accounts(self):
         for medium in self.filtered(lambda medium: medium.active and medium.config_id.active):
-            if medium.journal_id:
-                other = self.search([*medium._active_peers_domain(), ("journal_id", "=", medium.journal_id.id)],
-                                    limit=1)
+            for journal in medium.journal_id | medium.journal_ids:
+                other = self.search([*medium._active_peers_domain(), "|", ("journal_id", "=", journal.id),
+                                     ("journal_ids", "in", journal.ids)], limit=1)
                 if other:
                     raise ValidationError(self.env._(
                         "Journal %(journal)s is already used by payment mean %(other)s (%(kind)s). A journal can "
                         "only be in one payment mean: change the type of %(other)s, or archive it, before using "
                         "the journal in another one.",
-                        journal=medium.journal_id.display_name, other=other.name, kind=other._kind_label(),
+                        journal=journal.display_name, other=other.name, kind=other._kind_label(),
                     ))
             own_accounts = medium._get_own_accounts()
             if not own_accounts:
@@ -207,6 +227,13 @@ class AccountTreasuryMedium(models.Model):
             others = self.search(medium._active_peers_domain())
             for other in others:
                 shared = own_accounts & other._get_own_accounts()
+                if shared and medium.kind == other.kind == "credit_card":
+                    raise ValidationError(self.env._(
+                        "Account %(account)s is already used by credit card %(other)s. Journals booking on the same "
+                        "card account (e.g. one per cardholder) go in the same credit card: add the journal to the "
+                        "Journals of %(other)s instead of creating another credit card.",
+                        account=shared[0].display_name, other=other.name,
+                    ))
                 if shared:
                     raise ValidationError(self.env._(
                         "Account %(account)s is already used by payment mean %(other)s (%(kind)s). An account can "

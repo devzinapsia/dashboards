@@ -98,7 +98,8 @@ ones from Monday to Sunday.
 
 - **Opening balance**: balance of the BANK ACCOUNTS of the bank and cash
   payment means in the available total (foreign currencies at the rate of
-  the day), on purpose not their book balance: what is recorded but not in
+  the day), plus the investments marked *In cash projection* (their
+  balance, at the rate of the day), on purpose not the banks' book balance: what is recorded but not in
   the bank yet comes in as a flow (in transit, week 1). Starting from the
   book balance and adding those flows would count them twice.
 - **Inflows**: customer receivables (open receivable items, by due date,

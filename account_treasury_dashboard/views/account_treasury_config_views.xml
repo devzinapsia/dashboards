@@ -76,7 +76,7 @@
                                     <field name="journal_domain" column_invisible="1"/>
                                     <field name="kind" column_invisible="1"/>
                                     <field name="name"/>
-                                    <field name="journal_id" context="{'active_test': True}" options="{'no_create': True}"/>
+                                    <field name="journal_ids" context="{'active_test': True}" widget="many2many_tags" options="{'no_create': True}"/>
                                     <field name="account_ids" context="{'active_test': True}" widget="many2many_tags" options="{'no_create': True}"/>
                                     <field name="closing_day" required="1"/>
                                     <field name="due_day" required="1"/>
@@ -98,6 +98,7 @@
                                     <field name="account_ids" context="{'active_test': True}" widget="many2many_tags" options="{'no_create': True}"/>
                                     <field name="currency_id"/>
                                     <field name="in_available_total"/>
+                                    <field name="in_projection"/>
                                     <field name="active" widget="boolean_toggle"/>
                                 </list>
                             </field>

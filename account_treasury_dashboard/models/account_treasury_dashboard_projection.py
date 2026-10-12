@@ -15,7 +15,8 @@ class AccountTreasuryDashboard(models.AbstractModel):
 
     The starting balance is the balance of the BANK ACCOUNTS (the journals'
     default accounts) of the bank and cash payment means in the available
-    total, on purpose not their book balance: what is recorded but not in
+    total (plus the investments flagged "In cash projection"), on purpose
+    not their book balance: what is recorded but not in
     the bank yet (the in-transit items) comes in as a flow in week 1. Using
     the book balance and adding those flows would count them twice.
 
@@ -238,15 +239,28 @@ class AccountTreasuryDashboard(models.AbstractModel):
     # Projection
     # -------------------------------------------------------------------------
 
+    def _get_projection_investments(self, ctx):
+        return self._get_mediums(ctx["config"], ("investment",)).filtered("in_projection")
+
     def _opening_balances(self, ctx):
-        """{medium: balance of its bank account, in the company currency}."""
+        """{medium: opening balance in the company currency}: the balance of
+        the bank accounts of the bank and cash payment means in the available
+        total, plus the balance of the investments flagged "In cash
+        projection" (valued at the rate of the day: they have no in-transit
+        flows of their own in the projection, so their book balance)."""
         mediums = self._get_mediums(ctx["config"], ("bank", "cash"), available_only=True)
         liquidity = self._read_liquidity_balances(ctx, mediums)
-        return {
+        result = {
             medium: self._valued(ctx, medium, self._medium_amount(
                 medium, liquidity[medium.id]["balance"], liquidity[medium.id]["amount_currency"]))
             for medium in mediums
         }
+        investments = self._get_projection_investments(ctx)
+        if investments:
+            books = self._compute_book_balances(ctx, investments)
+            for investment in investments:
+                result[investment] = self._valued(ctx, investment, books[investment.id]["book"])
+        return result
 
     def _compute_projection(self, ctx):
         weeks = treasury_dates.projection_weeks(ctx["today"], ctx["config"].projection_weeks)
@@ -349,7 +363,9 @@ class AccountTreasuryDashboard(models.AbstractModel):
         cards = [
             blocks.card(self.env._("Opening balance"),
                         blocks.money(projection["opening"], currency, drilldown=blocks.drilldown("opening")),
-                        blocks.value(self.env._("Bank accounts as of today"), "text")),
+                        blocks.value(self.env._("Bank accounts and investments as of today")
+                                     if self._get_projection_investments(ctx)
+                                     else self.env._("Bank accounts as of today"), "text")),
             blocks.card(self.env._("Minimum projected balance"),
                         blocks.money(projection["closings"][minimum_index], currency,
                                      alert="danger" if projection["closings"][minimum_index] < 0 else None),
@@ -375,8 +391,8 @@ class AccountTreasuryDashboard(models.AbstractModel):
             blocks.table_block(
                 columns, rows,
                 note=self.env._(
-                    "Starts from the bank accounts' balance: recorded receipts and payments not in the bank yet "
-                    "come in as in-transit flows in week 1. Overdue vendor payables fall in week 1. Foreign "
+                    "Starts from the bank accounts' balance (plus the investments marked to count in the projection): "
+                    "recorded receipts and payments not in the bank yet come in as in-transit flows in week 1. Overdue vendor payables fall in week 1. Foreign "
                     "currency residuals valued at the rate of the day; credit card statements estimated from the "
                     "purchases up to today. Flows after the last week are left out."
                 ),
@@ -407,9 +423,9 @@ class AccountTreasuryDashboard(models.AbstractModel):
                 "amount": blocks.money(amount, currency),
             }} for medium, amount in openings.items()]
             return self._popup(
-                self.env._("Opening balance: bank accounts"),
+                self.env._("Opening balance"),
                 [blocks.column("name", self.env._("Payment mean")),
-                 blocks.column("amount", self.env._("Bank account balance"), "monetary")],
+                 blocks.column("amount", self.env._("Balance"), "monetary")],
                 rows,
                 total=blocks.money(sum(openings.values()), currency),
             )

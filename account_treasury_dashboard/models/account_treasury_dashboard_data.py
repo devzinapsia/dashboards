@@ -42,7 +42,9 @@ class AccountTreasuryDashboard(models.AbstractModel):
         mean's journals (see account.treasury.medium._get_journals()),
         filtered by that journal."""
         mediums = mediums.sudo()
-        all_own = mediums.journal_id.default_account_id | mediums.account_ids
+        all_own = self.env["account.account"]
+        for medium in mediums:
+            all_own |= medium._get_own_accounts()
         scope = {}
         for medium in mediums:
             outstanding = []

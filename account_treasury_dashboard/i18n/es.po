@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 21:41+0000\n"
-"PO-Revision-Date: 2026-10-12 21:41+0000\n"
+"POT-Creation-Date: 2026-10-12 21:56+0000\n"
+"PO-Revision-Date: 2026-10-12 21:56+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -254,6 +254,20 @@ msgstr ""
 
 #. module: account_treasury_dashboard
 #. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_medium.py:0
+msgid ""
+"Account %(account)s is already used by credit card %(other)s. Journals "
+"booking on the same card account (e.g. one per cardholder) go in the same "
+"credit card: add the journal to the Journals of %(other)s instead of "
+"creating another credit card."
+msgstr ""
+"La cuenta %(account)s ya está usada en la tarjeta de crédito %(other)s. Los "
+"diarios que registran en la misma cuenta de la tarjeta (por ejemplo, uno por"
+" titular) van en la misma tarjeta: agregue el diario a los Diarios de "
+"%(other)s en lugar de crear otra tarjeta."
+
+#. module: account_treasury_dashboard
+#. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_commitment.py:0
 msgid ""
 "Account %(account)s is already used by payment mean %(medium)s (%(kind)s)."
@@ -365,6 +379,7 @@ msgstr "Disponible"
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_investments.py:0
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
 msgid "Balance"
 msgstr "Saldo"
 
@@ -378,9 +393,14 @@ msgstr "Banco"
 #. module: account_treasury_dashboard
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
-#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
 msgid "Bank account balance"
 msgstr "Saldo de la cuenta del banco"
+
+#. module: account_treasury_dashboard
+#. odoo-python
+#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
+msgid "Bank accounts and investments as of today"
+msgstr "Cuentas de los bancos e inversiones al día de hoy"
 
 #. module: account_treasury_dashboard
 #. odoo-python
@@ -515,6 +535,16 @@ msgstr "Resúmenes de tarjetas de crédito"
 #: model_terms:ir.ui.view,arch_db:account_treasury_dashboard.view_account_treasury_config_form
 msgid "Credit cards"
 msgstr "Tarjetas de crédito"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__journal_ids
+msgid ""
+"Credit cards: the card's journals, e.g. one per cardholder, all booking on "
+"the card's account. The card is computed once, with all of them."
+msgstr ""
+"Tarjetas de crédito: los diarios de la tarjeta, por ejemplo uno por titular,"
+" que registran en la cuenta de la tarjeta. La tarjeta se calcula una sola "
+"vez, con todos ellos."
 
 #. module: account_treasury_dashboard
 #: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__credit_limit
@@ -714,6 +744,11 @@ msgid "In available total"
 msgstr "En total disponible"
 
 #. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__in_projection
+msgid "In cash projection"
+msgstr "En proyección de caja"
+
+#. module: account_treasury_dashboard
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
 msgid "In transit"
@@ -764,6 +799,17 @@ msgid "Investments"
 msgstr "Inversiones"
 
 #. module: account_treasury_dashboard
+#: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__in_projection
+msgid ""
+"Investments only: whether its balance, valued at the rate of the day, adds "
+"up to the cash projection's opening balance, as money available for the "
+"coming weeks."
+msgstr ""
+"Solo inversiones: si su saldo, valuado a la cotización del día, suma al "
+"saldo inicial de la proyección de caja, como dinero disponible para las "
+"próximas semanas."
+
+#. module: account_treasury_dashboard
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_cash_position.py:0
 msgid "Item"
@@ -790,6 +836,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__journal_domain
 msgid "Journal Domain"
 msgstr "Dominio del diario"
+
+#. module: account_treasury_dashboard
+#: model:ir.model.fields,field_description:account_treasury_dashboard.field_account_treasury_medium__journal_ids
+msgid "Journals"
+msgstr "Diarios"
 
 #. module: account_treasury_dashboard
 #. odoo-python
@@ -1034,12 +1085,6 @@ msgstr ""
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
 msgid "Opening balance"
 msgstr "Saldo inicial"
-
-#. module: account_treasury_dashboard
-#. odoo-python
-#: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
-msgid "Opening balance: bank accounts"
-msgstr "Saldo inicial: cuentas de los bancos"
 
 #. module: account_treasury_dashboard
 #: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_commitment__payment_day
@@ -1326,18 +1371,20 @@ msgstr "Saldo inicial"
 #. odoo-python
 #: code:addons/account_treasury_dashboard/models/account_treasury_dashboard_projection.py:0
 msgid ""
-"Starts from the bank accounts' balance: recorded receipts and payments not "
-"in the bank yet come in as in-transit flows in week 1. Overdue vendor "
-"payables fall in week 1. Foreign currency residuals valued at the rate of "
-"the day; credit card statements estimated from the purchases up to today. "
-"Flows after the last week are left out."
+"Starts from the bank accounts' balance (plus the investments marked to count"
+" in the projection): recorded receipts and payments not in the bank yet come"
+" in as in-transit flows in week 1. Overdue vendor payables fall in week 1. "
+"Foreign currency residuals valued at the rate of the day; credit card "
+"statements estimated from the purchases up to today. Flows after the last "
+"week are left out."
 msgstr ""
-"Parte del saldo de las cuentas de los bancos: los cobros y pagos registrados"
-" que todavía no están en el banco entran como flujos en tránsito en la "
-"semana 1. Los pagos vencidos a proveedores caen en la semana 1. Los saldos "
-"en moneda extranjera se valúan a la cotización del día; los resúmenes de "
-"tarjeta se estiman con los consumos hasta hoy. Los flujos posteriores a la "
-"última semana no se incluyen."
+"Parte del saldo de las cuentas de los bancos (más las inversiones marcadas "
+"para la proyección): los cobros y pagos registrados que todavía no están en "
+"el banco entran como flujos en tránsito en la semana 1. Los pagos vencidos a"
+" proveedores caen en la semana 1. Los saldos en moneda extranjera se valúan "
+"a la cotización del día; los resúmenes de tarjeta se estiman con los "
+"consumos hasta hoy. Los flujos posteriores a la última semana no se "
+"incluyen."
 
 #. module: account_treasury_dashboard
 #. odoo-python
@@ -1617,11 +1664,11 @@ msgstr "Semana %(number)s (%(start)s - %(end)s)"
 #. module: account_treasury_dashboard
 #: model:ir.model.fields,help:account_treasury_dashboard.field_account_treasury_medium__in_available_total
 msgid ""
-"Whether this payment mean adds up to the dashboard's available total and to "
-"the cash projection's starting balance."
+"Whether this payment mean adds up to the dashboard's available total (and, "
+"for banks and cash, to the cash projection's opening balance)."
 msgstr ""
-"Si este medio de pago suma al total disponible del tablero y al saldo "
-"inicial de la proyección de caja."
+"Si este medio de pago suma al total disponible del tablero (y, para bancos y"
+" efectivo, al saldo inicial de la proyección de caja)."
 
 #. module: account_treasury_dashboard
 #. odoo-python

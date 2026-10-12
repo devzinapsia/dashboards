@@ -33,6 +33,30 @@ class TestProjection(TreasuryDashboardCommon):
         self.assertAlmostEqual(projection["cells"]["in_transit_receipts"][0], 150.0)
         self.assertAlmostEqual(projection["closings"][0], 1150.0)
 
+    def test_investments_in_the_opening_balance(self):
+        eur = self.setup_other_currency("EUR", rates=[("2026-01-01", 0.6), ("2026-10-14", 0.5)])
+        fund = self._create_journal("Fund EUR", "FEUR", "general", currency=eur)
+        fund.default_account_id = self._create_account("1.2.1.01", "Fund EUR", "asset_current", currency=eur)
+        deposit = self._create_journal("Term deposit", "TDEP", "bank")
+        capital = self._create_account("3.1.1.01", "Capital", "equity")
+        self._entry(date(2026, 10, 2), [
+            (fund.default_account_id, 180.0, {"currency_id": eur.id, "amount_currency": 100.0}), (capital, -180.0),
+        ])
+        self._entry(date(2026, 10, 2), [(deposit.default_account_id, 500.0), (capital, -500.0)])
+        fund_medium = self._create_medium("investment", fund)
+        self._create_medium("investment", deposit)  # not in the projection
+        self.assertAlmostEqual(self._projection()["opening"], 1000.0)
+
+        fund_medium.in_projection = True
+        projection = self._projection()
+        self.assertAlmostEqual(projection["opening"], 1000.0 + 200.0)  # 100 EUR at today's rate
+        popup = self.Dashboard.get_drilldown("projection", "opening", {})
+        self.assertEqual(len(popup["rows"]), 2)
+        self.assertAlmostEqual(popup["total"]["value"], 1200.0)
+        section = self.Dashboard.get_section_data("projection")
+        self.assertEqual(section["blocks"][0]["items"][0]["secondary"]["value"],
+                         "Bank accounts and investments as of today")
+
     def test_receivables_and_payables_by_due_date(self):
         self._invoice("out_invoice", 300.0, date(2026, 10, 20))
         self._invoice("in_invoice", 400.0, date(2026, 10, 30))

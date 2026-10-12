@@ -34,8 +34,8 @@ banks (tab *Banks*), cash journals as cash (tab *Petty cash funds and
 prepaid cards*; change the type of those that are petty cash funds) and
 credit card journals as credit cards (closing on the 30th, due on the 8th;
 adjust them and set the credit limit). Journals of the same type booking on
-the same default account (e.g. one credit card journal per cardholder of
-the same card) get a single payment mean with that account. It doesn't
+the same default account get a single payment mean: one credit card with
+all its journals (e.g. one per cardholder of the same card). It doesn't
 change or duplicate existing ones, nor bring back an archived one. Prepaid
 cards and investments are added by hand.
 
@@ -51,15 +51,19 @@ its type rather than adding the journal again.
   accounts are not reconciled.
 - **Prepaid card**: a journal (Bank or Cash) and/or accounts, at least
   one. Not reconciled.
-- **Credit card** (tab *Credit cards*): a journal and/or accounts, at
-  least one, plus the closing day, the due day (1 to 31) and the credit
-  limit. A card whose cardholders have a journal each, all booking on the
-  card's account, is a single payment mean with that account (no journal):
-  its items in transit are taken from every journal booking on it. Odoo 19 has a *Credit Card* journal type (its default account is
+- **Credit card** (tab *Credit cards*): its **journals** (of type Credit
+  Card) and/or accounts, at least one, plus the closing day, the due day
+  (1 to 31) and the credit limit. A card whose cardholders have a journal
+  each, all booking on the card's account, is a single credit card listing
+  all those journals: it is computed once (debt, current cycle, limit),
+  with the items in transit of every one of them. Odoo 19 has a *Credit Card* journal type (its default account is
   of type *Credit Card*): a card journal must be of that type.
 - **Investment** (tab *Investments*): a journal of type Bank or
   Miscellaneous, and optionally more accounts. Its currency is the one of
-  its journal or account (pesos or dollars).
+  its journal or account (pesos or dollars). Check **In cash projection**
+  for the investments that count as money available in the cash
+  projection: their balance (at the rate of the day) adds up to its
+  opening balance.
 
 **In available total** (checked by default for banks and cash) adds the
 payment mean to the available total, to the projection's opening balance

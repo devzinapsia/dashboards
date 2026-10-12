@@ -170,6 +170,15 @@ class AccountTreasuryConfig(models.Model):
         journal = journals[0]
         kind = SUGGESTED_KINDS[journal.type]
         values = {"config_id": self.id, "kind": kind}
+        if kind == "credit_card":
+            # A credit card lists its journals (one per cardholder of the same
+            # card, all booking on the card's account).
+            values.update({
+                "name": journal.name if len(journals) == 1 else journal.default_account_id.name,
+                "journal_ids": [Command.set(journals.ids)],
+                **SUGGESTED_CARD_DAYS,
+            })
+            return values
         if len(journals) == 1:
             values.update({"name": journal.name, "journal_id": journal.id})
         else:
@@ -178,8 +187,6 @@ class AccountTreasuryConfig(models.Model):
             # account, so that its balance is counted once.
             account = journal.default_account_id
             values.update({"name": account.name, "account_ids": [Command.set(account.ids)]})
-        if kind == "credit_card":
-            values.update(SUGGESTED_CARD_DAYS)
         return values
 
     def action_load_suggested(self):
@@ -195,8 +202,8 @@ class AccountTreasuryConfig(models.Model):
         Medium = self.env["account.treasury.medium"]
         for config in self:
             existing = Medium.with_context(active_test=False).search([("company_id", "=", config.company_id.id)])
-            used_journals = existing.journal_id
-            used_accounts = existing.journal_id.default_account_id | existing.account_ids
+            used_journals = existing.journal_id | existing.journal_ids
+            used_accounts = used_journals.default_account_id | existing.account_ids
             # Only active journals: the settings form's lists show archived
             # payment means, and their context must not bring back archived
             # journals.

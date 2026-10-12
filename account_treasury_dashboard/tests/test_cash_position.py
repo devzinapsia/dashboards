@@ -2,6 +2,7 @@ from datetime import date
 
 from freezegun import freeze_time
 
+from odoo import Command
 from odoo.tests import tagged
 
 from .common import TreasuryDashboardCommon
@@ -233,8 +234,8 @@ class TestFundsAndCards(TreasuryDashboardCommon):
             journal = self._create_journal(name, code, "credit")
             journal.default_account_id = card_account
             journals |= journal
-        card = self._create_medium("credit_card", accounts=card_account, name="Visa Galicia",
-                                   closing_day=5, due_day=15, credit_limit=1000)
+        card = self._create_medium("credit_card", name="Visa Galicia", closing_day=5, due_day=15,
+                                   credit_limit=1000, journal_ids=[Command.set(journals.ids)])
         self._entry(date(2026, 10, 8), [(self.expense, 250.0), (card_account, -250.0)], journal=journals[0])
         self._entry(date(2026, 10, 9), [(self.expense, 100.0), (card_account, -100.0)], journal=journals[1])
         ctx = self.Dashboard._prepare_context()
