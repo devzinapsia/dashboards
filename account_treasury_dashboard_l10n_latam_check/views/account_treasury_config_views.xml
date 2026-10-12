@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_treasury_config_form_checks" model="ir.ui.view">
+        <field name="name">account.treasury.config.form.checks</field>
+        <field name="model">account.treasury.config</field>
+        <field name="inherit_id" ref="account_treasury_dashboard.view_account_treasury_config_form"/>
+        <field name="arch" type="xml">
+            <field name="show_investments" position="after">
+                <field name="show_checks"/>
+            </field>
+            <page name="investments" position="after">
+                <page string="Checks" name="checks">
+                    <div class="alert alert-info" role="status">
+                        Third-party checks in portfolio and rejected checks are followed by the journal they sit in. These journals can't be a bank or cash payment mean: their checks are shown in the Checks section and projected on their payment date. Own checks are taken from the banks configured as payment means.
+                    </div>
+                    <group>
+                        <field name="third_party_check_journal_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="rejected_check_journal_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>
