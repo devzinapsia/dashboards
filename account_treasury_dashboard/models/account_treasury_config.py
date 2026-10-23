@@ -4,6 +4,11 @@ from odoo.exceptions import ValidationError
 PROJECTION_WEEKS_MIN = 4
 PROJECTION_WEEKS_MAX = 8
 
+# Context key set while the settings form is saved: the consistency checks of
+# its lines (a journal or account in a single payment mean or commitment) run
+# once at the end, on the final state, instead of line by line.
+DEFER_CHECKS = "treasury_defer_checks"
+
 # Payment mean type suggested for each journal type by "Load suggested".
 SUGGESTED_KINDS = {"bank": "bank", "cash": "cash", "credit": "credit_card"}
 # Default closing and due days of a suggested credit card.
@@ -86,6 +91,48 @@ class AccountTreasuryConfig(models.Model):
             config.has_balance_commitments = any(
                 commitment.active and commitment.mode == "balance" for commitment in config.commitment_ids
             )
+
+    # -------------------------------------------------------------------------
+    # Saving the settings form
+    # -------------------------------------------------------------------------
+
+    # The form saves all its tabs in one write, and each tab is its own
+    # One2many: a line removed from a tab may only be deleted after a line
+    # added to another tab was created (e.g. a journal moved from Banks to
+    # Investments). Checking each line as it is created would then wrongly
+    # find the journal twice, so the lines' checks wait for the end of the
+    # save and run on the final state.
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        if self.env.context.get(DEFER_CHECKS):
+            return super().create(vals_list)
+        configs = super(AccountTreasuryConfig, self.with_context(**{DEFER_CHECKS: True})).create(vals_list)
+        configs = configs.with_env(self.env)
+        configs._treasury_after_save()
+        return configs
+
+    def write(self, vals):
+        if self.env.context.get(DEFER_CHECKS):
+            return super().write(vals)
+        result = super(AccountTreasuryConfig, self.with_context(**{DEFER_CHECKS: True})).write(vals)
+        self._treasury_after_save()
+        return result
+
+    def _treasury_after_save(self):
+        self._treasury_clean_up()
+        self._treasury_check_consistency()
+
+    def _treasury_clean_up(self):
+        """Extension point: adjust the lines to the saved settings before
+        they are checked (e.g. the checks module removes the payment means
+        whose journal became a check journal)."""
+
+    def _treasury_check_consistency(self):
+        """The lines' consistency checks, deferred while saving the form."""
+        for config in self:
+            config.medium_ids.filtered("active")._check_unique_journal_and_accounts()
+            config.commitment_ids.filtered("active")._check_unique_accounts()
 
     # -------------------------------------------------------------------------
     # Constraints

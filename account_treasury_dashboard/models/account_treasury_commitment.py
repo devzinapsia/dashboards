@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
+from .account_treasury_config import DEFER_CHECKS
+
 COMMITMENT_KINDS = [
     ("payroll", "Payroll"),
     ("tax", "Tax"),
@@ -83,6 +85,8 @@ class AccountTreasuryCommitment(models.Model):
 
     @api.constrains("account_ids", "active", "config_id")
     def _check_unique_accounts(self):
+        if self.env.context.get(DEFER_CHECKS):
+            return  # run by the settings form once saved, see account.treasury.config
         for commitment in self.filtered(lambda commitment: commitment.active and commitment.config_id.active):
             peers_domain = [
                 ("company_id", "=", commitment.company_id.id),

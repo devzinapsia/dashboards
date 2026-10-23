@@ -2,6 +2,8 @@ from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Domain
 
+from .account_treasury_config import DEFER_CHECKS
+
 MEDIUM_KINDS = [
     ("bank", "Bank"),
     ("cash", "Cash"),
@@ -218,6 +220,8 @@ class AccountTreasuryMedium(models.Model):
 
     @api.constrains("journal_id", "journal_ids", "account_ids", "active", "config_id")
     def _check_unique_journal_and_accounts(self):
+        if self.env.context.get(DEFER_CHECKS):
+            return  # run by the settings form once saved, see account.treasury.config
         for medium in self.filtered(lambda medium: medium.active and medium.config_id.active):
             for journal in medium.journal_id | medium.journal_ids:
                 other = self.search([*medium._active_peers_domain(), "|", ("journal_id", "=", journal.id),

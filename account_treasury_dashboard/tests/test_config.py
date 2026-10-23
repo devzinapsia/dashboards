@@ -1,6 +1,6 @@
 from odoo import Command
 from odoo.exceptions import AccessError
-from odoo.tests import new_test_user, tagged
+from odoo.tests import Form, new_test_user, tagged
 
 from .common import TreasuryDashboardCommon
 
@@ -189,6 +189,47 @@ class TestTreasuryConfig(TreasuryDashboardCommon):
             })
         with self.assertValidationError("already used by projection commitment Salaries"):
             self._create_medium("prepaid", accounts=account, name="Prepaid")
+
+    # -------------------------------------------------------------------------
+    # Saving the settings form
+    # -------------------------------------------------------------------------
+
+    def test_move_a_journal_between_tabs_in_one_save(self):
+        """"Load suggested" loads an investment's bank journal in Banks: deleting
+        it there and adding it in Investments in the same save works, whatever
+        the order the tabs are saved in."""
+        fund = self._create_journal("Fund", "FUND", "bank")
+        for first in ("bank_medium_ids", "investment_medium_ids"):
+            bank = self._create_medium("bank", fund, name="Fund as bank")
+            commands = {
+                "bank_medium_ids": [Command.delete(bank.id)],
+                "investment_medium_ids": [Command.create({"name": "Fund", "kind": "investment",
+                                                          "journal_id": fund.id})],
+            }
+            second = "investment_medium_ids" if first == "bank_medium_ids" else "bank_medium_ids"
+            self.config.write({first: commands[first], second: commands[second]})
+            investment = self.config.investment_medium_ids.filtered(lambda medium: medium.journal_id == fund)
+            self.assertEqual(len(investment), 1)
+            self.assertFalse(bank.exists())
+            investment.unlink()
+
+    def test_move_a_journal_between_tabs_with_the_form(self):
+        fund = self._create_journal("Fund", "FUND", "bank")
+        self._create_medium("bank", fund, name="Fund as bank")
+        with Form(self.config) as form:
+            form.bank_medium_ids.remove(0)
+            with form.investment_medium_ids.new() as line:
+                line.name = "Fund"
+                line.journal_id = fund
+        self.assertEqual(self.config.investment_medium_ids.journal_id, fund)
+        self.assertFalse(self.config.bank_medium_ids)
+
+    def test_duplicate_journal_still_refused_when_saving(self):
+        self._create_medium("bank", self.bank_journal, name="Bank A")
+        with self.assertValidationError("already used by payment mean"):
+            self.config.write({"investment_medium_ids": [Command.create({
+                "name": "Bank as investment", "kind": "investment", "journal_id": self.bank_journal.id,
+            })]})
 
     # -------------------------------------------------------------------------
     # Load suggested
