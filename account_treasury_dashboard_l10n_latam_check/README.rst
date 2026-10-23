@@ -60,7 +60,9 @@ In *Dashboards > Configuration > Treasury*, tab **Checks**:
 
 These journals can't be configured as a bank or cash payment mean (their
 checks are shown in the Checks section instead), and *Load suggested*
-leaves them out. Own checks are taken from the banks configured as payment
+leaves them out. Choosing a journal here removes, when saving, the payment
+mean that used it (e.g. the cash payment mean *Load suggested* had created
+before the check journals were configured). Own checks are taken from the banks configured as payment
 means. The *Show checks* option of the *General* tab hides the section.
 
 Usage

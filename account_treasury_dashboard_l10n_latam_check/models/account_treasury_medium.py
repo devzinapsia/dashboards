@@ -1,6 +1,8 @@
 from odoo import api, models
 from odoo.exceptions import ValidationError
 
+from odoo.addons.account_treasury_dashboard.models.account_treasury_config import DEFER_CHECKS
+
 
 class AccountTreasuryMedium(models.Model):
     _inherit = "account.treasury.medium"
@@ -10,6 +12,8 @@ class AccountTreasuryMedium(models.Model):
         """A check journal's portfolio is projected on each check's payment
         date: as a bank or cash payment mean in the available total it would
         also be in the projection's opening balance, counted twice."""
+        if self.env.context.get(DEFER_CHECKS):
+            return  # run once the settings form is saved, see account.treasury.config
         for medium in self.filtered(lambda medium: medium.active and medium.journal_id):
             if medium.journal_id in medium.config_id._get_check_journals():
                 raise ValidationError(self.env._(

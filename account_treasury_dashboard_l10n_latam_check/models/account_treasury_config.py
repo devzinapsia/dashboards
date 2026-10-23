@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
+from odoo.addons.account_treasury_dashboard.models.account_treasury_config import DEFER_CHECKS
+
 
 class AccountTreasuryConfig(models.Model):
     _inherit = "account.treasury.config"
@@ -34,6 +36,8 @@ class AccountTreasuryConfig(models.Model):
 
     @api.constrains("third_party_check_journal_ids", "rejected_check_journal_ids")
     def _check_check_journals(self):
+        if self.env.context.get(DEFER_CHECKS):
+            return  # run once the settings form is saved, after _treasury_clean_up()
         for config in self:
             both = config.third_party_check_journal_ids & config.rejected_check_journal_ids
             if both:
@@ -49,6 +53,21 @@ class AccountTreasuryConfig(models.Model):
                     "shown in the Checks section. Remove the payment mean first.",
                     journal=medium.journal_id.display_name, medium=medium.name,
                 ))
+
+    def _treasury_clean_up(self):
+        """A journal chosen as a check journal leaves the payment means: its
+        checks are shown in the Checks section (e.g. "Load suggested" had
+        added it as cash before the check journals were configured)."""
+        super()._treasury_clean_up()
+        for config in self:
+            check_journals = config._get_check_journals()
+            if check_journals:
+                config.medium_ids.filtered(lambda medium: medium.journal_id in check_journals).unlink()
+
+    def _treasury_check_consistency(self):
+        super()._treasury_check_consistency()
+        self._check_check_journals()
+        self.medium_ids.filtered("active")._check_not_a_check_journal()
 
     def _get_suggested_journal_domain(self):
         # Check journals are cash journals too, but their portfolio is shown

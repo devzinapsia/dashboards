@@ -141,9 +141,24 @@ class TestChecks(TreasuryChecksCommon):
     def test_check_journal_cannot_be_a_payment_mean(self):
         with self.assertValidationError("is configured as a check journal"):
             self._create_medium("cash", self.checks_journal)
+
+    def test_choosing_a_check_journal_removes_its_payment_mean(self):
+        """"Load suggested" before the check journals were configured adds the
+        checks journal as cash: choosing it as a check journal removes that
+        payment mean, in the same save, instead of refusing."""
+        self.config.third_party_check_journal_ids = [Command.clear()]
+        portfolio_cash = self._create_medium("cash", self.checks_journal, name="Third-party checks")
         cash = self._create_medium("cash", self.cash_journal)
-        with self.assertValidationError("is a check journal, so it can't be payment mean"):
-            self.config.rejected_check_journal_ids = [Command.link(cash.journal_id.id)]
+        self.config.write({"third_party_check_journal_ids": [Command.set(self.checks_journal.ids)]})
+        self.assertFalse(portfolio_cash.exists())
+        self.assertTrue(cash.exists())
+        # Also when the settings form saves the tab and the line together.
+        rejected_cash = self._create_medium("cash", self._create_journal("Old checks", "CHO", "cash"))
+        self.config.write({
+            "fund_medium_ids": [Command.update(rejected_cash.id, {"name": "Old checks (renamed)"})],
+            "rejected_check_journal_ids": [Command.link(rejected_cash.journal_id.id)],
+        })
+        self.assertFalse(rejected_cash.exists())
 
     def test_same_journal_third_party_and_rejected(self):
         with self.assertRaises(ValidationError):
