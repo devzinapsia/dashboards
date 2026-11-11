@@ -1,0 +1,75 @@
+<h1>Qué muestra el tablero de tesorería</h1>
+<p>Se abre en <strong>Dashboards › Tableros › Tesorería</strong>, para la compañía actual. "Hoy" es la fecha en la zona horaria del usuario.</p>
+<h2>Cómo se usa</h2>
+<ul>
+<li>Cada sección carga por separado: si una no se puede calcular (por ejemplo, falta una cotización), muestra el motivo y un botón <strong>Reintentar</strong>, y las demás siguen funcionando.</li>
+<li>Las secciones se pliegan (<strong>Expandir todo</strong> / <strong>Contraer todo</strong>) y quedan como se dejaron al volver de una lista.</li>
+<li>Pulse cualquier cifra con detalle: una ventana lista qué la compone (asientos, pagos, líneas de extracto, flujos de una semana). <strong>La suma de la ventana es la cifra pulsada.</strong> Una fila abre su registro, y <strong>Ver todos</strong> la lista estándar, si el usuario puede leerlos.</li>
+<li>Los importes en rojo son negativos. Un signo de advertencia marca una cifra para revisar: diferencia con el extracto, extracto viejo, saldo proyectado negativo, tarjeta por encima del límite o cerca del vencimiento.</li>
+</ul>
+<h2>Posición de caja</h2>
+<h3>Bancos</h3>
+<p>Una fila por banco, con las mismas cifras que el informe de <strong>conciliación bancaria</strong> de Odoo:</p>
+<table class="table table-bordered">
+<thead><tr><th>Columna</th><th>Qué es</th></tr></thead>
+<tbody>
+<tr><td><strong>Saldo de la cuenta del banco</strong></td><td>Saldo de la cuenta contable del banco (asientos publicados hasta hoy). Las líneas de extracto se registran en esa cuenta apenas se importan.</td></tr>
+<tr><td><strong>En tránsito</strong></td><td>Cobros y pagos registrados que todavía no se conciliaron con un extracto: están en las cuentas de cobros y pagos pendientes, no en la cuenta del banco.</td></tr>
+<tr><td><strong>Saldo contable</strong></td><td>Saldo de la cuenta del banco + en tránsito.</td></tr>
+<tr><td><strong>Saldo del último extracto</strong></td><td>Saldo final del último extracto, con su fecha (<em>Sin extracto</em> si no hay).</td></tr>
+<tr><td><strong>Diferencia</strong></td><td>Saldo contable − saldo del último extracto.</td></tr>
+</tbody>
+</table>
+<p>Una <strong>diferencia distinta de cero es algo para investigar</strong>. Su detalle la explica: movimientos sin extracto, operaciones varias en la cuenta del banco (apuntes que no vienen de un extracto), cobros pendientes, pagos pendientes y la <strong>diferencia sin explicar</strong>. La fila <strong>Total bancos</strong> suma todos los bancos en moneda de la compañía.</p>
+<h3>Efectivo, total disponible y moneda extranjera</h3>
+<ul>
+<li><strong>Efectivo</strong>: saldo de la cuenta de cada caja (más lo que esté en tránsito, si sus métodos de pago usan cuentas pendientes), con su <strong>Total efectivo</strong>.</li>
+<li><strong>Total disponible</strong>: saldo contable de todos los medios de pago marcados <em>En total disponible</em>, en moneda de la compañía, con las monedas extranjeras a la cotización del día.</li>
+<li><strong>Moneda extranjera</strong>, por cada moneda que aparezca (no solo dólares): importe original, equivalente en moneda de la compañía a la cotización del día, valor contable y la diferencia entre ambos, es decir la <strong>diferencia de cambio todavía no registrada</strong>.</li>
+</ul>
+<h3>Fondos fijos y tarjetas prepagas</h3>
+<p>Saldo y <strong>última reposición</strong> (fecha, importe y días desde entonces). La reposición es la última transferencia interna hacia el fondo o la tarjeta. Una tarjeta prepaga sin diario toma como última carga el último asiento que debitó sus cuentas. <em>Sin reposiciones</em> si no hay ninguna.</p>
+<h3>Tarjetas de crédito</h3>
+<ul>
+<li><strong>Ciclo actual</strong>: consumos desde el último cierre, netos de devoluciones (el pago de la tarjeta desde un banco o caja no cuenta).</li>
+<li><strong>Saldo adeudado</strong>: la deuda total con la tarjeta.</li>
+<li><strong>Último cierre</strong>, <strong>Próximo cierre</strong>, <strong>Próximo vencimiento</strong> y <strong>Días al vencimiento</strong>.</li>
+<li><strong>Límite</strong> y <strong>Disponible</strong> = límite − saldo adeudado.</li>
+</ul>
+<p>La tarjeta cierra su día de cierre todos los meses (el último día del mes si el mes es más corto, por ejemplo el 31 en febrero). Cada resumen vence el primer día de vencimiento posterior a su cierre (el mes siguiente cuando el día de vencimiento es menor o igual al de cierre).</p>
+<h2>Conciliación</h2>
+<p>Por banco, las <strong>líneas de extracto sin conciliar</strong>, cantidad e importe, por antigüedad de la fecha de la línea: <strong>0-7</strong>, <strong>8-30</strong>, <strong>31-60</strong> y <strong>Más de 60 días</strong>, con totales por banco y <strong>Total sin conciliar</strong>.</p>
+<p>El <strong>Último extracto</strong> es la fecha de la última línea de extracto publicada del banco, pertenezca o no a un extracto (la sincronización bancaria y la importación de archivos crean líneas sin extracto). Una alerta avisa cuando es más antiguo que los <em>Días sin extracto nuevo</em> del banco o, si no tiene, los generales: <strong>alguien dejó de importar los movimientos de ese banco</strong>.</p>
+<h2>Cheques</h2>
+<p>Solo con los cheques instalados y configurados. Por fecha del cheque (fecha de pago en los de terceros, fecha de débito en los propios), con cantidad e importe en tramos: <strong>Vencidos</strong>, <strong>Hoy</strong>, <strong>Próximos 7 días</strong>, <strong>Próximos 8 a 30 días</strong> y <strong>Más adelante</strong>.</p>
+<ul>
+<li><strong>Cheques de terceros en cartera</strong>: están en un diario de cheques de terceros. Una alerta lista los que ya tienen la fecha vencida (habría que depositarlos).</li>
+<li><strong>Depositados, sin acreditar</strong>: llevados a un banco por un pago todavía no conciliado con el extracto.</li>
+<li><strong>Cheques propios pendientes de débito</strong>: entregados y todavía no debitados.</li>
+<li><strong>Cheques rechazados</strong>: están en un diario de cheques rechazados. Se muestran con una alerta y nunca se proyectan.</li>
+</ul>
+<p>Cada cifra abre la lista de sus cheques (número, banco, contacto, diario, fecha, importe).</p>
+<h2>Inversiones</h2>
+<p>Cada inversión en su moneda (pesos o dólares), su equivalente en moneda de la compañía a la cotización del día, su valor contable, la diferencia de cambio todavía no registrada y su último movimiento, con un <strong>Total inversiones</strong>.</p>
+<h2>Proyección de caja</h2>
+<p>De 4 a 8 semanas: la semana 1 va de hoy al próximo domingo; las siguientes, de lunes a domingo.</p>
+<table class="table table-bordered">
+<thead><tr><th>Fila</th><th>Qué es</th></tr></thead>
+<tbody>
+<tr><td><strong>Saldo inicial</strong></td><td>Saldo de las <strong>cuentas de los bancos</strong> y cajas del total disponible (moneda extranjera a la cotización del día), más las inversiones marcadas <em>En proyección de caja</em>.</td></tr>
+<tr><td><strong>Ingresos</strong></td><td><strong>Cobros de clientes</strong> (partidas a cobrar abiertas, por fecha de vencimiento), <strong>Cobros en tránsito</strong> y, con cheques, <strong>Cheques de terceros</strong> en cartera (en su fecha de pago; semana 1 si ya pasó) y depositados.</td></tr>
+<tr><td><strong>Egresos</strong></td><td><strong>Pagos a proveedores</strong> (partidas a pagar abiertas, por vencimiento; las vencidas caen en la semana 1), <strong>Pagos en tránsito</strong>, <strong>Resúmenes de tarjetas de crédito</strong>, los <strong>compromisos</strong> y, con cheques, <strong>Cheques propios</strong> pendientes de débito en su fecha.</td></tr>
+<tr><td><strong>Neto</strong> y <strong>Saldo proyectado</strong></td><td>Ingresos − egresos de la semana, y el saldo que queda al final de cada semana.</td></tr>
+<tr><td><strong>Cobros vencidos</strong></td><td>Lo que los clientes ya deberían haber pagado. Por prudencia <strong>no se suma</strong> al saldo proyectado, salvo que esté marcado <em>Incluir cobros vencidos en la semana 1</em>.</td></tr>
+</tbody>
+</table>
+<div class="alert alert-info" role="status"><p><strong>Por qué el saldo inicial no es el saldo contable:</strong> lo registrado que todavía no llegó al banco (en tránsito) entra como flujo en la semana 1. Si se partiera del saldo contable y además se sumaran esos flujos, se contarían dos veces. Del mismo modo, un pago ya conciliado con su factura no deja saldo en la factura: aparece solo en tránsito hasta que se concilia con el extracto, y después solo en el saldo inicial.</p></div>
+<p>Los <strong>resúmenes de tarjetas</strong> se proyectan así: lo adeudado del ciclo cerrado en su vencimiento (semana 1 si ya venció), y los consumos del ciclo actual hasta hoy en el vencimiento siguiente. Los consumos que faltan del ciclo todavía no se conocen. Los flujos posteriores a la última semana quedan afuera.</p>
+<p>Además de la tabla se ve un gráfico (barras: neto; línea: saldo proyectado; línea de cero), una alerta en cada semana con <strong>saldo proyectado negativo</strong> y una tarjeta con el <strong>Saldo mínimo proyectado</strong> y su semana: es la semana en la que hay que buscar fondos o postergar pagos.</p>
+<h2>Movimientos del período</h2>
+<p>Ingresos y egresos de los medios de pago del total disponible, en moneda de la compañía: <strong>Mes actual a la fecha</strong>, <strong>Mes anterior hasta el día N</strong> (el mismo día del mes que hoy, con la variación) y <strong>Mes anterior completo</strong>.</p>
+<ul>
+<li>Conciliar una línea de extracto con un pago solo pasa el importe de la cuenta pendiente a la del banco: neto, no es un movimiento.</li>
+<li>Las <strong>transferencias internas</strong> no son ingresos ni egresos: se muestran aparte (cantidad e importe). Cuenta como transferencia interna un asiento con la <em>cuenta de transferencias internas</em> de la compañía, o uno que mueve plata entre dos medios de pago líquidos (banco, efectivo, fondo fijo, tarjeta prepaga, inversión) y da cero entre ellos.</li>
+<li>Pagar el resumen de una tarjeta de crédito desde un banco <strong>sí es un egreso</strong>: la tarjeta no es un medio de pago líquido.</li>
+</ul>

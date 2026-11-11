@@ -1,0 +1,47 @@
+<h1>Preguntas frecuentes</h1>
+<h2>Generales</h2>
+<h3>No veo el menú Dashboards.</h3>
+<p>Falta el permiso: en <strong>Ajustes › Usuarios</strong>, dentro de <strong>Dashboards</strong>, dé al usuario el permiso <em>Usuario</em> del tablero. Si tampoco lo ve un administrador, los módulos no están instalados (vea <em>Puesta en marcha</em>).</p>
+<h3>Veo el tablero pero no el menú Configuración.</h3>
+<p>La configuración requiere el permiso <strong>Administrador</strong> de ese tablero.</p>
+<h3>Las cifras no coinciden con otra compañía.</h3>
+<p>Los tableros no consolidan: muestran la compañía seleccionada arriba a la derecha. Cambie de compañía para ver otra.</p>
+<h3>Una cifra no coincide con lo que espero.</h3>
+<p>Púlsela: el detalle siempre suma la cifra pulsada y muestra qué la compone. Verifique que no haya asientos en borrador (no cuentan) y que los diarios y cuentas estén bien configurados.</p>
+<h3>Aparece un error de cotización.</h3>
+<p>Falta cargar la cotización de alguna moneda. Los tableros nunca convierten a 1 en silencio: avisan. Cargue la cotización en <em>Contabilidad › Configuración › Monedas</em> (o verifique la actualización automática) y pulse <strong>Actualizar</strong> o <strong>Reintentar</strong>.</p>
+<h2>Estado de resultados de gestión</h2>
+<h3>Aparece la fila Sin asignar.</h3>
+<p>Hay cuentas de ingresos o gastos con movimientos que ninguna línea incluye. Púlsela para ver cuáles y agréguelas a la estructura. No afecta los totales: es un control para conciliar con el resultado contable.</p>
+<h3>Los meses del ejercicio anterior aparecen en cero o muy chicos.</h3>
+<p>Probablemente el asiento de cierre de ejercicio se está contando. Agregue el diario de cierre a <strong>Diarios excluidos</strong> en la configuración.</p>
+<h3>Los meses pasados cambiaron en dólares.</h3>
+<p>Es lo esperado: los movimientos en pesos se convierten a la <strong>última cotización cargada</strong>, la misma para todos los meses. Los movimientos que ya eran en dólares no cambian.</p>
+<h3>No puedo guardar la estructura: una cuenta ya está usada.</h3>
+<p>Cada cuenta va en una sola línea. El mensaje indica qué línea ya la tiene: quítela de una de las dos.</p>
+<h3>Con el filtro analítico desaparece el presupuesto.</h3>
+<p>Es así a propósito: el presupuesto contable es por cuenta, no por proyecto, y no se puede comparar con una parte de la empresa.</p>
+<h3>En dólares, la lista de apuntes no suma lo mismo que la ventana.</h3>
+<p>Las listas de apuntes de Odoo están en moneda de la compañía. La ventana de detalle sí muestra los importes convertidos.</p>
+<h2>Cobranzas</h2>
+<h3>El tablero muestra todo en cero.</h3>
+<p>Verifique que en la configuración estén elegidos los <strong>Diarios de comprobantes de venta</strong>, y que el usuario tenga al menos el permiso <strong>Contabilidad › Facturación</strong>.</p>
+<h3>Un cheque rechazado no aparece.</h3>
+<p>Un cheque cuenta como rechazado solo si está en un diario configurado como <strong>Diario de cheques rechazados</strong>. Muévalo a ese diario.</p>
+<h3>¿Por qué "A cobrar hoy" y "A cobrar en próximos 7 días" se superponen?</h3>
+<p>A propósito: los próximos 7 días incluyen hoy. No los sume entre sí.</p>
+<h2>Tesorería</h2>
+<h3>Una sección no aparece.</h3>
+<p>Una sección sin nada configurado (o desactivada en la pestaña <em>General</em>) no se muestra. Por ejemplo, <em>Inversiones</em> aparece cuando se carga al menos una inversión.</p>
+<h3>Un banco tiene diferencia con el extracto.</h3>
+<p>Pulse la diferencia: el detalle separa movimientos sin extracto, operaciones varias en la cuenta del banco, cobros y pagos pendientes y lo que queda sin explicar. Lo habitual es un extracto sin importar o un asiento manual en la cuenta del banco.</p>
+<h3>No puedo agregar un diario a un medio de pago.</h3>
+<p>Un diario va en un solo medio de pago, y una cuenta en un solo medio de pago o compromiso. El mensaje indica dónde ya está usado. Para pasar un efectivo a fondo fijo, cambie su tipo.</p>
+<h3>¿Por qué los cobros vencidos no suman en la proyección?</h3>
+<p>Por prudencia: no se sabe cuándo se van a cobrar. Si quiere sumarlos a la semana 1, marque <strong>Incluir cobros vencidos en la semana 1</strong> en la configuración.</p>
+<h2>Lo que no incluyen</h2>
+<ul>
+<li><strong>Los tres tableros</strong>: la consolidación de varias compañías (cada tablero muestra la compañía actual).</li>
+<li><strong>Estado de resultados de gestión</strong>: la comparación con presupuestos analíticos (solo presupuestos contables, por cuenta).</li>
+<li><strong>Tesorería</strong>: los gastos de fondo fijo sin rendir y los consumos de tarjeta sin comprobante, previstos para una segunda fase.</li>
+</ul>

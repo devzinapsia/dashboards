@@ -1,0 +1,66 @@
+<h1>Qué muestra el estado de resultados de gestión</h1>
+<p>Se abre en <strong>Dashboards › Tableros › Estado de resultados de gestión</strong>, para la compañía seleccionada en Odoo. Solo cuenta asientos <strong>publicados</strong>, por <strong>fecha contable</strong>, sin los diarios excluidos en la configuración.</p>
+<h2>La barra de herramientas</h2>
+<table class="table table-bordered">
+<thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+<tbody>
+<tr><td><strong>Período</strong></td><td><em>Mes actual</em>, <em>Ejercicio actual</em>, <em>Ejercicio anterior</em> o <em>Últimos 12 meses</em>. Una columna por mes, más una columna <strong>Total</strong>. Los meses posteriores al actual quedan vacíos, no en 0.</td></tr>
+<tr><td><strong>Moneda</strong></td><td>Moneda de la compañía o moneda secundaria (vea más abajo).</td></tr>
+<tr><td><strong>Filtro analítico</strong></td><td>Elija un <strong>plan analítico</strong> (el de <em>Proyectos</em> es uno de ellos) y después una o más <strong>cuentas analíticas o proyectos</strong> de ese plan. Elegir solo el plan todavía no filtra nada.</td></tr>
+<tr><td><strong>Presupuesto</strong></td><td>El presupuesto contable con el que comparar, o <em>Sin presupuesto</em>.</td></tr>
+<tr><td><strong>Importes</strong></td><td><em>Unidades</em> ($ 2.500,00), <em>Miles (K)</em> (2,50 K) o <em>Millones (M)</em>. Solo cambia cómo se muestran las cifras, nunca los cálculos.</td></tr>
+<tr><td><strong>Grilla / Gráfico</strong></td><td>Muestra la grilla o el gráfico, uno por vez.</td></tr>
+<tr><td><strong>Exportar</strong></td><td>Descarga la grilla tal como se ve (mismo período, moneda, filtro y presupuesto, todas las filas expandidas) en un Excel.</td></tr>
+<tr><td><strong>Expandir todo</strong>, <strong>Colapsar todo</strong>, <strong>Actualizar</strong></td><td>Las secciones y grupos también se abren y cierran de a uno con su flecha.</td></tr>
+</tbody>
+</table>
+<h2>Cómo leer la grilla</h2>
+<ul>
+<li><strong>Ingresos</strong> suma las cuentas de ingresos (haber − debe): las notas de crédito de venta restan solas.</li>
+<li><strong>Costos directos</strong> y <strong>Costos indirectos</strong> suman las cuentas de gastos (debe − haber).</li>
+<li>Cada grupo es la suma de sus líneas; cada hoja, el saldo de sus cuentas.</li>
+<li><strong>Utilidad bruta</strong> = Ingresos − Costos directos: lo que deja la operación antes de la estructura.</li>
+<li><strong>Utilidad neta</strong> = Ingresos − Costos directos − Costos indirectos: el resultado de gestión del mes.</li>
+<li><strong>Utilidad bruta %</strong> y <strong>Utilidad neta %</strong>: la utilidad sobre los Ingresos. Quedan vacías si los Ingresos son 0.</li>
+</ul>
+<h2>La fila Sin asignar</h2>
+<p>Es una fila de <strong>control</strong>, debajo de las utilidades, que solo aparece cuando no es cero: son los movimientos de cuentas de ingresos y gastos que <strong>ninguna línea de la estructura incluye</strong>.</p>
+<ul>
+<li><strong>No se suma</strong> a los totales ni a las utilidades.</li>
+<li>Su signo es el efecto en el resultado (un ingreso suma, un gasto resta), así que <strong>Utilidad neta + Sin asignar = resultado contable del período</strong>. Así se concilia el tablero con el balance.</li>
+<li>Púlsela para ver qué cuentas faltan, y agréguelas a la línea que corresponda en la estructura.</li>
+</ul>
+<div class="alert alert-info" role="status"><p><strong>Objetivo:</strong> con la estructura completa, la fila <em>Sin asignar</em> no aparece. Si aparece de un mes para otro, probablemente se creó una cuenta nueva que hay que asignar.</p></div>
+<h2>El detalle de cada cifra</h2>
+<p>Pulse cualquier cifra de una sección, un grupo, una línea o la fila <em>Sin asignar</em>: se abre una ventana con <strong>el saldo de cada cuenta</strong> que la compone, para esa columna. Las cuentas siempre suman la cifra pulsada. Las filas de utilidad no tienen detalle.</p>
+<ul>
+<li>Pulsando una cuenta se abren <strong>sus apuntes contables</strong> del mes de la celda (o de todo el período en la columna Total). Cada apunte abre su asiento.</li>
+<li><strong>Ver todos los apuntes</strong> lista todos los apuntes de esas cuentas en el mismo período.</li>
+<li>Las listas de apuntes están siempre en <strong>moneda de la compañía</strong>: no se pueden totalizar en la moneda secundaria. En la vista en moneda secundaria la ventana lo aclara.</li>
+<li>Abrir los apuntes requiere permiso de lectura de Contabilidad.</li>
+</ul>
+<h2>La moneda secundaria</h2>
+<p>Sirve para leer el resultado en dólares (u otra moneda) cuando parte de la operación es en esa moneda. La conversión se hace <strong>apunte por apunte</strong>:</p>
+<ol>
+<li>Un apunte <strong>en la moneda secundaria</strong> mantiene su <strong>importe original</strong>: una factura de USD 1.000,00 muestra USD 1.000,00, cualquiera sea la cotización de hoy.</li>
+<li><strong>Cualquier otro apunte</strong> (en pesos, o en una tercera moneda como euros) se convierte desde su importe en pesos a la <strong>última cotización cargada</strong>, <strong>la misma para todos los meses</strong>. Con una cotización de 1.450, ARS 1.000.000 se muestran como USD 689,66 sea del mes que sea; por eso los meses pasados cambian en dólares cuando se carga una cotización nueva. El tablero muestra la cotización usada y su fecha.</li>
+<li>Las <strong>diferencias de cambio</strong> de apuntes en la moneda secundaria valen <strong>0</strong> en esa moneda: no se ganó ni perdió ningún dólar, solo pesos. En la vista en moneda de la compañía muestran su importe normal.</li>
+</ol>
+<p>La columna Total es la suma de los meses convertidos, y los porcentajes se calculan sobre los importes convertidos.</p>
+<h2>El presupuesto</h2>
+<p>Con un presupuesto elegido, cada celda muestra el importe real y, debajo, el <strong>presupuesto</strong> y el <strong>desvío</strong> = (real − presupuesto) / |presupuesto|. En el período <em>Mes actual</em> la grilla muestra columnas <strong>Real | Presupuesto | Desvío %</strong>.</p>
+<ul>
+<li>Los colores separan las buenas de las malas noticias: gastar más de lo presupuestado en costos, o vender menos de lo presupuestado, se muestra como <strong>desfavorable</strong>.</li>
+<li>Un presupuesto en cero muestra <em>n/d</em>.</li>
+<li>El presupuesto es por cuenta: cada hoja suma el presupuesto de sus cuentas, y grupos y secciones suman sus líneas. La ventana de detalle muestra también el presupuesto de cada cuenta.</li>
+<li>En moneda secundaria, el presupuesto se convierte a la misma cotización que los importes reales: gastar exactamente lo presupuestado en pesos no muestra desvío en dólares.</li>
+<li>Con el <strong>filtro analítico</strong> activo el presupuesto se oculta: el presupuesto contable no está distribuido por proyecto.</li>
+</ul>
+<h2>El filtro analítico</h2>
+<p>Con cuentas analíticas o proyectos elegidos, cada sección se limita a <strong>la parte de cada apunte distribuida a ellos</strong>: un apunte de 1.000 repartido 60 % / 40 % entre dos proyectos cuenta 600 para el primero. Así, los proyectos suman el total de la compañía.</p>
+<ul>
+<li>Elija cuentas analíticas de <strong>un solo plan</strong>: con varios planes, un apunte se reparte al 100 % en cada plan y se contaría más de una vez.</li>
+<li>En el detalle, una cuenta abre sus <strong>líneas analíticas</strong> (la parte exacta distribuida) en lugar de los apuntes.</li>
+</ul>
+<h2>El gráfico</h2>
+<p>Una barra apilada por mes, que suma 100 % (ingresos + costos directos + costos indirectos del mes), dividida en <strong>Ingresos</strong> (azul), <strong>Costos directos</strong> (rojo) y <strong>Costos indirectos</strong> (naranja). Al pasar el mouse por un segmento se ve su porcentaje y su importe. Sigue el mismo período, moneda y filtro analítico que la grilla; un importe negativo de una sección cuenta como 0 en el gráfico.</p>

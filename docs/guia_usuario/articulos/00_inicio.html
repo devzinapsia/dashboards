@@ -1,0 +1,45 @@
+<h1>Dashboards – Guía de implementación</h1>
+<p>Esta guía explica cómo poner en marcha y cómo leer los tableros de la aplicación <strong>Dashboards</strong> de Odoo. Son tres tableros de gestión que se calculan directamente desde la contabilidad, sin planillas aparte:</p>
+<table class="table table-bordered">
+<thead><tr><th>Tablero</th><th>Responde a</th><th>Menú</th></tr></thead>
+<tbody>
+<tr><td><strong>Estado de resultados de gestión</strong></td><td>¿Cuánto ganamos o perdimos cada mes, en los rubros que tienen sentido para el negocio, y cómo vamos contra el presupuesto?</td><td>Dashboards › Tableros › Estado de resultados de gestión</td></tr>
+<tr><td><strong>Cobranzas</strong></td><td>¿Cuánto nos deben los clientes, cuánto está vencido, qué vamos a cobrar en los próximos días y quiénes pagan más tarde?</td><td>Dashboards › Tableros › Cobranzas</td></tr>
+<tr><td><strong>Tesorería</strong></td><td>¿Cuánta plata tenemos hoy, dónde está, qué falta conciliar y cómo va a evolucionar la caja en las próximas semanas?</td><td>Dashboards › Tableros › Tesorería</td></tr>
+</tbody>
+</table>
+<p>Está pensada para tres perfiles:</p>
+<ul>
+<li><strong>Administrador de Odoo</strong>: instala los módulos y da los permisos. Empiece por <em>Puesta en marcha</em>.</li>
+<li><strong>Contabilidad / administrador de cada tablero</strong>: configura qué diarios, cuentas y parámetros usa cada tablero. Empiece por el subartículo <em>Configuración</em> de cada tablero.</li>
+<li><strong>Dirección y usuarios de los tableros</strong>: consultan los tableros. Lea el subartículo <em>Qué muestra el tablero</em> de cada uno.</li>
+</ul>
+<h2>Contenido</h2>
+<ol>
+<li><strong>Puesta en marcha</strong>: instalación, permisos y requisitos previos comunes a los tres tableros.</li>
+<li><strong>Estado de resultados de gestión</strong>
+<ul>
+<li><strong>Configuración</strong>: la estructura de rubros, los parámetros y los presupuestos.</li>
+<li><strong>Qué muestra el tablero</strong>: la grilla, las utilidades, la fila <em>Sin asignar</em>, la moneda secundaria, el presupuesto y el detalle de cada cifra.</li>
+</ul></li>
+<li><strong>Cobranzas</strong>
+<ul>
+<li><strong>Configuración</strong>: diarios de venta y de cheques rechazados.</li>
+<li><strong>Qué muestra el tablero</strong>: cada indicador y cada gráfico.</li>
+</ul></li>
+<li><strong>Tesorería</strong>
+<ul>
+<li><strong>Configuración</strong>: ajustes generales, medios de pago, compromisos y cheques.</li>
+<li><strong>Qué muestra el tablero</strong>: posición de caja, conciliación, cheques, inversiones, proyección de caja y movimientos del período.</li>
+</ul></li>
+<li><strong>Preguntas frecuentes</strong>.</li>
+<li><strong>Novedades por versión</strong>.</li>
+</ol>
+<h2>Criterios comunes a los tres tableros</h2>
+<ul>
+<li>Cada tablero trabaja sobre la <strong>compañía seleccionada</strong> en el selector de compañías de Odoo (arriba a la derecha). No consolidan compañías: para ver otra, cambie de compañía.</li>
+<li>Solo cuentan <strong>asientos publicados</strong>. Los borradores no aparecen.</li>
+<li>Casi todas las cifras se pueden <strong>pulsar</strong> para ver qué las compone y, desde ahí, abrir los asientos, apuntes, facturas, pagos o cheques que hay detrás.</li>
+<li>La configuración es <strong>por compañía</strong>: en una base con varias compañías, configure cada una por separado.</li>
+</ul>
+<div class="alert alert-info" role="status"><p><strong>Versión de la guía:</strong> noviembre 2026 (Estado de resultados de gestión 19.0.1.0.14, Cobranzas 19.0.1.0.11, Tesorería 19.0.1.0.6, Tesorería – cheques 19.0.1.0.2). La guía se actualiza con cada versión de los módulos.</p></div>

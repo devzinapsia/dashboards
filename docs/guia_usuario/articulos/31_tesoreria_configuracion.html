@@ -1,0 +1,56 @@
+<h1>Configuración de tesorería</h1>
+<p>Lo hace un usuario con permiso <strong>Tesorería › Administrador</strong>, en <strong>Dashboards › Configuración › Tesorería</strong>. Se abren los ajustes de la compañía actual (uno por compañía). Hágalo en este orden.</p>
+<h2>1. Pestaña General</h2>
+<table class="table table-bordered">
+<thead><tr><th>Ajuste</th><th>Valor inicial</th><th>Para qué</th></tr></thead>
+<tbody>
+<tr><td><strong>Días sin extracto nuevo</strong></td><td>3</td><td>Un banco cuyo último extracto es más antiguo se marca con una alerta. Cada banco puede tener su propio valor.</td></tr>
+<tr><td><strong>Semanas de proyección</strong></td><td>6</td><td>Entre 4 y 8.</td></tr>
+<tr><td><strong>Incluir cobros vencidos en la semana 1</strong></td><td>No</td><td>Vea <em>Proyección de caja</em> en <em>Qué muestra el tablero</em>.</td></tr>
+<tr><td><strong>Secciones</strong></td><td>Todas</td><td>Muestra u oculta cada sección: <em>Mostrar posición de caja</em>, <em>Mostrar conciliación</em>, <em>Mostrar cheques</em>, <em>Mostrar inversiones</em>, <em>Mostrar proyección de caja</em>, <em>Mostrar movimientos del período</em>.</td></tr>
+</tbody>
+</table>
+<h2>2. Cargar sugeridos</h2>
+<p>El botón <strong>Cargar sugeridos</strong> crea un medio de pago por cada diario activo de banco, efectivo y tarjeta de crédito que todavía no esté configurado:</p>
+<ul>
+<li>Diarios de banco → <strong>Banco</strong> (pestaña <em>Bancos</em>).</li>
+<li>Diarios de efectivo → <strong>Efectivo</strong> (pestaña <em>Fondos fijos y tarjetas prepagas</em>). Cambie el tipo a <strong>Fondo fijo</strong> en los que lo sean.</li>
+<li>Diarios de tarjeta de crédito → <strong>Tarjeta de crédito</strong>, con cierre el día 30 y vencimiento el día 8: ajuste esos días y cargue el límite de crédito.</li>
+</ul>
+<p>Los diarios del mismo tipo que registran en la misma cuenta quedan en un solo medio de pago (por ejemplo, una tarjeta con un diario por titular queda como una sola tarjeta, con el nombre de la cuenta y todos sus diarios). <em>Cargar sugeridos</em> no cambia ni duplica los existentes, ni recupera uno archivado. Las <strong>tarjetas prepagas</strong> y las <strong>inversiones</strong> se cargan a mano.</p>
+<div class="alert alert-info" role="status"><p>Si usa cheques, configure primero la pestaña <strong>Cheques</strong> (punto 5): así <em>Cargar sugeridos</em> deja afuera los diarios de cheques.</p></div>
+<h2>3. Medios de pago</h2>
+<table class="table table-bordered">
+<thead><tr><th>Tipo</th><th>Pestaña</th><th>Qué lleva</th></tr></thead>
+<tbody>
+<tr><td><strong>Banco</strong></td><td>Bancos</td><td>Un diario de tipo Banco. <em>Días sin extracto nuevo</em> propio (0 = el general).</td></tr>
+<tr><td><strong>Efectivo</strong></td><td>Fondos fijos y tarjetas prepagas</td><td>Un diario de tipo Efectivo.</td></tr>
+<tr><td><strong>Fondo fijo</strong></td><td>Fondos fijos y tarjetas prepagas</td><td>Su diario, de tipo Efectivo. No se concilia.</td></tr>
+<tr><td><strong>Tarjeta prepaga</strong></td><td>Fondos fijos y tarjetas prepagas</td><td>Un diario (Banco o Efectivo) y/o cuentas, al menos uno. No se concilia.</td></tr>
+<tr><td><strong>Tarjeta de crédito</strong></td><td>Tarjetas de crédito</td><td>Sus <strong>diarios</strong> (de tipo Tarjeta de crédito; al elegirlos, su cuenta se agrega a <em>Cuentas</em>) y/o cuentas, más el <strong>día de cierre</strong>, el <strong>día de vencimiento</strong> (1 a 31) y el <strong>límite de crédito</strong>. Una tarjeta con un diario por titular, todos sobre la misma cuenta, es <strong>una sola</strong> tarjeta con todos esos diarios.</td></tr>
+<tr><td><strong>Inversión</strong></td><td>Inversiones</td><td>Un diario de tipo Banco o Misceláneo, y opcionalmente más cuentas. Su moneda es la de su diario o cuenta. Marque <strong>En proyección de caja</strong> si es plata disponible para la proyección (su saldo se suma al saldo inicial).</td></tr>
+</tbody>
+</table>
+<ul>
+<li><strong>En total disponible</strong> (marcado por defecto en bancos y efectivo): suma el medio de pago al <em>Total disponible</em>, al saldo inicial de la proyección (solo bancos y efectivo) y a los movimientos del período.</li>
+<li><strong>Un diario va en un solo medio de pago</strong>, y una cuenta en un solo medio de pago o compromiso: si no, su saldo se contaría dos veces. El error indica dónde ya está usado. Para convertir un efectivo en fondo fijo, cambie su tipo en lugar de agregar el diario otra vez.</li>
+</ul>
+<h2>4. Compromisos de la proyección</h2>
+<p>Las deudas que la proyección tiene que pagar además de los proveedores: <strong>sueldos, cargas sociales, impuestos</strong>... Cada compromiso lleva sus <strong>cuentas</strong>, un <strong>tipo</strong> (solo una etiqueta) y un <strong>nombre</strong> (si se deja vacío, toma el de las cuentas). El <strong>modo</strong> se calcula solo:</p>
+<table class="table table-bordered">
+<thead><tr><th>Modo</th><th>Cuándo</th><th>Cómo se proyecta</th></tr></thead>
+<tbody>
+<tr><td><strong>Partidas abiertas</strong></td><td>Todas las cuentas permiten conciliación.</td><td>Cada partida abierta en su fecha de vencimiento, con su contacto.</td></tr>
+<tr><td><strong>Saldo de la cuenta</strong></td><td>Alguna cuenta no permite conciliación (por ejemplo, sueldos a pagar).</td><td>El saldo acreedor actual, en la fecha de vencimiento del último asiento que acreditó las cuentas (semana 1 si ya pasó), o en el próximo <strong>día de pago</strong> si se carga uno (es opcional).</td></tr>
+</tbody>
+</table>
+<p>Las cuentas de un compromiso se sacan de los cobros de clientes y pagos a proveedores genéricos: nunca se cuentan dos veces.</p>
+<h2>5. Pestaña Cheques</h2>
+<p>Solo aparece si están instalados los cheques (se instala solo el módulo <em>Tablero de tesorería - cheques</em>).</p>
+<ul>
+<li><strong>Diarios de cheques de terceros</strong>: los diarios donde están los cheques de terceros en cartera.</li>
+<li><strong>Diarios de cheques rechazados</strong>: los diarios a los que se mueven los cheques rechazados. Si también usa Cobranzas, elija los mismos en su configuración: se configuran por separado.</li>
+</ul>
+<p>Estos diarios no pueden ser un banco ni un efectivo del tablero (sus cheques se muestran en la sección <em>Cheques</em>). Si alguno ya estaba como medio de pago (por ejemplo, un efectivo que creó <em>Cargar sugeridos</em>), al guardar se quita ese medio de pago. Los cheques propios se toman de los bancos configurados como medios de pago.</p>
+<h2>6. Cotizaciones</h2>
+<p>Los saldos en moneda extranjera se valúan a la última cotización cargada hasta hoy. Si una moneda no tiene ninguna cotización, la sección que la usa muestra un error en lugar de un importe equivocado; las demás siguen funcionando.</p>

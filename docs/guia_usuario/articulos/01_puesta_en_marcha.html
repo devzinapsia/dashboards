@@ -1,0 +1,45 @@
+<h1>Puesta en marcha</h1>
+<p>Pasos comunes a los tres tableros, para el <strong>administrador de Odoo</strong>. La configuración propia de cada tablero está en su subartículo <em>Configuración</em>.</p>
+<h2>1. Requisitos previos</h2>
+<table class="table table-bordered">
+<thead><tr><th>Requisito</th><th>Lo necesita</th><th>Por qué</th></tr></thead>
+<tbody>
+<tr><td><strong>Contabilidad de Odoo Enterprise</strong> (informes contables)</td><td>Estado de resultados de gestión</td><td>Es obligatorio: el módulo no se instala sin él. Además, los presupuestos que se comparan son los <em>presupuestos contables</em> del informe <em>Estado de resultados</em>.</td></tr>
+<tr><td><strong>Cheques</strong> (<code>l10n_latam_check</code>, localización argentina)</td><td>Cobranzas (obligatorio); sección Cheques de Tesorería (opcional)</td><td>Cobranzas no se instala sin él (al instalar Cobranzas se instala solo): muestra los cheques rechazados. En Tesorería es opcional: si los cheques están instalados se agrega sola la sección <em>Cheques</em>.</td></tr>
+<tr><td><strong>Cotizaciones de monedas cargadas</strong> (por ejemplo, con el módulo de cotizaciones del Banco Nación de Zinapsia)</td><td>Los tres tableros, si hay operaciones en moneda extranjera</td><td>Las cifras en otra moneda se valúan con la última cotización cargada. Sin cotización, el tablero avisa en lugar de convertir a 1.</td></tr>
+<tr><td><strong>Ejercicio fiscal</strong> configurado (Contabilidad › Configuración › Ajustes)</td><td>Estado de resultados de gestión, Cobranzas</td><td>Los períodos <em>Ejercicio actual</em> y <em>Ejercicio anterior</em> siguen el cierre de ejercicio de la compañía, también si no coincide con el año calendario.</td></tr>
+</tbody>
+</table>
+<h2>2. Instalar los módulos</h2>
+<p>En <strong>Aplicaciones</strong>, quite el filtro <em>Aplicaciones</em>, busque e instale los tableros que va a usar:</p>
+<ul>
+<li><strong>Tablero de estado de resultados de gestión</strong>.</li>
+<li><strong>Tablero de cobranzas</strong>.</li>
+<li><strong>Tablero de tesorería</strong>. Si los cheques están instalados, junto con él se instala <strong>Tablero de tesorería - cheques</strong>.</li>
+</ul>
+<p>Cualquiera de ellos instala también <strong>Dashboards</strong>, que crea el menú principal <strong>Dashboards</strong> con dos submenús: <strong>Tableros</strong> (los tableros) y <strong>Configuración</strong> (la configuración de cada uno).</p>
+<div class="alert alert-warning" role="alert"><p><strong>Si no aparece el menú Dashboards</strong> después de actualizar el código del servidor, en <strong>Aplicaciones</strong> use <strong>Actualizar lista de aplicaciones</strong> e instale los módulos a mano: actualizar el código no los instala solos.</p></div>
+<h2>3. Dar permisos</h2>
+<p>En <strong>Ajustes › Usuarios y empresas › Usuarios</strong>, abra cada usuario. En la sección de permisos, dentro de <strong>Dashboards</strong>, hay un permiso por tablero: <strong>Cobranzas</strong>, <strong>Estado de resultados de gestión</strong> y <strong>Tesorería</strong>. Cada uno tiene dos niveles:</p>
+<ul>
+<li><strong>Usuario</strong>: ve el tablero, sin acceso a su configuración.</li>
+<li><strong>Administrador</strong>: además configura el tablero (menú <em>Dashboards › Configuración</em>).</li>
+</ul>
+<table class="table table-bordered">
+<thead><tr><th>Tablero</th><th>¿El usuario necesita permisos de Contabilidad?</th></tr></thead>
+<tbody>
+<tr><td>Estado de resultados de gestión</td><td>No para ver el tablero: lee la contabilidad por su cuenta. Sí para abrir los apuntes contables desde el detalle de una cifra.</td></tr>
+<tr><td>Tesorería</td><td>No para ver el tablero. Los enlaces a las listas estándar (apuntes, pagos, extractos) solo aparecen a quien puede leerlas.</td></tr>
+<tr><td>Cobranzas</td><td><strong>Sí</strong>: el tablero lee las facturas y pagos con los permisos del usuario. Dele al menos el permiso <strong>Contabilidad › Facturación</strong>.</td></tr>
+</tbody>
+</table>
+<h2>4. Configurar cada tablero</h2>
+<p>Con el permiso de <strong>Administrador</strong> del tablero, entre a <strong>Dashboards › Configuración</strong> y siga el subartículo <em>Configuración</em> de cada uno:</p>
+<ul>
+<li><strong>Estado de resultados de gestión</strong>: armar la estructura de rubros (es el paso más largo; conviene hacerlo con el contador).</li>
+<li><strong>Cobranzas</strong>: elegir los diarios de venta y, si corresponde, los de cheques rechazados.</li>
+<li><strong>Tesorería</strong>: <em>Cargar sugeridos</em> y completar los medios de pago, los compromisos y los cheques.</li>
+</ul>
+<p>Un tablero sin configurar no da error: muestra ceros, o en Tesorería oculta las secciones que no tienen nada configurado.</p>
+<h2>5. Compartir esta guía</h2>
+<p>Esta guía se importa en la aplicación <strong>Artículos</strong> (Knowledge) con el módulo <strong>Transferencia de artículos de Knowledge</strong> (<em>Artículos › Transferencia › Importar</em>). Queda en la sección privada de quien la importa, dentro de <em>Artículos importados Zinapsia</em>: muévala al <strong>Espacio de trabajo</strong> y compártala con los usuarios de los tableros.</p>

@@ -1,0 +1,11 @@
+<h1>Configuración de cobranzas</h1>
+<p>Lo hace un usuario con permiso <strong>Cobranzas › Administrador</strong>, en <strong>Dashboards › Configuración › Cobranzas</strong> (una configuración por compañía).</p>
+<table class="table table-bordered">
+<thead><tr><th>Campo</th><th>Para qué</th></tr></thead>
+<tbody>
+<tr><td><strong>Diarios de comprobantes de venta</strong></td><td>Los diarios de tipo <em>Ventas</em> de los que salen las facturas de clientes y sus cobranzas. Es el <strong>filtro base de todos los indicadores</strong>, no de uno solo: una factura de un diario que no está acá no aparece en el tablero.</td></tr>
+<tr><td><strong>Diarios de cheques rechazados</strong></td><td>Odoo no tiene un estado "rechazado" para los cheques de terceros. Acá un cheque cuenta como rechazado <strong>por convención</strong>: porque está en uno de estos diarios (por ejemplo, el diario <em>Cheques de terceros rechazados</em> que crean algunas localizaciones). Mueva el cheque a ese diario (con una transferencia, o como registre los rechazos su proceso) para que aparezca en el indicador <em>Cheques rechazados</em>. Si también usa Tesorería, elija los mismos diarios en su pestaña <em>Cheques</em>: se configuran por separado.</td></tr>
+</tbody>
+</table>
+<div class="alert alert-warning" role="alert"><p><strong>Permisos de los usuarios:</strong> además del permiso <strong>Cobranzas › Usuario</strong>, quien consulta este tablero necesita al menos el permiso <strong>Contabilidad › Facturación</strong>, porque el tablero lee las facturas y pagos con los permisos del usuario.</p></div>
+<p>Si el tablero muestra todo en cero, verifique primero que los diarios de venta estén elegidos.</p>

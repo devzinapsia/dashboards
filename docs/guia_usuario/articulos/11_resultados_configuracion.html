@@ -1,0 +1,38 @@
+<h1>Configuración del estado de resultados de gestión</h1>
+<p>Lo hace un usuario con permiso <strong>Estado de resultados de gestión › Administrador</strong>, en <strong>Dashboards › Configuración › Estado de resultados de gestión</strong>. Se abre directamente la estructura de la compañía actual (hay una por compañía, y se crea la primera vez que se entra).</p>
+<div class="alert alert-info" role="status"><p><strong>Consejo:</strong> arme la estructura junto con el contador, con el plan de cuentas a mano. Es el único paso largo de la puesta en marcha y define cómo se lee todo el tablero.</p></div>
+<h2>1. Armar la estructura</h2>
+<p>En la pestaña <strong>Líneas</strong> se ve el árbol indentado, con las tres secciones fijas: <strong>Ingresos</strong>, <strong>Costos directos</strong> y <strong>Costos indirectos</strong>. Se pueden renombrar, pero no borrar ni mover.</p>
+<ul>
+<li><strong>Sublínea</strong> (botón en cada sección o grupo) agrega una línea debajo.</li>
+<li><strong>Agregar una línea</strong> agrega una línea al mismo nivel que la fila seleccionada, justo después (al final de la sección si hay una sección seleccionada; al final de Costos indirectos si no hay ninguna). Nunca crea una sección nueva.</li>
+<li>Arrastre el asa de la izquierda para cambiar el orden entre líneas del mismo nivel. Para mover una línea a otro lugar del árbol, muestre la columna opcional <strong>Línea padre</strong> y cámbiela.</li>
+<li><strong>Vista</strong>, al final de cada fila, abre el formulario de la línea con sus cuentas en una lista completa.</li>
+</ul>
+<h3>Grupos y hojas</h3>
+<table class="table table-bordered">
+<thead><tr><th>Tipo de línea</th><th>Qué es</th><th>Qué muestra</th></tr></thead>
+<tbody>
+<tr><td><strong>Grupo</strong></td><td>Una línea que tiene sublíneas. No lleva cuentas.</td><td>La suma de sus sublíneas.</td></tr>
+<tr><td><strong>Hoja</strong></td><td>Una línea sin sublíneas. Lleva <strong>cuentas</strong>: de ingresos en Ingresos, de gastos en los costos.</td><td>El saldo de sus cuentas.</td></tr>
+<tr><td>Hoja <em>Sin cuentas</em></td><td>Una hoja a la que todavía no se le asignaron cuentas.</td><td>0, hasta que se le asigne algo.</td></tr>
+</tbody>
+</table>
+<p>Una hoja con cuentas no puede recibir sublíneas: primero quítele las cuentas.</p>
+<div class="alert alert-warning" role="alert"><p><strong>Cada cuenta se usa una sola vez</strong> en la estructura, en cualquier sección. Si no, el mismo importe se contaría dos veces (por ejemplo, una cuenta de comisiones en costos directos y otra vez en indirectos). Al guardar, el error indica qué línea ya la usa.</p></div>
+<p>No hace falta asignar todas las cuentas desde el primer día: lo que quede afuera aparece en la fila de control <strong>Sin asignar</strong> del tablero, que sirve justamente para completar la estructura (vea <em>Qué muestra el tablero</em>).</p>
+<h2>2. Parámetros</h2>
+<table class="table table-bordered">
+<thead><tr><th>Parámetro</th><th>Para qué</th></tr></thead>
+<tbody>
+<tr><td><strong>Diarios excluidos</strong></td><td>Sus asientos no se cuentan. Incluya el diario de <strong>cierre de ejercicio</strong>: si no, el asiento de cierre deja en cero los meses del ejercicio anterior.</td></tr>
+<tr><td><strong>Formato de columnas de meses</strong></td><td>Cómo se titulan los meses en la grilla, el gráfico y el Excel: <em>ene 2026</em> (por defecto), <em>01-2026</em>, <em>enero 26</em>, <em>2026/01</em> o <em>2026-01</em>.</td></tr>
+<tr><td><strong>Moneda secundaria</strong></td><td>Moneda opcional para ver el tablero (dólares por defecto, si están activos). Tiene que estar activa y ser distinta de la moneda de la compañía.</td></tr>
+<tr><td><strong>Abrir el tablero en</strong></td><td>Moneda en la que se abre el tablero: la de la compañía o la secundaria.</td></tr>
+</tbody>
+</table>
+<h2>3. Presupuestos (opcional)</h2>
+<p>El tablero compara contra los <strong>presupuestos contables</strong> de la compañía: un importe por cuenta y por mes. Se crean y cargan en <strong>Contabilidad › Reportes › Estado de resultados</strong>, con el filtro <strong>Presupuesto</strong>: los importes se escriben directamente en la columna de presupuesto del informe.</p>
+<p>Los presupuestos analíticos (<em>Contabilidad › Presupuestos</em>) no sirven para esta comparación: son por cuenta analítica, sin cuentas contables, y la estructura está armada sobre cuentas contables.</p>
+<h2>4. Cotizaciones</h2>
+<p>Para ver el tablero en moneda secundaria tiene que haber cotizaciones de esa moneda cargadas en Odoo (<em>Contabilidad › Configuración › Monedas</em>). Con el módulo de cotizaciones del Banco Nación de Zinapsia se carga todos los días la cotización <strong>vendedor divisa</strong> del dólar. Si no hay ninguna cotización, la vista en moneda secundaria muestra un aviso en lugar de convertir a 1.</p>

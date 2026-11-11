@@ -1,0 +1,31 @@
+<h1>Qué muestra el tablero de cobranzas</h1>
+<p>Se abre en <strong>Dashboards › Tableros › Cobranzas</strong>, para la compañía seleccionada en Odoo. Pulse cualquier tarjeta para ver las facturas, apuntes, cheques o pagos que hay detrás.</p>
+<h2>Los dos selectores</h2>
+<table class="table table-bordered">
+<thead><tr><th>Selector</th><th>Opciones</th><th>A qué afecta</th></tr></thead>
+<tbody>
+<tr><td><strong>Período</strong></td><td><em>Año fiscal actual</em>, <em>Año fiscal anterior</em>, <em>Últimos 12 meses</em></td><td>Solo a <em>Rotación de cobranza</em> y al gráfico <em>Top 10 - Peores pagadores</em>. El año fiscal se toma completo, de inicio a cierre.</td></tr>
+<tr><td><strong>Moneda</strong></td><td><em>Todas las monedas</em> o cualquier moneda activa</td><td>Expresa en esa moneda, a la <strong>cotización de hoy</strong>, el total por cobrar, los cheques rechazados, la deuda vencida y no vencida, lo que vence hoy y en 7 días, y la proyección. <em>Todas las monedas</em> muestra todo en la moneda de la compañía. No filtra: una factura en otra moneda no desaparece, se convierte.</td></tr>
+</tbody>
+</table>
+<h2>Indicadores</h2>
+<table class="table table-bordered">
+<thead><tr><th>Indicador</th><th>Qué es</th><th>Cómo leerlo</th></tr></thead>
+<tbody>
+<tr><td><strong>Total por cobrar</strong></td><td>El saldo pendiente de todas las facturas de clientes abiertas.</td><td>Es la deuda total de los clientes. El detalle lista las facturas (Total / Importe adeudado) agrupadas por mes de vencimiento.</td></tr>
+<tr><td><strong>Cheques rechazados</strong></td><td>El importe de los cheques de terceros que están en un diario de cheques rechazados.</td><td>Deuda que se creía cobrada y volvió: hay que gestionarla con el cliente.</td></tr>
+<tr><td><strong>Rotación de cobranza</strong></td><td>Ventas netas a crédito ÷ promedio de cuentas por cobrar, en el período elegido. Ventas netas: sin impuestos y descontadas las notas de crédito. Promedio: saldo de deudores al inicio y al final del período, promediado.</td><td>Cuántas veces en el período se "cobra" el saldo de deudores. <strong>Cuanto más alta, más rápido se cobra.</strong></td></tr>
+<tr><td><strong>Ratio cobro/pago</strong></td><td>Lo cobrado a clientes ÷ lo pagado a proveedores, en el <strong>mes en curso</strong>.</td><td>Mayor que 1: entró más de lo que salió por la operación comercial. Menor que 1: se pagó más de lo que se cobró.</td></tr>
+<tr><td><strong>Deuda vencida</strong></td><td>Lo que ya pasó su fecha de vencimiento (vencimiento anterior a hoy).</td><td>La deuda a gestionar ya. Junto con <em>Deuda no vencida</em> suma siempre el <em>Total por cobrar</em>.</td></tr>
+<tr><td><strong>Deuda no vencida</strong></td><td>Lo que vence hoy o más adelante, tenga o no nivel de seguimiento asignado.</td><td>La deuda "sana" que todavía está en plazo.</td></tr>
+<tr><td><strong>A cobrar hoy</strong></td><td>Lo que vence exactamente hoy.</td><td>Lo que debería entrar en el día.</td></tr>
+<tr><td><strong>A cobrar en próximos 7 días</strong></td><td>Lo que vence entre hoy y dentro de 7 días, <strong>hoy incluido</strong>.</td><td>Incluye a propósito lo de <em>A cobrar hoy</em>: no se suman entre sí.</td></tr>
+</tbody>
+</table>
+<h2>Gráficos</h2>
+<h3>Top 10 - Peores pagadores (días promedio)</h3>
+<p>Los 10 clientes que más tardaron, en promedio, en <strong>cancelar del todo</strong> una factura. Para cada factura totalmente pagada emitida en el período elegido, los días son: fecha de cancelación − fecha de factura. La fecha de cancelación es la última conciliación que la saldó, sea con un pago, una nota de crédito u otro movimiento.</p>
+<p>No mide días de atraso contra el vencimiento, sino <strong>cuánto tarda el cliente en pagar desde que se le factura</strong>. Las facturas todavía abiertas no cuentan.</p>
+<h3>Proyección de cobranzas</h3>
+<p>El saldo pendiente agrupado por días hasta el vencimiento: <strong>0-15</strong>, <strong>16-30</strong>, <strong>31-60</strong>, <strong>61-90</strong> y <strong>+90 días</strong>. Cada barra muestra su porcentaje del total.</p>
+<div class="alert alert-info" role="status"><p><strong>La deuda ya vencida se suma al tramo 0-15 días</strong>: se considera cobranza a gestionar ya. Por eso la primera barra suele ser la más alta.</p></div>
